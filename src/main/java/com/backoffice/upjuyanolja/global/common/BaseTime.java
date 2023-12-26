@@ -18,12 +18,10 @@ public abstract class BaseTime {
     @CreatedDate
     @Comment("생성일시")
     private LocalDateTime createdAt;
-
     @Column(insertable = false)
     @LastModifiedDate
     @Comment("수정일시")
     private LocalDateTime updatedAt;
-
     @Column(insertable = false)
     @Comment("삭제일시")
     private LocalDateTime deletedAt;
