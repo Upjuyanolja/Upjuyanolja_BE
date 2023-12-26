@@ -30,6 +30,9 @@ public class Reservation extends BaseTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("예약 식별자")
     private Long id;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Comment("예약 숙소 식별자")
+    private ReservationRoom reservationRoom;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "member_id")
     @Comment("회원 식별자")
@@ -45,23 +48,21 @@ public class Reservation extends BaseTime {
     @Column(nullable = false)
     @Comment("결제 금액")
     private int price;
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private ReservationRoom reservationRoom;
 
     @Builder
     public Reservation(
         Long id,
+        ReservationRoom reservationRoom,
         Member member,
         Coupon coupon,
         PayMethod payMethod,
-        int price,
-        ReservationRoom reservationRoom
+        int price
     ) {
         this.id = id;
+        this.reservationRoom = reservationRoom;
         this.member = member;
         this.coupon = coupon;
         this.payMethod = payMethod;
         this.price = price;
-        this.reservationRoom = reservationRoom;
     }
 }
