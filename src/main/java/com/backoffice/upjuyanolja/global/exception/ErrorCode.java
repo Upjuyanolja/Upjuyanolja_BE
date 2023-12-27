@@ -33,7 +33,7 @@ public enum ErrorCode {
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, 4000, "쿠폰 정보를 찾을 수 없습니다."),
 
     // OpenAPI
-    OPEN_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "오픈 API를 이용하는 중 에바가 발생했습니다."),
+    OPEN_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "오픈 API를 이용하는 중 에러가 발생했습니다."),
 
     // Common
     DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6000, "데이터베이스 오류가 발생했습니다."),
