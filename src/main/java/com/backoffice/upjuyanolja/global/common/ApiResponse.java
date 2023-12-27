@@ -19,7 +19,7 @@ public class ApiResponse {
     }
 
     @Builder
-    public record SuccessResponse<T>(String message, T object) {
+    public record SuccessResponse<T>(String message, T data) {
 
     }
 
