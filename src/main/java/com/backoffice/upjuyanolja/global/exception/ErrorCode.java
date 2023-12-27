@@ -32,11 +32,14 @@ public enum ErrorCode {
     // Coupon
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, 4000, "쿠폰 정보를 찾을 수 없습니다."),
 
+    // OpenAPI
+    OPEN_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "오픈 API를 이용하는 중 에바가 발생했습니다."),
+
     // Common
-    DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "데이터베이스 오류가 발생했습니다."),
-    INVALID_REQUEST_BODY(HttpStatus.BAD_REQUEST, 5001, "유효하지 않은 요청 바디입니다."),
-    SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5002, "서버에 알 수 없는 에러가 발생했습니다."),
-    INVALID_DATE(HttpStatus.BAD_REQUEST, 5003, "유효하지 않는 날짜입니다.");
+    DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6000, "데이터베이스 오류가 발생했습니다."),
+    INVALID_REQUEST_BODY(HttpStatus.BAD_REQUEST, 6001, "유효하지 않은 요청 바디입니다."),
+    SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6002, "서버에 알 수 없는 에러가 발생했습니다."),
+    INVALID_DATE(HttpStatus.BAD_REQUEST, 6003, "유효하지 않는 날짜입니다.");
 
     private final HttpStatus httpStatus;
     private final int code;
