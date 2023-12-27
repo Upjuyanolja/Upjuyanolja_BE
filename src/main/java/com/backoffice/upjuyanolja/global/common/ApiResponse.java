@@ -14,9 +14,7 @@ public class ApiResponse {
         return ResponseEntity.status(status).body(body);
     }
 
-    public static <T> ResponseEntity<FailResponse<T>> error(
-        FailResponse<T> responseDto
-    ) {
+    public static <T> ResponseEntity<FailResponse<T>> error(FailResponse<T> responseDto) {
         return ResponseEntity.status(responseDto.code.getHttpStatus()).body(responseDto);
     }
 
