@@ -78,6 +78,14 @@ tasks.named('asciidoctor') {
     dependsOn test
 }
 
+task copyPrivate(type: Copy){
+    copy {
+        from './submodule-data'
+        include "*.yaml"
+        into 'src/main/resources'
+    }
+}
+
 bootJar {
     dependsOn asciidoctor
     from("${asciidoctor.outputDir}") {
