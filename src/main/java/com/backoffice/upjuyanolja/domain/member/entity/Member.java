@@ -32,10 +32,10 @@ public class Member extends BaseTime {
     @Column(nullable = false, length = 30)
     @Comment("이름")
     private String name;
-    @Column(nullable = false, length = 12)
+    @Column(nullable = false, length = 13)
     @Comment("전화번호")
     private String phone;
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     @Comment("프로필 이미지 URL")
     private String imageUrl;
     @Enumerated(EnumType.STRING)
