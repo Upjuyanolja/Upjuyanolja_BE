@@ -71,34 +71,32 @@ public class OpenApiService {
             JSONArray stayArr = getItems(getAccommodation(pageSize, pageNum));
 
             for (int j = 0; j < stayArr.length(); j++) {
-                try {
-                    JSONObject stay = stayArr.getJSONObject(j);
-                    int contentId = stay.getInt("contentid");
+                JSONObject stay = stayArr.getJSONObject(j);
+                int contentId = stay.getInt("contentid");
 
-                    JSONObject info = getInfo(contentId);
-                    checkInfo(info);
-                    JSONArray rooms = getItems(info);
-                    checkRoom(rooms);
-                    checkRoomImage(rooms);
-                    JSONObject image = getImages(contentId);
-                    checkAccommodationImage(image);
-                    JSONArray images = getItems(image);
-                    JSONObject common = getCommon(contentId);
-                    checkCommon(common);
-                    JSONObject commonItem = getItems(common).getJSONObject(0);
-                    JSONObject intro = getIntro(contentId);
-                    checkIntro(intro);
-                    JSONObject introItem = getItems(intro).getJSONObject(0);
-                    checkIntroItem(introItem);
-                    checkStay(stay);
+                JSONObject info = getInfo(contentId);
+                checkInfo(info);
+                JSONArray rooms = getItems(info);
+                checkRoom(rooms);
+                checkRoomImage(rooms);
+                JSONObject image = getImages(contentId);
+                checkAccommodationImage(image);
+                JSONArray images = getItems(image);
+                JSONObject common = getCommon(contentId);
+                checkCommon(common);
+                JSONObject commonItem = getItems(common).getJSONObject(0);
+                JSONObject intro = getIntro(contentId);
+                checkIntro(intro);
+                JSONObject introItem = getItems(intro).getJSONObject(0);
+                checkIntroItem(introItem);
+                checkStay(stay);
 
-                    Accommodation accommodation = saveAccommodation(stay, commonItem, introItem);
-                    saveProductImages(accommodation, images);
-                    saveRooms(accommodation, introItem, rooms);
-                } catch (InvalidDataException e) {
-                    log.info("[OpenAPI] {}", e.getMessage());
-                }
+                Accommodation accommodation = saveAccommodation(stay, commonItem, introItem);
+                saveProductImages(accommodation, images);
+                saveRooms(accommodation, introItem, rooms);
             }
+        } catch (InvalidDataException e) {
+            log.info("[OpenAPI] {}", e.getMessage());
         } catch (Exception e) {
             log.error("[OpenAPI] {}", e.getMessage());
             throw new OpenApiException();
