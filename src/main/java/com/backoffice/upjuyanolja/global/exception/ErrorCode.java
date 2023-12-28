@@ -34,6 +34,7 @@ public enum ErrorCode {
 
     // OpenAPI
     OPEN_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "오픈 API를 이용하는 중 에러가 발생했습니다."),
+    DATA_NOT_FOUND(HttpStatus.NOT_FOUND, 5001, "오픈 API에서 가져온 숙소 데이터에서 필요한 정보가 없어, 다음 숙소를 조회합니다."),
 
     // Common
     DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6000, "데이터베이스 오류가 발생했습니다."),
