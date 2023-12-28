@@ -3,12 +3,15 @@ package com.backoffice.upjuyanolja.domain.member.service;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SingUpRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import com.backoffice.upjuyanolja.domain.member.exception.IncorrectPasswordException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberEmailDuplicationException;
+import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
 import com.backoffice.upjuyanolja.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +20,7 @@ public class MemberRegisterService {
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder encoder;
 
+    @Transactional
     public SignUpResponse signup(SingUpRequest request) {
         validateDuplicatedEmail(request.email());
 
@@ -31,10 +35,27 @@ public class MemberRegisterService {
         return SignUpResponse.fromEntity(member);
     }
 
-    public void validateDuplicatedEmail(String email) {
-        if (memberRepository.findByEmail(email).isPresent()) {
-            throw new MemberEmailDuplicationException(ErrorCode.DUPLICATED_EMAIL);
+    @Transactional
+    public String signin(String email, String password) {
+        //회원가입 여부 체크
+        Member member = memberRepository.findByEmail(email).orElseThrow(
+            () -> new MemberNotFoundException()
+        );
+
+        //비밀번호 체크
+        if (!member.getPassword().equals(password)) {
+            throw new IncorrectPasswordException();
         }
 
+        //토큰 발급
+        //TODO implmentation
+
+        return "";
+    }
+
+    public void validateDuplicatedEmail(String email) {
+        if (memberRepository.findByEmail(email).isPresent()) {
+            throw new MemberEmailDuplicationException();
+        }
     }
 }
