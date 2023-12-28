@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/members")
+@RequestMapping("api/members")
 @RequiredArgsConstructor
 public class MemberController {
 
@@ -34,12 +34,11 @@ public class MemberController {
     }
 
     @GetMapping("/email/verify")
-    public ResponseEntity<SuccessResponse<SignUpResponse>>verifyEmail(@NotNull String email) {
+    public ResponseEntity<SuccessResponse<Void>> verifyEmail(@NotNull String email) {
         memberRegisterService.validateDuplicatedEmail(email);
         return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<SignUpResponse>builder()
+            SuccessResponse.<Void>builder()
                 .message("사용가능한 이메일입니다.")
                 .build());
     }
-
 }
