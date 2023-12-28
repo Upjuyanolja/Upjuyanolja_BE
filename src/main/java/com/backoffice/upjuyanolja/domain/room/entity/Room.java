@@ -40,9 +40,6 @@ public class Room {
     @Column(nullable = false)
     @Comment("객실 이름")
     private String name;
-    @Column(columnDefinition = "TEXT", nullable = false)
-    @Comment("객실 설명")
-    private String description;
     @Column(columnDefinition = "TINYINT")
     @Comment("객실 기준인원")
     private int standard;
@@ -71,7 +68,6 @@ public class Room {
         Accommodation accommodation,
         long code,
         String name,
-        String description,
         int standard,
         int capacity,
         LocalTime checkIn,
@@ -84,7 +80,6 @@ public class Room {
         this.accommodation = accommodation;
         this.code = code;
         this.name = name;
-        this.description = description;
         this.standard = standard;
         this.capacity = capacity;
         this.checkIn = checkIn;
