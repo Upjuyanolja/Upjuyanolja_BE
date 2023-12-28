@@ -5,16 +5,16 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.Room;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.RoomImage;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.RoomOption;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.openapi.exception.InvalidDataException;
 import com.backoffice.upjuyanolja.domain.openapi.exception.OpenApiException;
-import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
-import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -229,7 +229,7 @@ public class OpenApiService {
             .name(base.getString("title"))
             .address(
                 Address.builder()
-                    .address(base.getString("addr1"))
+                    .shortAddress(base.getString("addr1"))
                     .detailAddress(base.getString("addr2"))
                     .mapX(base.getDouble("mapx"))
                     .mapY(base.getDouble("mapy"))
@@ -238,8 +238,8 @@ public class OpenApiService {
             .category(Category.getByCode(base.getString("cat3")))
             .description(common.getString("overview"))
             .thumbnail(base.getString("firstimage"))
-            .images(new ArrayList<>())
-            .productOption(productOption)
+            .accommodationImages(new ArrayList<>())
+            .accommodationOption(productOption)
             .build();
 
         return accommodationRepository.save(accommodation);
@@ -292,23 +292,26 @@ public class OpenApiService {
                         .accommodation(accommodation)
                         .code(roomJson.getLong("roomcode"))
                         .name(roomJson.getString("roomtitle"))
-                        .standard(
+                        .defaultCapacity(
                             roomJson.getInt("roombasecount"))
-                        .capacity(Math.max(roomJson.getInt("roombasecount"),
+                        .maxCapacity(Math.max(roomJson.getInt("roombasecount"),
                             roomJson.getInt("roommaxcount")))
-                        .checkIn(checkIn)
-                        .checkOut(checkOut)
-                        .price(roomPrice)
+                        .checkInTime(checkIn)
+                        .checkOutTime(checkOut)
+                        .roomPrice(roomPrice)
                         .roomOption(roomOption)
-                        .images(new ArrayList<>())
+                        .roomImages(new ArrayList<>())
                         .build());
 
                     for (int k = 1; k <= 5; k++) {
                         if (!roomJson.get("roomimg" + k).equals("")) {
-                            roomImageRepository.save(RoomImage.builder()
-                                .room(room)
-                                .url(roomJson.getString("roomimg" + k))
-                                .build());
+                            roomImageRepository.save
+                                (
+                                    RoomImage.builder()
+                                        .room(room)
+                                        .url(roomJson.getString("roomimg" + k))
+                                        .build()
+                                );
                         }
                     }
                 }
