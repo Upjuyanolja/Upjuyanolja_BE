@@ -1,5 +1,7 @@
 package com.backoffice.upjuyanolja.domain.member.entity;
 
+import static com.backoffice.upjuyanolja.domain.member.entity.Authority.*;
+
 import com.backoffice.upjuyanolja.global.common.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,7 +42,7 @@ public class Member extends BaseTime {
     private String imageUrl;
     @Enumerated(EnumType.STRING)
     @Comment("권한")
-    private Authority authority;
+    private Authority authority = ROLE_USER;
 
     @Builder
     public Member(
