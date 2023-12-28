@@ -1,6 +1,6 @@
-package com.backoffice.upjuyanolja.domain.room.entity;
+package com.backoffice.upjuyanolja.domain.accommodation.entity;
 
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponRoom;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,67 +30,84 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("객실 식별자")
     private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accommodation_id")
     @Comment("숙소 식별자")
     private Accommodation accommodation;
+
     @Column(nullable = false)
     @Comment("객실 코드")
-    private long code;
+    private Long code;
+
     @Column(nullable = false)
     @Comment("객실 이름")
     private String name;
-    @Column(columnDefinition = "TEXT", nullable = false)
-    @Comment("객실 설명")
-    private String description;
+
+    @Column(nullable = false)
+    @Comment("객실 갯수")
+    private Integer count;
+
     @Column(columnDefinition = "TINYINT")
-    @Comment("객실 기준인원")
-    private int standard;
+    @Comment("객실 기준 인원")
+    private Integer defaultCapacity;
+
     @Column(columnDefinition = "TINYINT")
-    @Comment("객실 최대인원")
-    private int capacity;
+    @Comment("객실 최대 인원")
+    private Integer maxCapacity;
+
     @Column(columnDefinition = "TIME")
-    @Comment("객실 체크인 시간")
-    private LocalTime checkIn;
+    @Comment("객실 체크 인 시간")
+    private LocalTime checkInTime;
+
     @Column(columnDefinition = "TIME")
-    @Comment("객실 체크아웃 시간")
-    private LocalTime checkOut;
+    @Comment("객실 체크 아웃 시간")
+    private LocalTime checkOutTime;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 가격")
-    private RoomPrice price;
+    private RoomPrice roomPrice;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 옵션 식별자")
     private RoomOption roomOption;
+
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 이미지 식별자")
-    private List<RoomImage> images = new ArrayList<>();
+    private List<RoomImage> roomImages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room",
+        cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<CouponRoom> couponRooms = new ArrayList<>();
 
     @Builder
     public Room(
         Long id,
         Accommodation accommodation,
-        long code,
+        Long code,
+        Integer count,
         String name,
-        String description,
-        int standard,
-        int capacity,
-        LocalTime checkIn,
-        LocalTime checkOut,
-        RoomPrice price,
+        Integer defaultCapacity,
+        Integer maxCapacity,
+        LocalTime checkInTime,
+        LocalTime checkOutTime,
+        RoomPrice roomPrice,
         RoomOption roomOption,
-        List<RoomImage> images
+        List<RoomImage> roomImages,
+        List<CouponRoom> couponRooms
     ) {
         this.id = id;
         this.accommodation = accommodation;
         this.code = code;
+        this.count = count;
         this.name = name;
-        this.description = description;
-        this.standard = standard;
-        this.capacity = capacity;
-        this.checkIn = checkIn;
-        this.checkOut = checkOut;
-        this.price = price;
+        this.defaultCapacity = defaultCapacity;
+        this.maxCapacity = maxCapacity;
+        this.checkInTime = checkInTime;
+        this.checkOutTime = checkOutTime;
+        this.roomPrice = roomPrice;
         this.roomOption = roomOption;
-        this.images = images;
+        this.roomImages = roomImages;
+        this.couponRooms = couponRooms;
     }
 }

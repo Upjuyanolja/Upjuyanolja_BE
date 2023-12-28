@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.accommodation.entity;
 
-import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.global.common.BaseTime;
+import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,27 +29,38 @@ public class Accommodation extends BaseTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("숙소 식별자")
     private Long id;
+
     @Column(nullable = false)
     @Comment("숙소 이름")
     private String name;
+
+    @Comment("숙소 전화 번호")
+    private String phoneNumber;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("숙소 위치")
     private Address address;
+
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     @Comment("숙소 카테고리")
     private Category category;
+
     @Column(columnDefinition = "TEXT", nullable = false)
     @Comment("숙소 설명")
     private String description;
+
     @Column(columnDefinition = "TEXT", nullable = false)
     @Comment("숙소 대표 이미지 URL")
     private String thumbnail;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("숙소 옵션 식별자")
-    private AccommodationOption productOption;
+    private AccommodationOption accommodationOption;
+
     @OneToMany(mappedBy = "accommodation", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AccommodationImage> images = new ArrayList<>();
+    private List<AccommodationImage> accommodationImages = new ArrayList<>();
+
     @OneToMany(mappedBy = "accommodation", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Room> rooms = new ArrayList<>();
 
@@ -58,22 +68,24 @@ public class Accommodation extends BaseTime {
     public Accommodation(
         Long id,
         String name,
+        String phoneNumber,
         Address address,
         Category category,
         String description,
         String thumbnail,
-        AccommodationOption productOption,
-        List<AccommodationImage> images,
+        AccommodationOption accommodationOption,
+        List<AccommodationImage> accommodationImages,
         List<Room> rooms
     ) {
         this.id = id;
         this.name = name;
+        this.phoneNumber = phoneNumber;
         this.address = address;
         this.category = category;
         this.description = description;
         this.thumbnail = thumbnail;
-        this.productOption = productOption;
-        this.images = images;
+        this.accommodationOption = accommodationOption;
+        this.accommodationImages = accommodationImages;
         this.rooms = rooms;
     }
 }

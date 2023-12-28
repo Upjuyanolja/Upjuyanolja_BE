@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.domain.room.entity;
+package com.backoffice.upjuyanolja.domain.accommodation.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,10 +23,12 @@ public class RoomImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("객실 이미지 식별자")
     private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "room_id")
     @Comment("객실 식별자")
     private Room room;
+
     @Column(nullable = false)
     @Comment("이미지 URL")
     private String url;

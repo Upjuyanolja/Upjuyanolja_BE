@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.domain.room.entity;
+package com.backoffice.upjuyanolja.domain.accommodation.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,26 +20,30 @@ public class RoomPrice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("객실 가격 식별자")
     private Long id;
+
     @Column(nullable = false)
     @Comment("비수기 주중 최소 가격")
-    private int offWeekDaysMinFee;
+    private Integer offWeekDaysMinFee;
+
     @Column(nullable = false)
     @Comment("비수기 주말 최소 가격")
-    private int offWeekendMinFee;
+    private Integer offWeekendMinFee;
+
     @Column(nullable = false)
     @Comment("성수기 주중 최소 가격")
-    private int peakWeekDaysMinFee;
+    private Integer peakWeekDaysMinFee;
+
     @Column(nullable = false)
     @Comment("성수기 주말 최소 가격")
-    private int peakWeekendMinFee;
+    private Integer peakWeekendMinFee;
 
     @Builder
     private RoomPrice(
         Long id,
-        int offWeekDaysMinFee,
-        int offWeekendMinFee,
-        int peakWeekDaysMinFee,
-        int peakWeekendMinFee
+        Integer offWeekDaysMinFee,
+        Integer offWeekendMinFee,
+        Integer peakWeekDaysMinFee,
+        Integer peakWeekendMinFee
     ) {
         this.id = id;
         this.offWeekDaysMinFee = offWeekDaysMinFee;

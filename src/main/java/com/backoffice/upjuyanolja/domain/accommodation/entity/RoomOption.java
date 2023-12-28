@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.domain.room.entity;
+package com.backoffice.upjuyanolja.domain.accommodation.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,22 +20,25 @@ public class RoomOption {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("객실 옵션 식별자")
     private Long id;
+
     @Column(nullable = false)
     @Comment("에어컨 여부")
-    private boolean airCondition;
+    private Boolean airCondition;
+
     @Column(nullable = false)
     @Comment("TV 여부")
-    private boolean tv;
+    private Boolean tv;
+
     @Column(nullable = false)
     @Comment("인터넷 여부")
-    private boolean internet;
+    private Boolean internet;
 
     @Builder
     public RoomOption(
         Long id,
-        boolean airCondition,
-        boolean tv,
-        boolean internet
+        Boolean airCondition,
+        Boolean tv,
+        Boolean internet
     ) {
         this.id = id;
         this.airCondition = airCondition;

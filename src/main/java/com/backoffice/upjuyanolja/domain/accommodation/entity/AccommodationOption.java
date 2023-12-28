@@ -20,46 +20,55 @@ public class AccommodationOption {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("숙소 옵션 식별자")
     private Long id;
+
     @Column(nullable = false)
     @Comment("객실 내 취사 여부")
-    private boolean cooking;
+    private Boolean cooking;
+
     @Column(nullable = false)
     @Comment("주차 시설 여부")
-    private boolean parking;
+    private Boolean parking;
+
     @Column(nullable = false)
     @Comment("픽업 서비스 여부")
-    private boolean pickup;
+    private Boolean pickup;
+
     @Column(nullable = false)
-    @Comment("바비큐장 여부")
-    private boolean barbecue;
+    @Comment("바비큐 장 여부")
+    private Boolean barbecue;
+
     @Column(nullable = false)
-    @Comment("휘트니스 센터 여부")
-    private boolean fitness;
+    @Comment("피트니스 센터 여부")
+    private Boolean fitness;
+
     @Column(nullable = false)
     @Comment("노래방 여부")
-    private boolean karaoke;
+    private Boolean karaoke;
+
     @Column(nullable = false)
     @Comment("사우나 여부")
-    private boolean sauna;
+    private Boolean sauna;
+
     @Column(nullable = false)
     @Comment("스포츠 시설 여부")
-    private boolean sports;
+    private Boolean sports;
+
     @Column(nullable = false)
-    @Comment("세미나실 여부")
-    private boolean seminar;
+    @Comment("세미나 실 여부")
+    private Boolean seminar;
 
     @Builder
     public AccommodationOption(
         Long id,
-        boolean cooking,
-        boolean parking,
-        boolean pickup,
-        boolean barbecue,
-        boolean fitness,
-        boolean karaoke,
-        boolean sauna,
-        boolean sports,
-        boolean seminar
+        Boolean cooking,
+        Boolean parking,
+        Boolean pickup,
+        Boolean barbecue,
+        Boolean fitness,
+        Boolean karaoke,
+        Boolean sauna,
+        Boolean sports,
+        Boolean seminar
     ) {
         this.id = id;
         this.cooking = cooking;
