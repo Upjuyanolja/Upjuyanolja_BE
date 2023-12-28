@@ -20,15 +20,15 @@ public record AccommodationOptionResponse(
         AccommodationOption accommodationOption
     ) {
         return AccommodationOptionResponse.builder()
-            .cooking(accommodationOption.isCooking())
-            .parking(accommodationOption.isParking())
-            .pickup(accommodationOption.isPickup())
-            .barbecue(accommodationOption.isBarbecue())
-            .fitness(accommodationOption.isFitness())
-            .karaoke(accommodationOption.isKaraoke())
-            .sauna(accommodationOption.isSauna())
-            .sports(accommodationOption.isSports())
-            .seminar(accommodationOption.isSeminar())
+            .cooking(accommodationOption.getCooking())
+            .parking(accommodationOption.getParking())
+            .pickup(accommodationOption.getPickup())
+            .barbecue(accommodationOption.getBarbecue())
+            .fitness(accommodationOption.getFitness())
+            .karaoke(accommodationOption.getKaraoke())
+            .sauna(accommodationOption.getSauna())
+            .sports(accommodationOption.getSports())
+            .seminar(accommodationOption.getSeminar())
             .build();
     }
 }
