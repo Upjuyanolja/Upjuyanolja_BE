@@ -12,9 +12,9 @@ public record RoomOptionResponse(
 
     public static RoomOptionResponse from(RoomOption roomOption) {
         return RoomOptionResponse.builder()
-            .airCondition(roomOption.isAirCondition())
-            .tv(roomOption.isTv())
-            .internet(roomOption.isInternet())
+            .airCondition(roomOption.getAirCondition())
+            .tv(roomOption.getAirCondition())
+            .internet(roomOption.getInternet())
             .build();
     }
 }
