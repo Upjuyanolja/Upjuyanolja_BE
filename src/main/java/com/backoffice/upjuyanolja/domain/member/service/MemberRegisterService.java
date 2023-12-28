@@ -1,13 +1,12 @@
 package com.backoffice.upjuyanolja.domain.member.service;
 
-import com.backoffice.upjuyanolja.domain.member.dto.request.SingUpRequest;
+import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.exception.IncorrectPasswordException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberEmailDuplicationException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
-import com.backoffice.upjuyanolja.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,7 @@ public class MemberRegisterService {
     private final BCryptPasswordEncoder encoder;
 
     @Transactional
-    public SignUpResponse signup(SingUpRequest request) {
+    public SignUpResponse signup(SignUpRequest request) {
         validateDuplicatedEmail(request.email());
 
         Member member = memberRepository.save(Member.builder()

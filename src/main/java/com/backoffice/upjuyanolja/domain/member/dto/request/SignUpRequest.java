@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record SingUpRequest(
+public record SignUpRequest(
     @Email(message = "Email을 입력해주세요")
     @NotBlank
     String email,

@@ -1,6 +1,8 @@
 package com.backoffice.upjuyanolja.domain.member.controller;
 
-import com.backoffice.upjuyanolja.domain.member.dto.request.SingUpRequest;
+import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
+import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
+import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
 import com.backoffice.upjuyanolja.global.common.ApiResponse;
@@ -25,7 +27,7 @@ public class MemberController {
 
     @PostMapping("/signup")
     public ResponseEntity<SuccessResponse<SignUpResponse>> signup(
-        @Valid @RequestBody SingUpRequest request) {
+        @Valid @RequestBody SignUpRequest request) {
         return ApiResponse.success(HttpStatus.OK,
             SuccessResponse.<SignUpResponse>builder()
                 .message("회원가입이 성공적으로 완료되었습니다.")
