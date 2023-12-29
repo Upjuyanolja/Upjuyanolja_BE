@@ -1,6 +1,5 @@
 package com.backoffice.upjuyanolja.domain.member.controller;
 
-import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
@@ -40,16 +39,6 @@ public class MemberController {
         return ApiResponse.success(HttpStatus.OK,
             SuccessResponse.<Void>builder()
                 .message("사용가능한 이메일입니다.")
-                .build());
-    }
-
-    @PostMapping("/signin")
-    public ResponseEntity<SuccessResponse<String>> signin(
-        @Valid @RequestBody SignInRequest request) {
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<String>builder()
-                .message("회원가입이 성공적으로 완료되었습니다.")
-                .data(memberRegisterService.signin(request.getEmail(), request.getPassword()))
                 .build());
     }
 }
