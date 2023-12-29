@@ -23,27 +23,27 @@ public class RoomPrice {
 
     @Column(nullable = false)
     @Comment("비수기 주중 최소 가격")
-    private Integer offWeekDaysMinFee;
+    private int offWeekDaysMinFee;
 
     @Column(nullable = false)
     @Comment("비수기 주말 최소 가격")
-    private Integer offWeekendMinFee;
+    private int offWeekendMinFee;
 
     @Column(nullable = false)
     @Comment("성수기 주중 최소 가격")
-    private Integer peakWeekDaysMinFee;
+    private int peakWeekDaysMinFee;
 
     @Column(nullable = false)
     @Comment("성수기 주말 최소 가격")
-    private Integer peakWeekendMinFee;
+    private int peakWeekendMinFee;
 
     @Builder
     private RoomPrice(
         Long id,
-        Integer offWeekDaysMinFee,
-        Integer offWeekendMinFee,
-        Integer peakWeekDaysMinFee,
-        Integer peakWeekendMinFee
+        int offWeekDaysMinFee,
+        int offWeekendMinFee,
+        int peakWeekDaysMinFee,
+        int peakWeekendMinFee
     ) {
         this.id = id;
         this.offWeekDaysMinFee = offWeekDaysMinFee;

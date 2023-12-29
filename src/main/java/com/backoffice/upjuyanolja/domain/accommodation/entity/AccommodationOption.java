@@ -23,52 +23,52 @@ public class AccommodationOption {
 
     @Column(nullable = false)
     @Comment("객실 내 취사 여부")
-    private Boolean cooking;
+    private boolean cooking;
 
     @Column(nullable = false)
     @Comment("주차 시설 여부")
-    private Boolean parking;
+    private boolean parking;
 
     @Column(nullable = false)
     @Comment("픽업 서비스 여부")
-    private Boolean pickup;
+    private boolean pickup;
 
     @Column(nullable = false)
     @Comment("바비큐 장 여부")
-    private Boolean barbecue;
+    private boolean barbecue;
 
     @Column(nullable = false)
     @Comment("피트니스 센터 여부")
-    private Boolean fitness;
+    private boolean fitness;
 
     @Column(nullable = false)
     @Comment("노래방 여부")
-    private Boolean karaoke;
+    private boolean karaoke;
 
     @Column(nullable = false)
     @Comment("사우나 여부")
-    private Boolean sauna;
+    private boolean sauna;
 
     @Column(nullable = false)
     @Comment("스포츠 시설 여부")
-    private Boolean sports;
+    private boolean sports;
 
     @Column(nullable = false)
     @Comment("세미나 실 여부")
-    private Boolean seminar;
+    private boolean seminar;
 
     @Builder
     public AccommodationOption(
         Long id,
-        Boolean cooking,
-        Boolean parking,
-        Boolean pickup,
-        Boolean barbecue,
-        Boolean fitness,
-        Boolean karaoke,
-        Boolean sauna,
-        Boolean sports,
-        Boolean seminar
+        boolean cooking,
+        boolean parking,
+        boolean pickup,
+        boolean barbecue,
+        boolean fitness,
+        boolean karaoke,
+        boolean sauna,
+        boolean sports,
+        boolean seminar
     ) {
         this.id = id;
         this.cooking = cooking;

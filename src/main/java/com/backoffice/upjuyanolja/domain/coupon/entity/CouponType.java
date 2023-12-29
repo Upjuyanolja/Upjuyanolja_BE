@@ -5,11 +5,11 @@ import lombok.Getter;
 
 public class CouponType {
 
-    public static final Integer MIN_WON_DISCOUNT = 1000;
-    public static final Integer MAX_WON_DISCOUNT = 50000;
+    public static final int MIN_WON_DISCOUNT = 1000;
+    public static final int MAX_WON_DISCOUNT = 50000;
 
-    public static final Integer MIN_PERCENT_DISCOUNT = 1;
-    public static final Integer MAX_PERCENT_DISCOUNT = 50;
+    public static final int MIN_PERCENT_DISCOUNT = 1;
+    public static final int MAX_PERCENT_DISCOUNT = 50;
 
     @Getter
     public enum Type {

@@ -45,7 +45,7 @@ public class Coupon extends BaseTime {
 
     @Column(nullable = false)
     @Comment("할인 가격(할인 율)")
-    private Integer couponPrice;
+    private int couponPrice;
 
     @Column(nullable = false)
     @Comment("유효 기간 시작일")
@@ -57,7 +57,7 @@ public class Coupon extends BaseTime {
 
     @Column(nullable = false)
     @Comment("일일 사용 한도")
-    private Integer dayLimit;
+    private int dayLimit;
 
     @OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY)
     private List<Reservation> reservations = new ArrayList<>();
@@ -71,10 +71,10 @@ public class Coupon extends BaseTime {
         Long id,
         Status status,
         Type type,
-        Integer couponPrice,
+        int couponPrice,
         LocalDate startDate,
         LocalDate endDate,
-        Integer dayLimit,
+        int dayLimit,
         List<Reservation> reservations,
         List<CouponRoom> couponRooms
     ) {

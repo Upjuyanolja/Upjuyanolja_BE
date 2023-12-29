@@ -27,7 +27,7 @@ public class AccommodationController {
     @GetMapping
     public ResponseBody<AccommodationPageResponse> getAccommodations(
         @RequestParam(defaultValue = "ALL", required = false) Category category,
-        @RequestParam(defaultValue = "false") Boolean hasCoupon,
+        @RequestParam(defaultValue = "false") boolean hasCoupon,
         @RequestParam(defaultValue = "") String keyword,
         @PageableDefault(page = 1, size = 12) Pageable pageable
     ) {

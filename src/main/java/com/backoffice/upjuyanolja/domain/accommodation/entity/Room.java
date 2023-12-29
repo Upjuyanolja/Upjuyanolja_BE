@@ -38,7 +38,7 @@ public class Room {
 
     @Column(nullable = false)
     @Comment("객실 코드")
-    private Long code;
+    private long code;
 
     @Column(nullable = false)
     @Comment("객실 이름")
@@ -46,15 +46,15 @@ public class Room {
 
     @Column(nullable = false)
     @Comment("객실 갯수")
-    private Integer count;
+    private int count;
 
     @Column(columnDefinition = "TINYINT")
     @Comment("객실 기준 인원")
-    private Integer defaultCapacity;
+    private int defaultCapacity;
 
     @Column(columnDefinition = "TINYINT")
     @Comment("객실 최대 인원")
-    private Integer maxCapacity;
+    private int maxCapacity;
 
     @Column(columnDefinition = "TIME")
     @Comment("객실 체크 인 시간")
@@ -84,11 +84,11 @@ public class Room {
     public Room(
         Long id,
         Accommodation accommodation,
-        Long code,
-        Integer count,
+        long code,
+        int count,
         String name,
-        Integer defaultCapacity,
-        Integer maxCapacity,
+        int defaultCapacity,
+        int maxCapacity,
         LocalTime checkInTime,
         LocalTime checkOutTime,
         RoomPrice roomPrice,

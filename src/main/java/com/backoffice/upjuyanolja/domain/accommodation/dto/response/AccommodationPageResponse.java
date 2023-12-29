@@ -6,11 +6,11 @@ import org.springframework.data.domain.Page;
 
 @Builder
 public record AccommodationPageResponse(
-    Integer pageNum,
-    Integer pageSize,
-    Integer totalPages,
-    Long totalElements,
-    Boolean isLast,
+    int pageNum,
+    int pageSize,
+    int totalPages,
+    long totalElements,
+    boolean isLast,
     List<AccommodationSummaryResponse> accommodations
 
 ) {

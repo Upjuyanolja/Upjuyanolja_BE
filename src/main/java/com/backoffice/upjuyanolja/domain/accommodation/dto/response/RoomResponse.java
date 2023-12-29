@@ -13,22 +13,22 @@ import lombok.Builder;
 public record RoomResponse(
     Long id,
     String name,
-    Integer basePrice,
-    Integer discountPrice,
-    Integer defaultCapacity,
-    Integer maxCapacity,
+    int basePrice,
+    int discountPrice,
+    int defaultCapacity,
+    int maxCapacity,
     String checkInTime,
     String checkOutTime,
-    Boolean soldOut,
-    Integer count,
+    boolean soldOut,
+    int count,
     List<CouponRoomResponse> coupons,
     List<String> images,
     RoomOptionResponse roomOption
 ) {
 
     public static RoomResponse from(
-        Room room, Integer discountPrice, Boolean soldOut,
-        Integer couponRoomPrice
+        Room room, int discountPrice, boolean soldOut,
+        int couponRoomPrice
     ) {
         return RoomResponse.builder()
             .id(room.getId())

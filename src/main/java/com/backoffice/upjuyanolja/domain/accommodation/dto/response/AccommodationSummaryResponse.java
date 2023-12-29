@@ -9,16 +9,16 @@ public record AccommodationSummaryResponse(
     String name,
     String shortAddress,
     String category,
-    Integer lowestPrice,
-    Integer discountPrice,
+    int lowestPrice,
+    int discountPrice,
     String thumbnail,
-    Boolean soldOut,
+    boolean soldOut,
     String coupon
 
 ) {
 
     public static AccommodationSummaryResponse from(
-        Accommodation accommodation, Boolean isSoldOut, Integer lowestPrice, Integer discountPrice, String couponName
+        Accommodation accommodation, boolean isSoldOut, int lowestPrice, int discountPrice, String couponName
     ) {
         return AccommodationSummaryResponse.builder()
             .id(accommodation.getId())

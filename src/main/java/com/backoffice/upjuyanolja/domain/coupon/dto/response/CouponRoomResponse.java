@@ -7,10 +7,10 @@ import lombok.Builder;
 public record CouponRoomResponse(
     Long id,
     String name,
-    Integer price
+    int price
 ) {
 
-    public static CouponRoomResponse from(Coupon coupon, Integer couponRoomPrice) {
+    public static CouponRoomResponse from(Coupon coupon, int couponRoomPrice) {
         return CouponRoomResponse.builder()
             .id(coupon.getId())
             .name(coupon.getCouponPrice() + " " + coupon.getType().getName())

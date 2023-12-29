@@ -5,16 +5,16 @@ import lombok.Builder;
 
 @Builder
 public record RoomOptionResponse(
-    Boolean airCondition,
-    Boolean tv,
-    Boolean internet
+    boolean airCondition,
+    boolean tv,
+    boolean internet
 ) {
 
     public static RoomOptionResponse from(RoomOption roomOption) {
         return RoomOptionResponse.builder()
-            .airCondition(roomOption.getAirCondition())
-            .tv(roomOption.getAirCondition())
-            .internet(roomOption.getInternet())
+            .airCondition(roomOption.isAirCondition())
+            .tv(roomOption.isTv())
+            .internet(roomOption.isInternet())
             .build();
     }
 }

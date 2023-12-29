@@ -23,22 +23,22 @@ public class RoomOption {
 
     @Column(nullable = false)
     @Comment("에어컨 여부")
-    private Boolean airCondition;
+    private boolean airCondition;
 
     @Column(nullable = false)
     @Comment("TV 여부")
-    private Boolean tv;
+    private boolean tv;
 
     @Column(nullable = false)
     @Comment("인터넷 여부")
-    private Boolean internet;
+    private boolean internet;
 
     @Builder
     public RoomOption(
         Long id,
-        Boolean airCondition,
-        Boolean tv,
-        Boolean internet
+        boolean airCondition,
+        boolean tv,
+        boolean internet
     ) {
         this.id = id;
         this.airCondition = airCondition;
