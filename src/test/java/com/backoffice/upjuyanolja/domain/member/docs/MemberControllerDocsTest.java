@@ -2,14 +2,17 @@ package com.backoffice.upjuyanolja.domain.member.docs;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.GetMemberResponse;
+import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +24,9 @@ public class MemberControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private MemberRegisterService memberRegisterService;
+
+    @MockBean
+    private MemberGetService memberGetService;
 
     @Test
     @DisplayName("checkEmailDuplicate()는 이메일 중복 검사를 할 수 있다.")
@@ -41,8 +47,40 @@ public class MemberControllerDocsTest extends RestDocsSupport {
                     parameterWithName("email").description("이메일")
                 ),
                 responseFields(successResponseCommon()).and(
-                    fieldWithPath("data.isExists").type(JsonFieldType.BOOLEAN).description("이메일 중복 여부")
+                    fieldWithPath("data.isExists").type(JsonFieldType.BOOLEAN)
+                        .description("이메일 중복 여부")
                 )
             ));
+    }
+
+    @Test
+    @DisplayName("getMember()는 회원 정보를 조회할 수 있다.")
+    void getMember() throws Exception {
+        // given
+        GetMemberResponse getMemberResponse = GetMemberResponse.builder()
+            .memberId(1L)
+            .email("test@mail.com")
+            .phoneNumber("010-1234-1234")
+            .build();
+
+        given(memberGetService.getMember(any(Long.TYPE)))
+            .willReturn(getMemberResponse);
+
+        // when then
+        mockMvc.perform(get("/api/members/{memberId}", 1L))
+            .andDo(restDoc.document(
+                responseFields(successResponseCommon()).and(
+                    fieldWithPath("data.memberId").type(JsonFieldType.NUMBER)
+                        .description("회원 식별자"),
+                    fieldWithPath("data.email").type(JsonFieldType.STRING)
+                        .description("이메일"),
+                    fieldWithPath("data.name").type(JsonFieldType.STRING)
+                        .description("이름"),
+                    fieldWithPath("data.phoneNumber").type(JsonFieldType.STRING)
+                        .description("전화번호")
+                )
+            ));
+
+        verify(memberGetService, times(1)).getMember(any(Long.TYPE));
     }
 }
