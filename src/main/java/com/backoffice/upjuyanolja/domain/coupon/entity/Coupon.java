@@ -52,7 +52,7 @@ public class Coupon extends BaseTime {
 
     @Column(nullable = false)
     @Comment("일일 사용 한도")
-    private Integer limit;
+    private Integer dayLimit;
 
     @OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY)
     private List<Reservation> reservations = new ArrayList<>();
@@ -68,7 +68,7 @@ public class Coupon extends BaseTime {
         Integer couponPrice,
         LocalDate startDate,
         LocalDate endDate,
-        Integer limit,
+        Integer dayLimit,
         List<Reservation> reservations,
         List<CouponRoom> couponRooms
     ) {
@@ -77,7 +77,7 @@ public class Coupon extends BaseTime {
         this.couponPrice = couponPrice;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.limit = limit;
+        this.dayLimit = dayLimit;
         this.reservations = reservations;
         this.couponRooms = couponRooms;
     }
