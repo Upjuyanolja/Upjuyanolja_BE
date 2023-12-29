@@ -14,7 +14,7 @@ public class ApiResponse {
         return ResponseEntity.status(status).body(body);
     }
 
-    public static <T> ResponseEntity<FailResponse<T>> error(FailResponse<T> responseDto) {
+    public static ResponseEntity<FailResponse> error(FailResponse responseDto) {
         return ResponseEntity.status(responseDto.code.getHttpStatus()).body(responseDto);
     }
 
@@ -24,7 +24,7 @@ public class ApiResponse {
     }
 
     @Builder
-    public record FailResponse<T>(ErrorCode code, String message) {
+    public record FailResponse(ErrorCode code, String message) {
 
     }
 }
