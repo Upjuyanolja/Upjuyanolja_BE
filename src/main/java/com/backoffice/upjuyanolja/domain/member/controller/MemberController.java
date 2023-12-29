@@ -35,7 +35,7 @@ public class MemberController {
     }
 
     @GetMapping("/email")
-    public ResponseEntity<SuccessResponse<CheckEmailDuplicateResponse>> verifyEmail(
+    public ResponseEntity<SuccessResponse<CheckEmailDuplicateResponse>> checkEmailDuplicate(
         @RequestParam(name = "email") String email
     ) {
         return ApiResponse.success(HttpStatus.OK,
