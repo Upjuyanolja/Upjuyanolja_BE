@@ -1,12 +1,12 @@
 package com.backoffice.upjuyanolja.domain.member.controller;
 
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
+import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
 import com.backoffice.upjuyanolja.global.common.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.ApiResponse.SuccessResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -33,12 +34,14 @@ public class MemberController {
                 .build());
     }
 
-    @GetMapping("/email/verify")
-    public ResponseEntity<SuccessResponse<Void>> verifyEmail(@NotNull String email) {
-        memberRegisterService.validateDuplicatedEmail(email);
+    @GetMapping("/email")
+    public ResponseEntity<SuccessResponse<CheckEmailDuplicateResponse>> checkEmailDuplicate(
+        @RequestParam(name = "email") String email
+    ) {
         return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<Void>builder()
-                .message("사용가능한 이메일입니다.")
+            SuccessResponse.<CheckEmailDuplicateResponse>builder()
+                .message("성공적으로 이메일 중복 여부를 검사했습니다.")
+                .data(memberRegisterService.checkEmailDuplicate(email))
                 .build());
     }
 }
