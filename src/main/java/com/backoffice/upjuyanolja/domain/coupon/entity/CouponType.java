@@ -1,5 +1,8 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
+import static com.backoffice.upjuyanolja.global.exception.ErrorCode.INVALID_COUPON;
+
+import com.backoffice.upjuyanolja.domain.coupon.exception.CouponException;
 import java.util.function.Function;
 import lombok.Getter;
 
@@ -29,7 +32,7 @@ public class CouponType {
 
         public void validatePrice(Integer price) {
             if (!validateFunction.apply(price)) {
-                throw new RuntimeException();
+                throw new CouponException(INVALID_COUPON);
             }
         }
     }
