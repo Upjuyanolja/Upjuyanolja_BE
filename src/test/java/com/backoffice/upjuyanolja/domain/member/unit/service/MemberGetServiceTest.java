@@ -58,6 +58,7 @@ public class MemberGetServiceTest {
             GetMemberResponse result = memberGetService.getMember(1L);
 
             // then
+            assertThat(result.memberId()).isEqualTo(1L);
             assertThat(result.email()).isEqualTo("test@mail.com");
             assertThat(result.name()).isEqualTo("test");
             assertThat(result.phoneNumber()).isEqualTo("010-1234-1234");
