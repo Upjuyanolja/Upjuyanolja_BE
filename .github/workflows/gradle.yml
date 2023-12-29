@@ -26,7 +26,6 @@ jobs:
       - name: Make application.properties
         run: |
           mkdir ./src/main/resources
-          mkdir ./src/test/resources
           echo "${{ secrets.PROPERTIES }}" | base64 --decode > src/main/resources/application.yml
           echo "${{ secrets.LOCAL_PROPERTIES }}" | base64 --decode > src/main/resources/application-local.yml
           echo "${{ secrets.TEST_PROPERTIES }}" | base64 --decode > src/test/resources/application.yml
