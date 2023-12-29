@@ -35,6 +35,11 @@ public class Coupon extends BaseTime {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Comment("쿠폰 상태")
+    private Status status;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     @Comment("할인 종류")
     private Type type;
 
@@ -64,6 +69,7 @@ public class Coupon extends BaseTime {
     @Builder
     public Coupon(
         Long id,
+        Status status,
         Type type,
         Integer couponPrice,
         LocalDate startDate,
@@ -73,6 +79,7 @@ public class Coupon extends BaseTime {
         List<CouponRoom> couponRooms
     ) {
         this.id = id;
+        this.status = status;
         this.type = type;
         this.couponPrice = couponPrice;
         this.startDate = startDate;
