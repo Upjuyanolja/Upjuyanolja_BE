@@ -60,6 +60,7 @@ public class MemberControllerDocsTest extends RestDocsSupport {
         GetMemberResponse getMemberResponse = GetMemberResponse.builder()
             .memberId(1L)
             .email("test@mail.com")
+            .name("test")
             .phoneNumber("010-1234-1234")
             .build();
 
