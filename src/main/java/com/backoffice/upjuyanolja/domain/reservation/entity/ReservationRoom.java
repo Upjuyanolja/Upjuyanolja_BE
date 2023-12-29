@@ -10,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,50 +23,32 @@ public class ReservationRoom extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Comment("숙소 식별자")
+    @Comment("예약 객실 식별자")
     private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id")
     @Comment("예약 식별자")
     private Reservation reservation;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     @Comment("객실 식별자")
     private Room room;
+
     @Column(nullable = false)
-    @Comment("가격")
+    @Comment("객실가격") // 예약 결제 할 당시의 객실 가격
     private int price;
-    @Column(nullable = false)
-    @Comment("숙박 시작일")
-    private LocalDate startDate;
-    @Column(nullable = false)
-    @Comment("숙박 마지막일")
-    private LocalDate endDate;
-    @Column(nullable = false)
-    @Comment("방문자명")
-    private String visitorName;
-    @Column(nullable = false)
-    @Comment("방문자 전화번호")
-    private String visitorPhone;
 
     @Builder
     public ReservationRoom(
         Long id,
         Reservation reservation,
-        Room room,
-        int price,
-        LocalDate startDate,
-        LocalDate endDate,
-        String visitorName,
-        String visitorPhone
-    ) {
+        Room room, int price)
+    {
         this.id = id;
         this.reservation = reservation;
         this.room = room;
         this.price = price;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.visitorName = visitorName;
-        this.visitorPhone = visitorPhone;
     }
 }

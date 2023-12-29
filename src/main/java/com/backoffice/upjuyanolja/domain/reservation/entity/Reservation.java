@@ -3,18 +3,18 @@ package com.backoffice.upjuyanolja.domain.reservation.entity;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
+import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
+import com.backoffice.upjuyanolja.global.common.BaseTime;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,39 +30,55 @@ public class Reservation extends BaseTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("예약 식별자")
     private Long id;
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("예약 숙소 식별자")
-    private ReservationRoom reservationRoom;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "member_id")
     @Comment("회원 식별자")
     private Member member;
+
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "coupon_id")
     @Comment("쿠폰 식별자")
     private Coupon coupon;
-    @Column(nullable = false)
-    @Enumerated(value = EnumType.STRING)
-    @Comment("결제 수단")
-    private PayMethod payMethod;
-    @Column(nullable = false)
-    @Comment("결제 금액")
-    private int price;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
+    @Comment("결제 식별자")
+    private Payment payment;
+
+    @Column(nullable = false, name = "visitor_name")
+    @Comment("방문자명")
+    private String visitorName;
+
+    @Column(nullable = false, name = "visitor_phone")
+    @Comment("방문자 전화번호")
+    private String visitorPhone;
+
+    @Column(nullable = false, name = "start_date")
+    @Comment("입실 일자")
+    private LocalDate startDate;
+
+    @Column(nullable = false, name = "end_date")
+    @Comment("퇴실 일자")
+    private LocalDate endDate;
 
     @Builder
-    public Reservation(
-        Long id,
-        ReservationRoom reservationRoom,
+    public Reservation(Long id,
         Member member,
         Coupon coupon,
-        PayMethod payMethod,
-        int price
-    ) {
+        Payment payment,
+        String visitorName,
+        String visitorPhone,
+        LocalDate startDate,
+        LocalDate endDate)
+    {
         this.id = id;
-        this.reservationRoom = reservationRoom;
         this.member = member;
         this.coupon = coupon;
-        this.payMethod = payMethod;
-        this.price = price;
+        this.payment = payment;
+        this.visitorName = visitorName;
+        this.visitorPhone = visitorPhone;
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 }

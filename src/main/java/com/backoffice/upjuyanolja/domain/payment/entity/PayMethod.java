@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.domain.reservation.entity;
+package com.backoffice.upjuyanolja.domain.payment.entity;
 
 public enum PayMethod {
 

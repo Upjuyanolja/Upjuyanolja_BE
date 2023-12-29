@@ -1,0 +1,24 @@
+ifndef::snippets[]
+:snippets: build/generated-snippets
+endif::[]
+
+= Member REST API Docs
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+
+[[Check-Email-Duplicate]]
+== 이메일 중복 검사
+
+이메일 중복 검사 API 입니다.
+
+=== HttpRequest
+
+include::{snippets}/member-controller-docs-test/check-email-duplicate/http-request.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/member-controller-docs-test/check-email-duplicate/http-response.adoc[]
+include::{snippets}/member-controller-docs-test/check-email-duplicate/response-fields.adoc[]
