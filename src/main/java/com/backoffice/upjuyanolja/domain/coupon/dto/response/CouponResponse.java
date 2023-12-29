@@ -18,4 +18,12 @@ public record CouponResponse(
             .build();
     }
 
+    public static CouponResponse fromRoom(Coupon coupon, Integer couponRoomPrice) {
+        return CouponResponse.builder()
+            .id(coupon.getId())
+            .name(coupon.getCouponPrice()+" "+coupon.getType().getName())
+            .price(couponRoomPrice)
+            .build();
+    }
+
 }

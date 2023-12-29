@@ -26,19 +26,22 @@ public record RoomResponse(
     RoomOptionResponse roomOption
 ) {
 
-    public static RoomResponse from(Room room, Integer discountPrice, Boolean soldOut) {
+    public static RoomResponse from(
+        Room room, Integer discountPrice, Boolean soldOut,
+        Integer couponRoomPrice
+    ) {
         return RoomResponse.builder()
             .id(room.getId())
             .name(room.getName())
             .basePrice(
                 Optional.ofNullable(room.getRoomPrice())
-                .map(roomPrice -> Stream.of(
-                        roomPrice.getOffWeekDaysMinFee(),
-                        roomPrice.getOffWeekendMinFee(),
-                        roomPrice.getPeakWeekDaysMinFee(),
-                        roomPrice.getPeakWeekendMinFee())
-                    .reduce(Math::min).orElse(0))
-                .orElse(0)
+                    .map(roomPrice -> Stream.of(
+                            roomPrice.getOffWeekDaysMinFee(),
+                            roomPrice.getOffWeekendMinFee(),
+                            roomPrice.getPeakWeekDaysMinFee(),
+                            roomPrice.getPeakWeekendMinFee())
+                        .reduce(Math::min).orElse(0))
+                    .orElse(0)
             )
             .discountPrice(discountPrice)
             .defaultCapacity(room.getDefaultCapacity())
@@ -50,7 +53,8 @@ public record RoomResponse(
             .coupons(
                 Optional.ofNullable(room.getCouponRooms())
                     .orElse(new ArrayList<>())
-                    .stream().map(couponRoom -> CouponResponse.from(couponRoom.getCoupon()))
+                    .stream()
+                    .map(couponRoom -> CouponResponse.fromRoom(couponRoom.getCoupon(), couponRoomPrice))
                     .toList()
             )
             .images(
