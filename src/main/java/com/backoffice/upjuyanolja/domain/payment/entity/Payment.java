@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -26,7 +27,6 @@ public class Payment extends BaseTime {
     @Enumerated(value = EnumType.STRING)
     @Comment("결제 수단")
     private PayMethod payMethod;
-
 
     @Column(nullable = false, name = "final_price")
     @Comment("최종 가격")
