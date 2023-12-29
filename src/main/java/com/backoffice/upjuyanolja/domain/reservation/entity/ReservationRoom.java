@@ -41,7 +41,11 @@ public class ReservationRoom extends BaseTime {
     private int price;
 
     @Builder
-    public ReservationRoom(Long id, Reservation reservation, Room room, int price) {
+    public ReservationRoom(
+        Long id,
+        Reservation reservation,
+        Room room, int price)
+    {
         this.id = id;
         this.reservation = reservation;
         this.room = room;
