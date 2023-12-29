@@ -1,7 +1,7 @@
 package com.backoffice.upjuyanolja.domain.accommodation.dto.response;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Room;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomResponse;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ public record RoomResponse(
     String checkOutTime,
     Boolean soldOut,
     Integer count,
-    List<CouponResponse> coupons,
+    List<CouponRoomResponse> coupons,
     List<String> images,
     RoomOptionResponse roomOption
 ) {
@@ -54,7 +54,7 @@ public record RoomResponse(
                 Optional.ofNullable(room.getCouponRooms())
                     .orElse(new ArrayList<>())
                     .stream()
-                    .map(couponRoom -> CouponResponse.fromRoom(couponRoom.getCoupon(), couponRoomPrice))
+                    .map(couponRoom -> CouponRoomResponse.from(couponRoom.getCoupon(), couponRoomPrice))
                     .toList()
             )
             .images(
