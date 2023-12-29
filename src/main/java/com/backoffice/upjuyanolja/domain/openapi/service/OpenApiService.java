@@ -14,7 +14,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationR
 import com.backoffice.upjuyanolja.domain.accommodation.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.openapi.exception.InvalidDataException;
 import com.backoffice.upjuyanolja.domain.openapi.exception.OpenApiException;
-import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.RoomImageRepository;
 import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URLEncoder;

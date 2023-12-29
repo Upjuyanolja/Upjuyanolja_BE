@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.domain.room.repository;
+package com.backoffice.upjuyanolja.domain.accommodation.repository;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.RoomImage;
 import org.springframework.data.jpa.repository.JpaRepository;
