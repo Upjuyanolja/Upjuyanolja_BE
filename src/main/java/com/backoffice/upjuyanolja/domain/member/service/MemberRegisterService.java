@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.member.service;
 
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
+import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.exception.IncorrectPasswordException;
@@ -53,8 +54,18 @@ public class MemberRegisterService {
     }
 
     public void validateDuplicatedEmail(String email) {
-        if (memberRepository.findByEmail(email).isPresent()) {
+        if (isDuplicatedEmail(email)) {
             throw new MemberEmailDuplicationException();
         }
+    }
+
+    public CheckEmailDuplicateResponse checkEmailDuplicate(String email) {
+        return CheckEmailDuplicateResponse.builder()
+            .isExists(isDuplicatedEmail(email))
+            .build();
+    }
+
+    public boolean isDuplicatedEmail(String email) {
+        return memberRepository.findByEmail(email).isPresent();
     }
 }
