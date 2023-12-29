@@ -9,7 +9,7 @@ endif::[]
 :toc: left
 :toclevels: 2
 
-[[Check-Email-Dupplicate]]
+[[Check-Email-Duplicate]]
 == 이메일 중복 검사
 
 이메일 중복 검사 API 입니다.
