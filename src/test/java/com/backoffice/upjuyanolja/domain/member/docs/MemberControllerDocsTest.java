@@ -11,7 +11,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
-import com.backoffice.upjuyanolja.domain.member.dto.response.GetMemberResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
@@ -57,7 +57,7 @@ public class MemberControllerDocsTest extends RestDocsSupport {
     @DisplayName("getMember()는 회원 정보를 조회할 수 있다.")
     void getMember() throws Exception {
         // given
-        GetMemberResponse getMemberResponse = GetMemberResponse.builder()
+        MemberInfoResponse memberInfoResponse = MemberInfoResponse.builder()
             .memberId(1L)
             .email("test@mail.com")
             .name("test")
@@ -65,7 +65,7 @@ public class MemberControllerDocsTest extends RestDocsSupport {
             .build();
 
         given(memberGetService.getMember(any(Long.TYPE)))
-            .willReturn(getMemberResponse);
+            .willReturn(memberInfoResponse);
 
         // when then
         mockMvc.perform(get("/api/members/{memberId}", 1L))

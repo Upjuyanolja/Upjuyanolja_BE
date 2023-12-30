@@ -2,7 +2,7 @@ package com.backoffice.upjuyanolja.domain.member.controller;
 
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
-import com.backoffice.upjuyanolja.domain.member.dto.response.GetMemberResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
@@ -50,10 +50,10 @@ public class MemberController {
     }
 
     @GetMapping("/{memberId}")
-    public ResponseEntity<SuccessResponse<GetMemberResponse>> getMember(
+    public ResponseEntity<SuccessResponse<MemberInfoResponse>> getMember(
         // TODO 시큐리티 로그인 적용 이후 토큰에서 memberId 받아오도록 수정
         @PathVariable(name = "memberId") long memberId) {
-        return ApiResponse.success(HttpStatus.OK, SuccessResponse.<GetMemberResponse>builder()
+        return ApiResponse.success(HttpStatus.OK, SuccessResponse.<MemberInfoResponse>builder()
             .message("성공적으로 회원 정보를 조회했습니다.")
             .data(memberGetService.getMember(memberId))
             .build());

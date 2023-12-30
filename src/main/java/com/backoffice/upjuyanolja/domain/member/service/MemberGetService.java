@@ -1,6 +1,6 @@
 package com.backoffice.upjuyanolja.domain.member.service;
 
-import com.backoffice.upjuyanolja.domain.member.dto.response.GetMemberResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
@@ -13,8 +13,8 @@ public class MemberGetService {
 
     private final MemberRepository memberRepository;
 
-    public GetMemberResponse getMember(long memberId) {
-        return GetMemberResponse.of(getMemberById(memberId));
+    public MemberInfoResponse getMember(long memberId) {
+        return MemberInfoResponse.of(getMemberById(memberId));
     }
 
     public Member getMemberById(long memberId) {

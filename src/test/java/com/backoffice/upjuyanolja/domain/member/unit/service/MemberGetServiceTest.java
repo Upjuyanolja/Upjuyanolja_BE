@@ -8,7 +8,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.backoffice.upjuyanolja.domain.member.dto.response.GetMemberResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
@@ -55,7 +55,7 @@ public class MemberGetServiceTest {
             given(memberRepository.findById(any(Long.TYPE))).willReturn(Optional.of(member));
 
             // when
-            GetMemberResponse result = memberGetService.getMember(1L);
+            MemberInfoResponse result = memberGetService.getMember(1L);
 
             // then
             assertThat(result.memberId()).isEqualTo(1L);

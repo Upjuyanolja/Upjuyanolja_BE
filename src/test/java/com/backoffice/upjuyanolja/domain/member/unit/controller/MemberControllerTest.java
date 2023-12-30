@@ -11,8 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.backoffice.upjuyanolja.domain.member.controller.MemberController;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
-import com.backoffice.upjuyanolja.domain.member.dto.response.GetMemberResponse;
-import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
+import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
@@ -107,7 +106,7 @@ public class MemberControllerTest {
         @DisplayName("회원 정보를 조회할 수 있다.")
         void _willSuccess() throws Exception {
             // given
-            GetMemberResponse getMemberResponse = GetMemberResponse.builder()
+            MemberInfoResponse memberInfoResponse = MemberInfoResponse.builder()
                 .memberId(1L)
                 .email("test@mail.com")
                 .name("test")
@@ -115,7 +114,7 @@ public class MemberControllerTest {
                 .build();
 
             given(memberGetService.getMember(any(Long.TYPE)))
-                .willReturn(getMemberResponse);
+                .willReturn(memberInfoResponse);
 
             // when then
             mockMvc.perform(get("/api/members/{memberId}", 1L))

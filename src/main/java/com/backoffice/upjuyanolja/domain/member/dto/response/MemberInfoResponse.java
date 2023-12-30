@@ -4,15 +4,15 @@ import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import lombok.Builder;
 
 @Builder
-public record GetMemberResponse(
+public record MemberInfoResponse(
     long memberId,
     String email,
     String name,
     String phoneNumber
 ) {
 
-    public static GetMemberResponse of(Member member) {
-        return GetMemberResponse.builder()
+    public static MemberInfoResponse of(Member member) {
+        return MemberInfoResponse.builder()
             .memberId(member.getId())
             .email(member.getEmail())
             .name(member.getName())
