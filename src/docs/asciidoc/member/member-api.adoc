@@ -22,3 +22,17 @@ include::{snippets}/member-controller-docs-test/check-email-duplicate/http-reque
 
 include::{snippets}/member-controller-docs-test/check-email-duplicate/http-response.adoc[]
 include::{snippets}/member-controller-docs-test/check-email-duplicate/response-fields.adoc[]
+
+[[Get-Member]]
+== 회원 정보 조회
+
+회원 정보 조회 API 입니다.
+
+=== HttpRequest
+
+include::{snippets}/member-controller-docs-test/get-member/http-request.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/member-controller-docs-test/get-member/http-response.adoc[]
+include::{snippets}/member-controller-docs-test/get-member/response-fields.adoc[]
