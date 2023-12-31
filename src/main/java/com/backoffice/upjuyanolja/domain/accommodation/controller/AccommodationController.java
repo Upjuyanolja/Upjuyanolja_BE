@@ -2,14 +2,16 @@ package com.backoffice.upjuyanolja.domain.accommodation.controller;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationService;
-import com.backoffice.upjuyanolja.global.common.response.ResponseBody;
+import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
+import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +27,7 @@ public class AccommodationController {
     private final AccommodationService accommodationService;
 
     @GetMapping
-    public ResponseBody<AccommodationPageResponse> getAccommodations(
+    public ResponseEntity<SuccessResponse<AccommodationPageResponse>> getAccommodations(
         @RequestParam(defaultValue = "ALL", required = false) String category,
         @RequestParam(defaultValue = "false", required = false) boolean hasCoupon,
         @RequestParam(required = false) String keyword,
@@ -36,11 +38,17 @@ public class AccommodationController {
         AccommodationPageResponse response = accommodationService.findAccommodations(
             category, hasCoupon, keyword, pageable
         );
-        return ResponseBody.ok(response);
+        return ApiResponse.success(
+            HttpStatus.OK,
+            SuccessResponse.<AccommodationPageResponse>builder()
+                .message("성공적으로 숙소 목록을 조회 했습니다.")
+                .data(response)
+                .build()
+        );
     }
 
     @GetMapping("/{accommodationId}")
-    public ResponseBody<AccommodationDetailResponse> getAccommodationWithRooms(
+    public ResponseEntity<SuccessResponse<AccommodationDetailResponse>> getAccommodationWithRooms(
         @PathVariable Long accommodationId,
         @RequestParam LocalDate startDate,
         @RequestParam LocalDate endDate
@@ -50,6 +58,12 @@ public class AccommodationController {
         AccommodationDetailResponse response = accommodationService.findAccommodationWithRooms(
             accommodationId, startDate, endDate
         );
-        return ResponseBody.ok(response);
+        return ApiResponse.success(
+            HttpStatus.OK,
+            SuccessResponse.<AccommodationDetailResponse>builder()
+                .message("성공적으로 숙소 상세 목록을 조회 했습니다.")
+                .data(response)
+                .build()
+        );
     }
 }

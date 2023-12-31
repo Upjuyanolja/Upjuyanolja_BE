@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.global.common;
+package com.backoffice.upjuyanolja.global.common.response;
 
 import com.backoffice.upjuyanolja.global.exception.ErrorCode;
 import lombok.Builder;
