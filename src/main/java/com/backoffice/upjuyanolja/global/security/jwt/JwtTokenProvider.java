@@ -18,6 +18,7 @@ import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,11 +67,14 @@ public class JwtTokenProvider implements InitializingBean {
     }
 
     public TokenResponseDto generateToken(Authentication authentication) {
-        Claims claims = Jwts.claims();
-        claims.put("userName", authentication.getName());
+        String authorities = authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.joining(","));
+        log.info("authorities is : {}", authorities);
 
         String accessToken = Jwts.builder()
-            .setClaims(claims)
+            .setSubject(authentication.getName())
+            .claim(AUTHORITIES_KEY, authorities)
             .setIssuedAt(new Date(System.currentTimeMillis()))
             .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRE_TIME))
             .signWith(key, SignatureAlgorithm.HS256)
@@ -94,6 +98,7 @@ public class JwtTokenProvider implements InitializingBean {
 
     public Authentication getAuthentication(String accessToken) {
         Claims claims = parseClaims(accessToken);
+        log.info("클레임 정보 : {}", claims.toString());
         if (claims.get(AUTHORITIES_KEY) == null) {
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
