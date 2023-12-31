@@ -2,12 +2,15 @@ package com.backoffice.upjuyanolja.domain.member.controller;
 
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
+import com.backoffice.upjuyanolja.domain.member.dto.request.TokenRequestDto;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.RefreshTokenDto;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponseDto;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.global.common.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.ApiResponse.SuccessResponse;
 import jakarta.validation.Valid;
@@ -69,5 +72,15 @@ public class MemberAuthController {
             .message("성공적으로 회원 정보를 조회했습니다.")
             .data(memberGetService.getMember(memberId))
             .build());
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<SuccessResponse<RefreshTokenDto>> refresh(
+        @Valid @RequestBody TokenRequestDto request) {
+        return ApiResponse.success(HttpStatus.OK,
+            SuccessResponse.<RefreshTokenDto>builder()
+                .message("리프레쉬 토큰 재발급이 성공적으로 완료되었습니다.")
+                .data(memberAuthService.refresh(request))
+                .build());
     }
 }
