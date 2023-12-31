@@ -1,11 +1,13 @@
 package com.backoffice.upjuyanolja.domain.member.controller;
 
+import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import com.backoffice.upjuyanolja.global.common.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.ApiResponse.SuccessResponse;
 import jakarta.validation.Valid;
@@ -23,9 +25,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api/members")
 @RequiredArgsConstructor
-public class MemberController {
+public class MemberAuthController {
 
-    private final MemberRegisterService memberRegisterService;
+    private final MemberAuthService memberAuthService;
     private final MemberGetService memberGetService;
 
     @PostMapping("/signup")
@@ -34,7 +36,7 @@ public class MemberController {
         return ApiResponse.success(HttpStatus.OK,
             SuccessResponse.<SignUpResponse>builder()
                 .message("회원가입이 성공적으로 완료되었습니다.")
-                .data(memberRegisterService.signup(request))
+                .data(memberAuthService.signup(request))
                 .build());
     }
 
@@ -45,7 +47,17 @@ public class MemberController {
         return ApiResponse.success(HttpStatus.OK,
             SuccessResponse.<CheckEmailDuplicateResponse>builder()
                 .message("성공적으로 이메일 중복 여부를 검사했습니다.")
-                .data(memberRegisterService.checkEmailDuplicate(email))
+                .data(memberAuthService.checkEmailDuplicate(email))
+                .build());
+    }
+
+    @PostMapping("/signin")
+    public ResponseEntity<SuccessResponse<SignInResponse>> signin(
+        @Valid @RequestBody SignInRequest request) {
+        return ApiResponse.success(HttpStatus.OK,
+            SuccessResponse.<SignInResponse>builder()
+                .message("로그인이 성공적으로 완료되었습니다.")
+                .data(memberAuthService.signin(request))
                 .build());
     }
 

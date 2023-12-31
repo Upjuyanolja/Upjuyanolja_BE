@@ -9,11 +9,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.backoffice.upjuyanolja.domain.member.controller.MemberController;
+import com.backoffice.upjuyanolja.domain.member.controller.MemberAuthController;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.catalina.security.SecurityConfig;
@@ -28,12 +28,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(value = MemberController.class,
+@WebMvcTest(value = MemberAuthController.class,
     excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
         SecurityConfig.class,
         AuthenticationConfig.class})},
     excludeAutoConfiguration = SecurityAutoConfiguration.class)
-public class MemberControllerTest {
+public class MemberAuthControllerTest {
 
     @Autowired
     protected MockMvc mockMvc;
@@ -42,7 +42,7 @@ public class MemberControllerTest {
     protected ObjectMapper objectMapper;
 
     @MockBean
-    private MemberRegisterService memberRegisterService;
+    private MemberAuthService memberAuthService;
 
     @MockBean
     private MemberGetService memberGetService;
@@ -59,7 +59,7 @@ public class MemberControllerTest {
                 .isExists(true)
                 .build();
 
-            given(memberRegisterService.checkEmailDuplicate(any(String.class)))
+            given(memberAuthService.checkEmailDuplicate(any(String.class)))
                 .willReturn(checkEmailDuplicateResponse);
 
             // when then
@@ -71,7 +71,7 @@ public class MemberControllerTest {
                 .andExpect(jsonPath("$.data.isExists").isBoolean())
                 .andDo(print());
 
-            verify(memberRegisterService, times(1)).checkEmailDuplicate(any(String.class));
+            verify(memberAuthService, times(1)).checkEmailDuplicate(any(String.class));
         }
 
         @Test
@@ -82,7 +82,7 @@ public class MemberControllerTest {
                 .isExists(false)
                 .build();
 
-            given(memberRegisterService.checkEmailDuplicate(any(String.class)))
+            given(memberAuthService.checkEmailDuplicate(any(String.class)))
                 .willReturn(checkEmailDuplicateResponse);
 
             // when then
@@ -94,7 +94,7 @@ public class MemberControllerTest {
                 .andExpect(jsonPath("$.data.isExists").isBoolean())
                 .andDo(print());
 
-            verify(memberRegisterService, times(1)).checkEmailDuplicate(any(String.class));
+            verify(memberAuthService, times(1)).checkEmailDuplicate(any(String.class));
         }
     }
 
