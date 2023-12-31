@@ -78,6 +78,7 @@ public class Room {
 
     @OneToMany(mappedBy = "room",
         cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @Comment("쿠폰-객실 식별자")
     private List<CouponRoom> couponRooms = new ArrayList<>();
 
     @Builder

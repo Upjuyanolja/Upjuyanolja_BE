@@ -15,14 +15,14 @@ public record AccommodationPageResponse(
 
 ) {
 
-    public static AccommodationPageResponse from(Page<AccommodationSummaryResponse> dto) {
+    public static AccommodationPageResponse from(Page<AccommodationSummaryResponse> responsePage) {
         return AccommodationPageResponse.builder()
-            .pageNum(dto.getNumber() + 1)
-            .pageSize(dto.getSize())
-            .totalPages(dto.getTotalPages())
-            .totalElements(dto.getTotalElements())
-            .isLast(dto.isLast())
-            .accommodations(dto.getContent())
+            .pageNum(responsePage.getNumber() + 1)
+            .pageSize(responsePage.getSize())
+            .totalPages(responsePage.getTotalPages())
+            .totalElements(responsePage.getTotalElements())
+            .isLast(responsePage.isLast())
+            .accommodations(responsePage.getContent())
             .build();
     }
 }

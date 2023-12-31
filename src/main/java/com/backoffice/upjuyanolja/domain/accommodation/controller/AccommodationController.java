@@ -26,16 +26,17 @@ public class AccommodationController {
 
     @GetMapping
     public ResponseBody<AccommodationPageResponse> getAccommodations(
-        @RequestParam(defaultValue = "ALL", required = false) Category category,
-        @RequestParam(defaultValue = "false") boolean hasCoupon,
-        @RequestParam(defaultValue = "") String keyword,
+        @RequestParam(defaultValue = "ALL", required = false) String category,
+        @RequestParam(defaultValue = "false", required = false) boolean hasCoupon,
+        @RequestParam(required = false) String keyword,
         @PageableDefault(page = 1, size = 12) Pageable pageable
     ) {
-        AccommodationPageResponse accommodations =
-            accommodationService.findAccommodationsWithSoldOutCheck(
-                category, pageable
-            );
-        return ResponseBody.ok(accommodations);
+        log.info("GET /api/accommodations");
+
+        AccommodationPageResponse response = accommodationService.findAccommodations(
+            category, hasCoupon, keyword, pageable
+        );
+        return ResponseBody.ok(response);
     }
 
     @GetMapping("/{accommodationId}")
@@ -44,8 +45,11 @@ public class AccommodationController {
         @RequestParam LocalDate startDate,
         @RequestParam LocalDate endDate
     ) {
-        return ResponseBody.ok(accommodationService.findAccommodationWithRooms(
-            accommodationId, startDate, endDate)
+        log.info("GET /api/accommodations/{accommodationId}");
+
+        AccommodationDetailResponse response = accommodationService.findAccommodationWithRooms(
+            accommodationId, startDate, endDate
         );
+        return ResponseBody.ok(response);
     }
 }

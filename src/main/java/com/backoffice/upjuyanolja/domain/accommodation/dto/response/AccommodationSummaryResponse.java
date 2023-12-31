@@ -13,12 +13,13 @@ public record AccommodationSummaryResponse(
     int discountPrice,
     String thumbnail,
     boolean soldOut,
-    String coupon
+    String couponName
 
 ) {
 
     public static AccommodationSummaryResponse from(
-        Accommodation accommodation, boolean isSoldOut, int lowestPrice, int discountPrice, String couponName
+        Accommodation accommodation, boolean isSoldOut, int lowestPrice,
+        int discountPrice, String couponName
     ) {
         return AccommodationSummaryResponse.builder()
             .id(accommodation.getId())
@@ -29,7 +30,7 @@ public record AccommodationSummaryResponse(
             .discountPrice(discountPrice)
             .thumbnail(accommodation.getThumbnail())
             .soldOut(isSoldOut)
-            .coupon(couponName)
+            .couponName(couponName)
             .build();
     }
 }
