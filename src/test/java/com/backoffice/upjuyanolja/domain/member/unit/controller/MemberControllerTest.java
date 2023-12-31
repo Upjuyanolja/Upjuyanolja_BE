@@ -11,6 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.backoffice.upjuyanolja.domain.member.controller.MemberController;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
+import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +43,9 @@ public class MemberControllerTest {
 
     @MockBean
     private MemberRegisterService memberRegisterService;
+
+    @MockBean
+    private MemberGetService memberGetService;
 
     @Nested
     @DisplayName("checkEmailDuplicate()는")
@@ -90,6 +95,39 @@ public class MemberControllerTest {
                 .andDo(print());
 
             verify(memberRegisterService, times(1)).checkEmailDuplicate(any(String.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("getMember()는")
+    class Context_getMember {
+
+        @Test
+        @DisplayName("회원 정보를 조회할 수 있다.")
+        void _willSuccess() throws Exception {
+            // given
+            MemberInfoResponse memberInfoResponse = MemberInfoResponse.builder()
+                .memberId(1L)
+                .email("test@mail.com")
+                .name("test")
+                .phoneNumber("010-1234-1234")
+                .build();
+
+            given(memberGetService.getMember(any(Long.TYPE)))
+                .willReturn(memberInfoResponse);
+
+            // when then
+            mockMvc.perform(get("/api/members/{memberId}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.memberId").isNumber())
+                .andExpect(jsonPath("$.data.email").isString())
+                .andExpect(jsonPath("$.data.name").isString())
+                .andExpect(jsonPath("$.data.phoneNumber").isString())
+                .andDo(print());
+
+            verify(memberGetService, times(1)).getMember(any(Long.class));
         }
     }
 }
