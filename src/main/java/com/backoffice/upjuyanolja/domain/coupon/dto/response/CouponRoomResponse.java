@@ -13,7 +13,7 @@ public record CouponRoomResponse(
     public static CouponRoomResponse from(Coupon coupon, int couponRoomPrice) {
         return CouponRoomResponse.builder()
             .id(coupon.getId())
-            .name(coupon.getCouponPrice() + " " + coupon.getType().getName())
+            .name(coupon.getCouponPrice() + coupon.getType().getName())
             .price(couponRoomPrice)
             .build();
     }

@@ -1,11 +1,13 @@
 package com.backoffice.upjuyanolja.domain.accommodation.dto.response;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Room;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomResponse;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 
@@ -28,7 +30,8 @@ public record RoomResponse(
 
     public static RoomResponse from(
         Room room, int discountPrice, boolean soldOut,
-        int couponRoomPrice
+        CouponRoomDetailResponse couponRoomDetailResponse
+
     ) {
         return RoomResponse.builder()
             .id(room.getId())
@@ -49,11 +52,10 @@ public record RoomResponse(
             .soldOut(soldOut)
             .count(room.getCount())
             .coupons(
-                Optional.ofNullable(room.getCouponRooms())
-                    .orElse(new ArrayList<>())
-                    .stream()
-                    .map(couponRoom -> CouponRoomResponse.from(couponRoom.getCoupon(),
-                        couponRoomPrice))
+                Stream.of(couponRoomDetailResponse)
+                    .filter(response -> response.roomName().equals(room.getName()))
+                    .map(response -> response.couponRooms())
+                    .flatMap(List::stream)
                     .toList()
             )
             .images(

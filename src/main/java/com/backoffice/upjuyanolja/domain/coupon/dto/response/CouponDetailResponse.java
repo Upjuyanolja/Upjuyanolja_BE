@@ -1,25 +1,26 @@
 package com.backoffice.upjuyanolja.domain.coupon.dto.response;
 
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record CouponAccommodationResponse(
+public record CouponDetailResponse(
     Long id,
     String couponName,
+    String startDate,
     String endDate,
-    List<String> rooms
+    String status
+
 ) {
 
-    public static CouponAccommodationResponse from(Coupon coupon, List<String> rooms) {
-        return CouponAccommodationResponse.builder()
+    public static CouponDetailResponse from(Coupon coupon) {
+        return CouponDetailResponse.builder()
             .id(coupon.getId())
             .couponName(coupon.getCouponPrice() + coupon.getType().getName())
+            .startDate(coupon.getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
             .endDate(coupon.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
-            .rooms(rooms)
+            .status(coupon.getStatus().getDescription())
             .build();
     }
 
