@@ -1,0 +1,2 @@
+POST http://localhost:8080/api/open-api?pageSize=100&pageNum=1
+Content-Type: application/json
