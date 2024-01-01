@@ -68,32 +68,47 @@ public class CouponService {
         return couponRooms;
     }
 
-    public List<CouponRoomDetailResponse> getSortedCouponInAccommodation(
-        Accommodation accommodation, Type type) {
+    public List<CouponRoomDetailResponse> getSortedFlatCouponInAccommodation(
+        Accommodation accommodation) {
         List<CouponRoomDetailResponse> result = new ArrayList<>();
+        Map<Room, TreeSet<Coupon>> couponRoomMap = getTypeCouponWithRoom(accommodation, Type.FLAT);
 
-        for (Entry<Room, TreeSet<Coupon>> roomCouponEntry :
-            getTypeCouponWithRoom(accommodation, type).entrySet()) {
-
+        for (Entry<Room, TreeSet<Coupon>> roomCouponEntry : couponRoomMap.entrySet()) {
             Room room = roomCouponEntry.getKey();
             List<CouponRoomResponse> responses = new ArrayList<>();
             int roomPrice = room.getRoomPrice().getOffWeekDaysMinFee();
 
             roomCouponEntry.getValue().stream()
-                .map(coupon -> {
-                        int discountPrice;
-                        if (type == Type.FLAT) {
-                            discountPrice = roomPrice - coupon.getCouponPrice();
-                        } else {
-                            discountPrice = (int) Math.round(
-                                (1 - 0.01 * coupon.getCouponPrice()) * roomPrice);
-                        }
-                        responses.add(CouponRoomResponse.from(coupon, discountPrice));
-                        return responses;
-                    }
+                .map(coupon ->
+                    responses.add(
+                        CouponRoomResponse.from(coupon, roomPrice - coupon.getCouponPrice())
+                    )
                 );
+            result.add(CouponRoomDetailResponse.from(room.getName(), "FLAT", responses));
+        }
+        return result;
+    }
 
-            result.add(CouponRoomDetailResponse.from(room.getName(), responses));
+    public List<CouponRoomDetailResponse> getSortedPercentageCouponInAccommodation(
+        Accommodation accommodation) {
+        List<CouponRoomDetailResponse> result = new ArrayList<>();
+        Map<Room, TreeSet<Coupon>> couponRoomMap = getTypeCouponWithRoom(accommodation,
+            Type.PERCENTAGE);
+
+        for (Entry<Room, TreeSet<Coupon>> roomCouponEntry : couponRoomMap.entrySet()) {
+            Room room = roomCouponEntry.getKey();
+            List<CouponRoomResponse> responses = new ArrayList<>();
+            int roomPrice = room.getRoomPrice().getOffWeekDaysMinFee();
+
+            roomCouponEntry.getValue().stream()
+                .map(coupon ->
+                    responses.add(
+                        CouponRoomResponse.from(coupon,
+                            (int) Math.round((1 - 0.01*coupon.getCouponPrice()) * roomPrice)
+                        )
+                    )
+                );
+            result.add(CouponRoomDetailResponse.from(room.getName(), "PERCENTAGE", responses));
         }
         return result;
     }
