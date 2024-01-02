@@ -29,14 +29,14 @@ public class AccommodationController {
     @GetMapping
     public ResponseEntity<SuccessResponse<AccommodationPageResponse>> getAccommodations(
         @RequestParam(defaultValue = "ALL", required = false) String category,
-        @RequestParam(defaultValue = "false", required = false) boolean hasCoupon,
+        @RequestParam(defaultValue = "false", required = false) boolean onlyHasCoupon,
         @RequestParam(required = false) String keyword,
         @PageableDefault(page = 1, size = 12) Pageable pageable
     ) {
         log.info("GET /api/accommodations");
 
         AccommodationPageResponse response = accommodationService.findAccommodations(
-            category, hasCoupon, keyword, pageable
+            category, onlyHasCoupon, keyword, pageable
         );
         return ApiResponse.success(
             HttpStatus.OK,
