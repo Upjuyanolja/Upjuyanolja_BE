@@ -1,15 +1,23 @@
 package com.backoffice.upjuyanolja.domain.accommodation.service;
 
+import static com.backoffice.upjuyanolja.global.exception.ErrorCode.ACCOMMODATION_NOT_FOUND;
+import static com.backoffice.upjuyanolja.global.exception.ErrorCode.ROOM_NOT_FOUND;
+
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationSummaryResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Room;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.RoomPrice;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.RoomRepository;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
+import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
+import com.backoffice.upjuyanolja.global.exception.ErrorCode;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.PriorityQueue;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageImpl;
@@ -22,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AccommodationService {
 
     private final AccommodationRepository accommodationRepository;
+    private final CouponService couponService;
 
     @Transactional(readOnly = true)
     public AccommodationPageResponse findAccommodations(
@@ -61,28 +70,45 @@ public class AccommodationService {
         PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
 
         for (Room room : accommodation.getRooms()) {
-            RoomPrice roomPrice = room.getRoomPrice();
-            int minPrice = Math.min(
-                Math.min(roomPrice.getOffWeekDaysMinFee(), roomPrice.getOffWeekendMinFee()),
-                Math.min(roomPrice.getPeakWeekDaysMinFee(), roomPrice.getPeakWeekendMinFee())
-            );
-            pq.offer(minPrice);
+            pq.offer(room.getRoomPrice().getOffWeekDaysMinFee());
         }
 
         return pq.poll();
     }
 
     private int getDiscountPrice(Accommodation accommodation) {
-        return 0;
+        return getDiscountInfo(accommodation)
+            .map(couponRoom -> couponRoom.couponRooms().get(0).price())
+            .orElse(getLowestPrice(accommodation));
     }
 
     private String getCouponName(Accommodation accommodation) {
-        return null;
+        return getDiscountInfo(accommodation)
+            .map(couponRoom -> couponRoom.couponRooms().get(0).name())
+            .orElse("쿠폰이 없습니다.");
     }
 
+    private Optional<CouponRoomDetailResponse> getDiscountInfo(Accommodation accommodation) {
+        List<CouponRoomDetailResponse> flatResponse =
+            couponService.getSortedFlatCouponInAccommodation(accommodation);
+        List<CouponRoomDetailResponse> percentageResponse =
+            couponService.getSortedPercentageCouponInAccommodation(accommodation);
+
+        return Optional.ofNullable(flatResponse.get(0).couponRooms().get(0).price() <=
+            percentageResponse.get(0).couponRooms().get(0).price() ?
+            flatResponse.get(0) : percentageResponse.get(0));
+
+    }
+
+    @Transactional(readOnly = true)
     public AccommodationDetailResponse findAccommodationWithRooms(
         Long accommodationId, LocalDate startDate, LocalDate endDate
     ) {
+        Accommodation accommodation =
+            accommodationRepository.findById(accommodationId)
+                .orElseThrow(()->new AccommodationException(ACCOMMODATION_NOT_FOUND));
+
         return null;
     }
+
 }

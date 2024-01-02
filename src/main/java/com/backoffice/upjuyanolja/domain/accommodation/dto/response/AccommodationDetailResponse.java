@@ -21,7 +21,7 @@ public record AccommodationDetailResponse(
 ) {
 
     public static AccommodationDetailResponse from(
-        Accommodation accommodation, List<RoomResponse> rooms
+        Accommodation accommodation, String mainCoupon, List<RoomResponse> rooms
     ) {
         return AccommodationDetailResponse.builder()
             .id(accommodation.getId())
@@ -32,6 +32,7 @@ public record AccommodationDetailResponse(
             .mapY(String.valueOf(accommodation.getAddress().getMapY()))
             .description(accommodation.getDescription())
             .category(accommodation.getCategory().getName())
+            .mainCoupon(mainCoupon)
             .images(
                 accommodation.getAccommodationImages().stream()
                     .map(image -> image.getUrl())
