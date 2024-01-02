@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.accommodation.service;
 
 import static com.backoffice.upjuyanolja.global.exception.ErrorCode.ACCOMMODATION_NOT_FOUND;
-import static com.backoffice.upjuyanolja.global.exception.ErrorCode.ROOM_NOT_FOUND;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
@@ -10,10 +9,8 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Room;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
-import com.backoffice.upjuyanolja.domain.accommodation.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
-import com.backoffice.upjuyanolja.global.exception.ErrorCode;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -45,8 +42,8 @@ public class AccommodationService {
                     .filter(
                         accommodation -> !hasCoupon || this.checkCouponAvailability(accommodation))
                     .map(accommodation -> AccommodationSummaryResponse.from(
-                        accommodation, checkSoldOut(accommodation),
-                        getLowestPrice(accommodation), getDiscountPrice(accommodation),
+                        accommodation, getLowestPrice(accommodation),
+                        getDiscountPrice(accommodation),
                         getCouponName(accommodation)
                     ))
                     .toList(),
@@ -59,11 +56,6 @@ public class AccommodationService {
     private boolean checkCouponAvailability(Accommodation accommodation) {
         return accommodation.getRooms().stream()
             .anyMatch(room -> !room.getCouponRooms().isEmpty());
-    }
-
-    private boolean checkSoldOut(Accommodation accommodation) {
-        return accommodation.getRooms().stream()
-            .allMatch(room -> room.getCount() == 0);
     }
 
     private int getLowestPrice(Accommodation accommodation) {
@@ -89,14 +81,21 @@ public class AccommodationService {
     }
 
     private Optional<CouponRoomDetailResponse> getDiscountInfo(Accommodation accommodation) {
-        List<CouponRoomDetailResponse> flatResponse =
+        Optional<List<CouponRoomDetailResponse>> flatResponse =
             couponService.getSortedFlatCouponInAccommodation(accommodation);
-        List<CouponRoomDetailResponse> percentageResponse =
+        Optional<List<CouponRoomDetailResponse>> percentageResponse =
             couponService.getSortedPercentageCouponInAccommodation(accommodation);
 
-        return Optional.ofNullable(flatResponse.get(0).couponRooms().get(0).price() <=
-            percentageResponse.get(0).couponRooms().get(0).price() ?
-            flatResponse.get(0) : percentageResponse.get(0));
+        if (flatResponse.isEmpty() || percentageResponse.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return flatResponse.map(flat ->
+            flat.get(0).couponRooms().get(0).price()).orElse(getLowestPrice(accommodation)) <=
+            percentageResponse.map(percent ->
+                percent.get(0).couponRooms().get(0).price()).orElse(getLowestPrice(accommodation)) ?
+            flatResponse.map(flat -> flat.get(0))
+            : percentageResponse.map(percent -> percent.get(0));
 
     }
 
@@ -106,7 +105,7 @@ public class AccommodationService {
     ) {
         Accommodation accommodation =
             accommodationRepository.findById(accommodationId)
-                .orElseThrow(()->new AccommodationException(ACCOMMODATION_NOT_FOUND));
+                .orElseThrow(() -> new AccommodationException(ACCOMMODATION_NOT_FOUND));
 
         return null;
     }
