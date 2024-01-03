@@ -1,6 +1,6 @@
 package com.backoffice.upjuyanolja.domain.reservation.entity;
 
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

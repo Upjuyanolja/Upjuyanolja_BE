@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.accommodation.dto.response;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
+import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import java.util.List;
 import lombok.Builder;
 
