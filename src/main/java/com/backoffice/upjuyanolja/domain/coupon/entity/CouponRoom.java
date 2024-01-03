@@ -25,12 +25,12 @@ public class CouponRoom extends BaseTime {
     @Comment("쿠폰-객실 식별자")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_id")
     @Comment("쿠폰 식별자")
     private Coupon coupon;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     @Comment("객실 식별자")
     private Room room;
