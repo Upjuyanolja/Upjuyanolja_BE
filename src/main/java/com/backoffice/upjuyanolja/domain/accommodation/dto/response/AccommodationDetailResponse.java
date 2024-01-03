@@ -8,8 +8,7 @@ import lombok.Builder;
 public record AccommodationDetailResponse(
     Long id,
     String name,
-    String shortAddress,
-    String phoneNumber,
+    String address,
     String mapX,
     String mapY,
     String description,
@@ -26,8 +25,10 @@ public record AccommodationDetailResponse(
         return AccommodationDetailResponse.builder()
             .id(accommodation.getId())
             .name(accommodation.getName())
-            .shortAddress(accommodation.getAddress().getShortAddress())
-            .phoneNumber(accommodation.getPhoneNumber())
+            .address(
+                accommodation.getAddress().getShortAddress() + "\n"
+                    + accommodation.getAddress().getDetailAddress()
+            )
             .mapX(String.valueOf(accommodation.getAddress().getMapX()))
             .mapY(String.valueOf(accommodation.getAddress().getMapY()))
             .description(accommodation.getDescription())

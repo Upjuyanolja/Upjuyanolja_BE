@@ -34,9 +34,6 @@ public class Accommodation extends BaseTime {
     @Comment("숙소 이름")
     private String name;
 
-    @Comment("숙소 전화 번호")
-    private String phoneNumber;
-
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("숙소 위치")
     private Address address;
@@ -68,7 +65,6 @@ public class Accommodation extends BaseTime {
     public Accommodation(
         Long id,
         String name,
-        String phoneNumber,
         Address address,
         Category category,
         String description,
@@ -79,7 +75,6 @@ public class Accommodation extends BaseTime {
     ) {
         this.id = id;
         this.name = name;
-        this.phoneNumber = phoneNumber;
         this.address = address;
         this.category = category;
         this.description = description;

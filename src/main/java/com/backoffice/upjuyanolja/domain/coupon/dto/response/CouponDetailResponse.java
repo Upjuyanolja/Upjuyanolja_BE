@@ -10,7 +10,8 @@ public record CouponDetailResponse(
     String couponName,
     String startDate,
     String endDate,
-    String status
+    String status,
+    int count
 
 ) {
 
@@ -21,6 +22,7 @@ public record CouponDetailResponse(
             .startDate(coupon.getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
             .endDate(coupon.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
             .status(coupon.getStatus().getDescription())
+            .count(coupon.getCount())
             .build();
     }
 

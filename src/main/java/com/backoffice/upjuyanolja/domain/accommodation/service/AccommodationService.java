@@ -1,13 +1,11 @@
 package com.backoffice.upjuyanolja.domain.accommodation.service;
 
-import static com.backoffice.upjuyanolja.global.exception.ErrorCode.ACCOMMODATION_NOT_FOUND;
-
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationSummaryResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Room;
-import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationException;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
@@ -31,7 +29,7 @@ public class AccommodationService {
 
     @Transactional(readOnly = true)
     public AccommodationPageResponse findAccommodations(
-        String category, boolean hasCoupon, String keyword, Pageable pageable
+        String category, boolean onlyHasCoupon, String keyword, Pageable pageable
     ) {
         List<Accommodation> accommodations = accommodationRepository
             .findAllByCategoryAndName(category, keyword);
@@ -40,7 +38,8 @@ public class AccommodationService {
             new PageImpl<>(
                 accommodations.stream()
                     .filter(
-                        accommodation -> !hasCoupon || this.checkCouponAvailability(accommodation))
+                        accommodation -> !onlyHasCoupon || this.checkCouponAvailability(
+                            accommodation))
                     .map(accommodation -> AccommodationSummaryResponse.from(
                         accommodation, getLowestPrice(accommodation),
                         getDiscountPrice(accommodation),
@@ -105,7 +104,7 @@ public class AccommodationService {
     ) {
         Accommodation accommodation =
             accommodationRepository.findById(accommodationId)
-                .orElseThrow(() -> new AccommodationException(ACCOMMODATION_NOT_FOUND));
+                .orElseThrow(() -> new AccommodationNotFoundException());
 
         return null;
     }
