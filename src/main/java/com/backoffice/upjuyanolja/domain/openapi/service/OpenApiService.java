@@ -52,6 +52,7 @@ public class OpenApiService {
     private final String BASE_URL = "https://apis.data.go.kr/B551011/KorService1";
     private final String DEFAULT_QUERY_PARAMS = "&MobileOS=ETC&MobileApp=AppTest&_type=json";
     private final int CONTENT_TYPE_ID = 32;
+    private final int DEFAULT_PRICE = 100000;
 
     private final AccommodationRepository accommodationRepository;
     private final AccommodationImageRepository accommodationImageRepository;
@@ -279,15 +280,28 @@ public class OpenApiService {
                 LocalTime checkIn = getTimeFromString(stringCheckIn);
                 LocalTime checkOut = getTimeFromString(stringCheckOut);
 
+                int offWeekDaysMinFee = Integer.parseInt(
+                    roomJson.getString("roomoffseasonminfee1")) == 0 ? DEFAULT_PRICE
+                    : Integer.parseInt(
+                        roomJson.getString("roomoffseasonminfee1"));
+                int offWeekendMinFee = Math.max(Integer.parseInt(
+                    roomJson.getString("roomoffseasonminfee2")) == 0 ? DEFAULT_PRICE
+                    : Integer.parseInt(
+                        roomJson.getString("roomoffseasonminfee2")), offWeekDaysMinFee);
+                int peakWeekDaysMinFee = Math.max(Integer.parseInt(
+                    roomJson.getString("roompeakseasonminfee1")) == 0 ? DEFAULT_PRICE
+                    : Integer.parseInt(
+                        roomJson.getString("roompeakseasonminfee1")), offWeekendMinFee);
+                int peakWeekendMinFee = Math.max(Integer.parseInt(
+                    roomJson.getString("roompeakseasonminfee2")) == 0 ? DEFAULT_PRICE
+                    : Integer.parseInt(
+                        roomJson.getString("roompeakseasonminfee2")), peakWeekDaysMinFee);
+
                 RoomPrice roomPrice = RoomPrice.builder()
-                    .offWeekDaysMinFee(Integer.parseInt(
-                        roomJson.getString("roomoffseasonminfee1")))
-                    .offWeekendMinFee(Integer.parseInt(
-                        roomJson.getString("roomoffseasonminfee2")))
-                    .peakWeekDaysMinFee(Integer.parseInt(
-                        roomJson.getString("roompeakseasonminfee1")))
-                    .peakWeekendMinFee(Integer.parseInt(
-                        roomJson.getString("roompeakseasonminfee2")))
+                    .offWeekDaysMinFee(offWeekDaysMinFee)
+                    .offWeekendMinFee(offWeekendMinFee)
+                    .peakWeekDaysMinFee(peakWeekDaysMinFee)
+                    .peakWeekendMinFee(peakWeekendMinFee)
                     .build();
                 RoomOption roomOption = RoomOption.builder()
                     .airCondition(roomJson.get("roomaircondition").equals("Y"))
