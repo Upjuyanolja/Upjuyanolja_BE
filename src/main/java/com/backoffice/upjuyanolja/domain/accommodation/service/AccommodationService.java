@@ -41,9 +41,9 @@ public class AccommodationService {
                         accommodation -> !onlyHasCoupon || this.checkCouponAvailability(
                             accommodation))
                     .map(accommodation -> AccommodationSummaryResponse.from(
-                        accommodation, getLowestPrice(accommodation),
-                        getDiscountPrice(accommodation),
-                        getCouponName(accommodation)
+                        accommodation, getLowestPrice(accommodation.getId()),
+                        getDiscountPrice(accommodation.getId()),
+                        getCouponName(accommodation.getId())
                     ))
                     .toList(),
                 pageable,
@@ -57,7 +57,10 @@ public class AccommodationService {
             .anyMatch(room -> !room.getCouponRooms().isEmpty());
     }
 
-    private int getLowestPrice(Accommodation accommodation) {
+    private int getLowestPrice(Long accommodationId) {
+        Accommodation accommodation = accommodationRepository.findById(accommodationId).orElseThrow(
+            () -> new AccommodationNotFoundException()
+        );
         PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
 
         for (Room room : accommodation.getRooms()) {
@@ -67,31 +70,33 @@ public class AccommodationService {
         return pq.poll();
     }
 
-    private int getDiscountPrice(Accommodation accommodation) {
-        return getDiscountInfo(accommodation)
+    private int getDiscountPrice(Long accommodationId) {
+        return getDiscountInfo(accommodationId)
             .map(couponRoom -> couponRoom.couponRooms().get(0).price())
-            .orElse(getLowestPrice(accommodation));
+            .orElse(getLowestPrice(accommodationId));
     }
 
-    private String getCouponName(Accommodation accommodation) {
-        return getDiscountInfo(accommodation)
+    private String getCouponName(Long accommodationId) {
+        return getDiscountInfo(accommodationId)
             .map(couponRoom -> couponRoom.couponRooms().get(0).name())
             .orElse("쿠폰이 없습니다.");
     }
 
-    private Optional<CouponRoomDetailResponse> getDiscountInfo(Accommodation accommodation) {
+    private Optional<CouponRoomDetailResponse> getDiscountInfo(Long accommodationId) {
         List<CouponRoomDetailResponse> flatResponse =
-            couponService.getSortedFlatCouponInAccommodation(accommodation);
+            couponService.getSortedFlatCouponInAccommodation(accommodationId);
         List<CouponRoomDetailResponse> percentageResponse =
-            couponService.getSortedPercentageCouponInAccommodation(accommodation);
+            couponService.getSortedPercentageCouponInAccommodation(accommodationId);
 
         if (!flatResponse.isEmpty() && !percentageResponse.isEmpty()) {
             int flatPrice = flatResponse.get(0).couponRooms().get(0).price();
             int percentPrice = percentageResponse.get(0).couponRooms().get(0).price();
+
             CouponRoomDetailResponse bestCoupon =
                 flatPrice <= percentPrice ? flatResponse.get(0) : percentageResponse.get(0);
 
             return Optional.of(bestCoupon);
+
         } else {
             return Optional.empty();
         }

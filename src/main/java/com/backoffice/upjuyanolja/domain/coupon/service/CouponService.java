@@ -79,10 +79,10 @@ public class CouponService {
     }
 
     @Transactional(readOnly = true)
-    public List<CouponRoomDetailResponse> getSortedFlatCouponInAccommodation(
-        Accommodation accommodation) {
+    public List<CouponRoomDetailResponse> getSortedFlatCouponInAccommodation(Long accommodationId) {
         List<CouponRoomDetailResponse> result = new ArrayList<>();
-        Map<Long, TreeSet<Coupon>> couponRoomMap = getTypeCouponWithRoom(accommodation, Type.FLAT);
+        Map<Long, TreeSet<Coupon>> couponRoomMap = getTypeCouponWithRoom(accommodationId,
+            Type.FLAT);
 
         if (couponRoomMap.isEmpty()) {
             return new ArrayList<>();
@@ -104,11 +104,11 @@ public class CouponService {
 
     @Transactional(readOnly = true)
     public List<CouponRoomDetailResponse> getSortedPercentageCouponInAccommodation(
-        Accommodation accommodation
+        Long accommodationId
     ) {
         List<CouponRoomDetailResponse> result = new ArrayList<>();
         Map<Long, TreeSet<Coupon>> couponRoomMap = getTypeCouponWithRoom(
-            accommodation, Type.PERCENTAGE
+            accommodationId, Type.PERCENTAGE
         );
 
         if (couponRoomMap.isEmpty()) {
@@ -133,9 +133,9 @@ public class CouponService {
     }
 
     private Map<Long, TreeSet<Coupon>> getTypeCouponWithRoom(
-        Accommodation accommodation, Type type
+        Long accommodationId, Type type
     ) {
-        List<CouponRoom> couponRooms = getCouponRoomsByAccommodation(accommodation.getId());
+        List<CouponRoom> couponRooms = getCouponRoomsByAccommodation(accommodationId);
         Map<Long, TreeSet<Coupon>> couponRoomMap = new HashMap<>();
 
         if (couponRooms.isEmpty()) {
