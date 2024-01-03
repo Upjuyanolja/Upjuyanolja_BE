@@ -80,21 +80,21 @@ public class AccommodationService {
     }
 
     private Optional<CouponRoomDetailResponse> getDiscountInfo(Accommodation accommodation) {
-        Optional<List<CouponRoomDetailResponse>> flatResponse =
+        List<CouponRoomDetailResponse> flatResponse =
             couponService.getSortedFlatCouponInAccommodation(accommodation);
-        Optional<List<CouponRoomDetailResponse>> percentageResponse =
+        List<CouponRoomDetailResponse> percentageResponse =
             couponService.getSortedPercentageCouponInAccommodation(accommodation);
 
-        if (flatResponse.isEmpty() || percentageResponse.isEmpty()) {
+        if (!flatResponse.isEmpty() && !percentageResponse.isEmpty()) {
+            int flatPrice = flatResponse.get(0).couponRooms().get(0).price();
+            int percentPrice = percentageResponse.get(0).couponRooms().get(0).price();
+            CouponRoomDetailResponse bestCoupon =
+                flatPrice <= percentPrice ? flatResponse.get(0) : percentageResponse.get(0);
+
+            return Optional.of(bestCoupon);
+        } else {
             return Optional.empty();
         }
-
-        return flatResponse.map(flat ->
-            flat.get(0).couponRooms().get(0).price()).orElse(getLowestPrice(accommodation)) <=
-            percentageResponse.map(percent ->
-                percent.get(0).couponRooms().get(0).price()).orElse(getLowestPrice(accommodation)) ?
-            flatResponse.map(flat -> flat.get(0))
-            : percentageResponse.map(percent -> percent.get(0));
 
     }
 

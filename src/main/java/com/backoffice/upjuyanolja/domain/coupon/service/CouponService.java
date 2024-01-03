@@ -1,8 +1,6 @@
 package com.backoffice.upjuyanolja.domain.coupon.service;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Room;
-import com.backoffice.upjuyanolja.domain.accommodation.service.RoomService;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponAccommodationResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponPageResponse;
@@ -13,12 +11,16 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.CouponRoom;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType.Type;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRoomRepository;
+import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.service.RoomService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -91,12 +93,10 @@ public class CouponService {
             List<CouponRoomResponse> responses = new ArrayList<>();
             int roomPrice = room.getRoomPrice().getOffWeekDaysMinFee();
 
-            roomCouponEntry.getValue().stream()
-                .map(coupon ->
-                    responses.add(
-                        CouponRoomResponse.from(coupon, roomPrice - coupon.getCouponPrice())
-                    )
-                );
+            for (Coupon coupon : roomCouponEntry.getValue()) {
+                responses.add(CouponRoomResponse.from(coupon, roomPrice - coupon.getCouponPrice()));
+            }
+
             result.add(CouponRoomDetailResponse.from(room.getName(), "FLAT", responses));
         }
         return result;
@@ -104,24 +104,29 @@ public class CouponService {
 
     @Transactional(readOnly = true)
     public List<CouponRoomDetailResponse> getSortedPercentageCouponInAccommodation(
-        Accommodation accommodation) {
+        Accommodation accommodation
+    ) {
         List<CouponRoomDetailResponse> result = new ArrayList<>();
-        Map<Long, TreeSet<Coupon>> couponRoomMap = getTypeCouponWithRoom(accommodation,
-            Type.PERCENTAGE);
+        Map<Long, TreeSet<Coupon>> couponRoomMap = getTypeCouponWithRoom(
+            accommodation, Type.PERCENTAGE
+        );
+
+        if (couponRoomMap.isEmpty()) {
+            return new ArrayList<>();
+        }
 
         for (Entry<Long, TreeSet<Coupon>> roomCouponEntry : couponRoomMap.entrySet()) {
             Room room = roomService.findRoomById(roomCouponEntry.getKey());
             List<CouponRoomResponse> responses = new ArrayList<>();
             int roomPrice = room.getRoomPrice().getOffWeekDaysMinFee();
 
-            roomCouponEntry.getValue().stream()
-                .map(coupon ->
-                    responses.add(
-                        CouponRoomResponse.from(coupon,
-                            (int) Math.round((1 - 0.01 * coupon.getCouponPrice()) * roomPrice)
-                        )
+            for (Coupon coupon : roomCouponEntry.getValue()) {
+                responses.add(CouponRoomResponse.from(
+                        coupon, (int) Math.round((1 - 0.01 * coupon.getCouponPrice()) * roomPrice)
                     )
                 );
+            }
+
             result.add(CouponRoomDetailResponse.from(room.getName(), "PERCENTAGE", responses));
         }
         return result;
@@ -131,28 +136,34 @@ public class CouponService {
         Accommodation accommodation, Type type
     ) {
         List<CouponRoom> couponRooms = getCouponRoomsByAccommodation(accommodation.getId());
+        Map<Long, TreeSet<Coupon>> couponRoomMap = new HashMap<>();
 
         if (couponRooms.isEmpty()) {
             return Collections.emptyMap();
         }
 
-        Map<Long, TreeSet<Coupon>> couponRoomMap = couponRooms.stream()
-            .filter(couponRoom -> couponRoom.getCoupon().getType() == type)
-            .collect(Collectors.groupingBy(
-                    couponRoom -> couponRoom.getRoom().getId(),
-                    Collectors.mapping(
-                        couponRoom -> couponRoom.getCoupon(),
-                        Collectors.toCollection(
-                            () -> new TreeSet<>(Comparator.comparing(Coupon::getCouponPrice).reversed())
-                        )
-                    )
-                )
-            );
+        for (CouponRoom couponRoom : couponRooms) {
+            if (couponRoom.getCoupon().getType() == type) {
+                Long key = couponRoom.getRoom().getId();
+                Coupon value = couponRoom.getCoupon();
+
+                if (couponRoomMap.containsKey(key)) {
+                    couponRoomMap.get(key).add(value);
+                } else {
+                    TreeSet<Coupon> coupons = new TreeSet<>
+                        (Comparator.comparingInt(Coupon::getCouponPrice).reversed());
+                    coupons.add(value);
+                    couponRoomMap.put(key, coupons);
+                }
+
+            }
+        }
+
         return couponRoomMap;
     }
 
     @Transactional(readOnly = true)
-    public String getMainCouponName(){
+    public String getMainCouponName() {
         return null;
     }
 }
