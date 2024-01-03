@@ -39,7 +39,7 @@ public class RoomStock {
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     @Comment("상태")
-    private RoomStatus roomStatus;
+    private RoomStatus status;
 
     @Column(nullable = false)
     @Comment("적용일시")
@@ -50,12 +50,18 @@ public class RoomStock {
     private LocalDateTime stopDate;
 
     @Builder
-    public RoomStock(Long id, Room room, int count, RoomStatus roomStatus, LocalDateTime applyDate,
-        LocalDateTime stopDate) {
+    public RoomStock(
+        Long id,
+        Room room,
+        int count,
+        RoomStatus status,
+        LocalDateTime applyDate,
+        LocalDateTime stopDate
+    ) {
         this.id = id;
         this.room = room;
         this.count = count;
-        this.roomStatus = roomStatus;
+        this.status = status;
         this.applyDate = applyDate;
         this.stopDate = stopDate;
     }
