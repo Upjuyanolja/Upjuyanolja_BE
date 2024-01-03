@@ -45,7 +45,7 @@ public class RoomStock {
     @Comment("적용일시")
     private LocalDateTime applyDate;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     @Comment("종료일시")
     private LocalDateTime stopDate;
 
