@@ -1,6 +1,6 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,12 +25,12 @@ public class CouponRoom extends BaseTime {
     @Comment("쿠폰-객실 식별자")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "coupon_id")
     @Comment("쿠폰 식별자")
     private Coupon coupon;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_id")
     @Comment("객실 식별자")
     private Room room;
