@@ -63,7 +63,7 @@ public class MemberAuthControllerTest {
                 .willReturn(checkEmailDuplicateResponse);
 
             // when then
-            mockMvc.perform(get("/api/members/email")
+            mockMvc.perform(get("/api/auth/members/email")
                     .queryParam("email", "test@mail.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").isString())
@@ -86,7 +86,7 @@ public class MemberAuthControllerTest {
                 .willReturn(checkEmailDuplicateResponse);
 
             // when then
-            mockMvc.perform(get("/api/members/email")
+            mockMvc.perform(get("/api/auth/members/email")
                     .queryParam("email", "test@mail.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").isString())
@@ -117,7 +117,7 @@ public class MemberAuthControllerTest {
                 .willReturn(memberInfoResponse);
 
             // when then
-            mockMvc.perform(get("/api/members/{memberId}", 1L))
+            mockMvc.perform(get("/api/auth/members/{memberId}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").isString())
                 .andExpect(jsonPath("$.data").isMap())

@@ -40,7 +40,7 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
             .willReturn(checkEmailDuplicateResponse);
 
         // when then
-        mockMvc.perform(get("/api/members/email")
+        mockMvc.perform(get("/api/auth/members/email")
                 .queryParam("email", "test@mail.com"))
             .andDo(restDoc.document(
                 queryParameters(
@@ -68,7 +68,7 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
             .willReturn(memberInfoResponse);
 
         // when then
-        mockMvc.perform(get("/api/members/{memberId}", 1L))
+        mockMvc.perform(get("/api/auth/members/{memberId}", 1L))
             .andDo(restDoc.document(
                 responseFields(successResponseCommon()).and(
                     fieldWithPath("data.memberId").type(JsonFieldType.NUMBER)
