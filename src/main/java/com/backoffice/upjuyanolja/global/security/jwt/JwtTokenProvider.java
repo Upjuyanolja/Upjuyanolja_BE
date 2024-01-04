@@ -1,9 +1,6 @@
 package com.backoffice.upjuyanolja.global.security.jwt;
 
-import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
-import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponseDto;
-import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
+import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponse;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -66,7 +63,7 @@ public class JwtTokenProvider implements InitializingBean {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public TokenResponseDto generateToken(Authentication authentication) {
+    public TokenResponse generateToken(Authentication authentication) {
         String authorities = authentication.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
             .collect(Collectors.joining(","));
@@ -84,7 +81,7 @@ public class JwtTokenProvider implements InitializingBean {
             .signWith(key, SignatureAlgorithm.HS512)
             .compact();
 
-        return TokenResponseDto.builder()
+        return TokenResponse.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken)
             .build();

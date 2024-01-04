@@ -4,15 +4,17 @@ import static com.backoffice.upjuyanolja.domain.member.entity.Authority.ROLE_USE
 
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
-import com.backoffice.upjuyanolja.domain.member.dto.request.TokenRequestDto;
+import com.backoffice.upjuyanolja.domain.member.dto.request.TokenRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.RefreshTokenDto;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
-import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponseDto;
+import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.entity.RefreshToken;
 import com.backoffice.upjuyanolja.domain.member.exception.IncorrectPasswordException;
+import com.backoffice.upjuyanolja.domain.member.exception.InvalidRefreshTokenException;
+import com.backoffice.upjuyanolja.domain.member.exception.LoggedOutMemberException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberEmailDuplicationException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
@@ -68,7 +70,7 @@ public class MemberAuthService {
             request.toUsernamePasswordAuthenticationToken());
 
         //토큰 발급
-        TokenResponseDto tokenResponseDto = jwtTokenProvider.generateToken(authentication);
+        TokenResponse tokenResponse = jwtTokenProvider.generateToken(authentication);
 
         //회원정보 취득
         Member memberInfo = memberRepository.findByEmail(authentication.getName())
@@ -78,15 +80,14 @@ public class MemberAuthService {
         //토큰 객체 생성 및 저장
         RefreshToken refreshToken = RefreshToken.builder()
             .id(authentication.getName())
-            .token(tokenResponseDto.getRefreshToken())
+            .token(tokenResponse.getRefreshToken())
             .build();
 
         refreshTokenRepository.save(refreshToken);
 
-
         return SignInResponse.builder()
-            .accessToken(tokenResponseDto.getAccessToken())
-            .refreshToken(tokenResponseDto.getRefreshToken())
+            .accessToken(tokenResponse.getAccessToken())
+            .refreshToken(tokenResponse.getRefreshToken())
             .id(memberInfo.getId())
             .email(memberInfo.getEmail())
             .name(memberInfo.getName())
@@ -110,7 +111,7 @@ public class MemberAuthService {
         return memberRepository.existsByEmail(email);
     }
 
-    public RefreshTokenDto refresh(TokenRequestDto request) {
+    public RefreshTokenDto refresh(TokenRequest request) {
 
         // 1. Refresh Token 검증
         if (!jwtTokenProvider.validateToken(request.getRefreshToken())) {
@@ -118,29 +119,28 @@ public class MemberAuthService {
         }
 
         // 2. Access Token 에서 Member ID 가져오기
-        Authentication authentication = jwtTokenProvider.getAuthentication(request.getAccessToken());
-        log.info("멤버 아이디 :{}", authentication.getName());
+        Authentication authentication = jwtTokenProvider.getAuthentication(
+            request.getAccessToken());
+        log.info("멤버 아이디: {}", authentication.getName());
 
         // 3. 저장소에서 Member ID 를 기반으로 Refresh Token 값 가져옴
         RefreshToken refreshToken = refreshTokenRepository.findById(authentication.getName())
-            .orElseThrow(() -> new RuntimeException("로그아웃 된 사용자입니다."));
+            .orElseThrow(LoggedOutMemberException::new);
 
         // 4. Refresh Token 일치하는지 검사
         if (!refreshToken.getToken().equals(request.getRefreshToken())) {
-            throw new RuntimeException("토큰의 유저 정보가 일치하지 않습니다.");
+            throw new InvalidRefreshTokenException();
         }
-        log.info("요청한 리프레쉬 토큰 : {} ", request.getRefreshToken());
-        log.info("디비에 저장된 리프레쉬 토큰 : {} ", refreshToken.getToken());
+        log.info("요청한 리프레쉬 토큰: {} ", request.getRefreshToken());
+        log.info("디비에 저장된 리프레쉬 토큰: {} ", refreshToken.getToken());
 
         // 5. 새로운 토큰 생성
-        TokenResponseDto newToken = jwtTokenProvider.generateToken(authentication);
+        TokenResponse newToken = jwtTokenProvider.generateToken(authentication);
 
         // 6. 저장소 정보 업데이트
         RefreshToken newRefreshToken = refreshToken.updateRefreshToken(newToken.getRefreshToken());
         refreshTokenRepository.save(newRefreshToken);
 
-        RefreshTokenDto newRefreshTokenDto = new RefreshTokenDto(newRefreshToken.getToken());
-
-        return newRefreshTokenDto;
+        return new RefreshTokenDto(newRefreshToken.getToken());
     }
 }
