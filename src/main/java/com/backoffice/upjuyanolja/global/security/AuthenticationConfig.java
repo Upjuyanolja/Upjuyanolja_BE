@@ -1,6 +1,11 @@
 package com.backoffice.upjuyanolja.global.security;
 
+import com.backoffice.upjuyanolja.global.security.jwt.JwtAccessDeniedHandler;
+import com.backoffice.upjuyanolja.global.security.jwt.JwtAuthenticationEntryPoint;
+import com.backoffice.upjuyanolja.global.security.jwt.JwtAuthenticationFilter;
+import com.backoffice.upjuyanolja.global.security.jwt.JwtTokenProvider;
 import java.util.Arrays;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -8,17 +13,30 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class AuthenticationConfig {
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private static final String[] PERMIT_URL_ARRAY = {
+        "/",
+        "/error",
+        "/docs/**",
+        "/api/members/**",
+        "/api/products/**",
+        "/api/open-api"
+    };
 
     @Bean
     SecurityFilterChain http(HttpSecurity http) throws Exception {
 
         http
-            .httpBasic(AbstractHttpConfigurer::disable)
             .formLogin(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(request -> {
                 CorsConfiguration configuration = new CorsConfiguration();
@@ -35,19 +53,14 @@ public class AuthenticationConfig {
             .sessionManagement(sessionConfig ->
                 sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        http.authorizeHttpRequests(request ->
-                request
-                    //TODO 추가예정
-//                .requestMatchers("/v1/reservations/**").authenticated()
-//                .requestMatchers("/v1/carts/**").authenticated()
-                    .anyRequest().permitAll()
+        http.authorizeHttpRequests(request -> request.
+
+            requestMatchers("/v1/reservations/**").authenticated()
+            .requestMatchers("/v1/carts/**").authenticated()
+            .anyRequest().permitAll()
         );
-
-//        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-//        http.addFilterAfter(customFormLoginFilter, JwtAuthenticationFilter.class);
-
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+            UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
-
 }
