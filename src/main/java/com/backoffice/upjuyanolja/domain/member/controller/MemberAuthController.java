@@ -2,13 +2,12 @@ package com.backoffice.upjuyanolja.domain.member.controller;
 
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
-import com.backoffice.upjuyanolja.domain.member.dto.request.TokenRequestDto;
+import com.backoffice.upjuyanolja.domain.member.dto.request.TokenRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.RefreshTokenDto;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
-import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponseDto;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.global.common.ApiResponse;
@@ -26,14 +25,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/members")
+@RequestMapping("api/auth")
 @RequiredArgsConstructor
 public class MemberAuthController {
 
     private final MemberAuthService memberAuthService;
     private final MemberGetService memberGetService;
 
-    @PostMapping("/signup")
+    @PostMapping("members/signup")
     public ResponseEntity<SuccessResponse<SignUpResponse>> signup(
         @Valid @RequestBody SignUpRequest request) {
         return ApiResponse.success(HttpStatus.OK,
@@ -43,7 +42,7 @@ public class MemberAuthController {
                 .build());
     }
 
-    @GetMapping("/email")
+    @GetMapping("members/email")
     public ResponseEntity<SuccessResponse<CheckEmailDuplicateResponse>> checkEmailDuplicate(
         @RequestParam(name = "email") String email
     ) {
@@ -54,7 +53,7 @@ public class MemberAuthController {
                 .build());
     }
 
-    @PostMapping("/signin")
+    @PostMapping("members/signin")
     public ResponseEntity<SuccessResponse<SignInResponse>> signin(
         @Valid @RequestBody SignInRequest request) {
         return ApiResponse.success(HttpStatus.OK,
@@ -76,7 +75,7 @@ public class MemberAuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<SuccessResponse<RefreshTokenDto>> refresh(
-        @Valid @RequestBody TokenRequestDto request) {
+        @Valid @RequestBody TokenRequest request) {
         return ApiResponse.success(HttpStatus.OK,
             SuccessResponse.<RefreshTokenDto>builder()
                 .message("리프레쉬 토큰 재발급이 성공적으로 완료되었습니다.")
