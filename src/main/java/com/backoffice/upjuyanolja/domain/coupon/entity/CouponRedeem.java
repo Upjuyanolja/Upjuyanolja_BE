@@ -1,7 +1,8 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
-import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
 import com.backoffice.upjuyanolja.global.common.BaseTime;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -18,11 +19,11 @@ import org.hibernate.annotations.Comment;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class CouponRoom extends BaseTime {
+public class CouponRedeem extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Comment("쿠폰-객실 식별자")
+    @Comment("쿠폰 사용 식별자")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -31,18 +32,24 @@ public class CouponRoom extends BaseTime {
     private Coupon coupon;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
-    @Comment("객실 식별자")
-    private Room room;
+    @JoinColumn(name = "payment_id")
+    @Comment("결제 식별자")
+    private Payment payment;
+
+    @Column(nullable = false, name = "coupon_balance")
+    @Comment("쿠폰 잔여수량")
+    private Integer couponBalance;
 
     @Builder
-    public CouponRoom(
+    public CouponRedeem(
         Long id,
         Coupon coupon,
-        Room room
+        Payment payment,
+        Integer couponBalance
     ) {
         this.id = id;
         this.coupon = coupon;
-        this.room = room;
+        this.payment = payment;
+        this.couponBalance = couponBalance;
     }
 }

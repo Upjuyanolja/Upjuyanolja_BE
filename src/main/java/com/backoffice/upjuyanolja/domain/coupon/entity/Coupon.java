@@ -1,22 +1,15 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
-
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType.Type;
-import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
 import com.backoffice.upjuyanolja.global.common.BaseTime;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,14 +38,10 @@ public class Coupon extends BaseTime {
 
     @Column(nullable = false)
     @Comment("할인 가격(할인 율)")
-    private int couponPrice;
+    private int discount;
 
     @Column(nullable = false)
-    @Comment("유효 기간 시작일")
-    private LocalDate startDate;
-
-    @Column(nullable = false)
-    @Comment("유효 기간 만료일")
+    @Comment("구폰 노출 만료일")
     private LocalDate endDate;
 
     @Column(nullable = false)
@@ -60,38 +49,25 @@ public class Coupon extends BaseTime {
     private int dayLimit;
 
     @Column(nullable = false)
-    @Comment("쿠폰 개수")
+    @Comment("쿠폰 개수(재고)")
     private int count;
-
-    @OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY)
-    private List<Reservation> reservations = new ArrayList<>();
-
-    @OneToMany(mappedBy = "coupon",
-        cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<CouponRoom> couponRooms = new ArrayList<>();
 
     @Builder
     public Coupon(
         Long id,
         CouponStatus status,
         Type type,
-        int couponPrice,
-        LocalDate startDate,
+        int discount,
         LocalDate endDate,
         int dayLimit,
-        int count,
-        List<Reservation> reservations,
-        List<CouponRoom> couponRooms
+        int count
     ) {
         this.id = id;
         this.status = status;
         this.type = type;
-        this.couponPrice = couponPrice;
-        this.startDate = startDate;
+        this.discount = discount;
         this.endDate = endDate;
         this.dayLimit = dayLimit;
         this.count = count;
-        this.reservations = reservations;
-        this.couponRooms = couponRooms;
     }
 }
