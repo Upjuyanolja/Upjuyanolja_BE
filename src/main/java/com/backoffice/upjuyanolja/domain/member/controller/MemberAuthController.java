@@ -63,7 +63,7 @@ public class MemberAuthController {
                 .build());
     }
 
-    @GetMapping("/{memberId}")
+    @GetMapping("members/{memberId}")
     public ResponseEntity<SuccessResponse<MemberInfoResponse>> getMember(
         // TODO 시큐리티 로그인 적용 이후 토큰에서 memberId 받아오도록 수정
         @PathVariable(name = "memberId") long memberId) {
