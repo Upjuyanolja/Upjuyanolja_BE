@@ -1,9 +1,9 @@
-package com.backoffice.upjuyanolja.domain.coupon.entity;
+package com.backoffice.upjuyanolja.domain.room.entity;
 
 import lombok.Getter;
 
 @Getter
-public enum Status {
+public enum RoomStatus {
 
     ISSUING("발급 중"),
     SUSPENDED("발급 중지"),
@@ -11,7 +11,7 @@ public enum Status {
 
     private final String description;
 
-    Status(String description) {
+    RoomStatus(String description) {
         this.description = description;
     }
 

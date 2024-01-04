@@ -1,10 +1,8 @@
 package com.backoffice.upjuyanolja.domain.coupon.service;
 
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponAccommodationResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponPageResponse;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponRoom;
@@ -13,6 +11,7 @@ import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRoomRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.service.RoomService;
+import com.querydsl.core.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,9 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -79,8 +79,8 @@ public class CouponService {
     }
 
     @Transactional(readOnly = true)
-    public List<CouponRoomDetailResponse> getSortedFlatCouponInAccommodation(Long accommodationId) {
-        List<CouponRoomDetailResponse> result = new ArrayList<>();
+    public List<CouponRoomResponse> getSortedFlatCouponInAccommodation(Long accommodationId) {
+        List<CouponRoomResponse> result = new ArrayList<>();
         Map<Long, TreeSet<Coupon>> couponRoomMap = getTypeCouponWithRoom(accommodationId,
             Type.FLAT);
 
@@ -90,23 +90,20 @@ public class CouponService {
 
         for (Entry<Long, TreeSet<Coupon>> roomCouponEntry : couponRoomMap.entrySet()) {
             Room room = roomService.findRoomById(roomCouponEntry.getKey());
-            List<CouponRoomResponse> responses = new ArrayList<>();
             int roomPrice = room.getRoomPrice().getOffWeekDaysMinFee();
 
             for (Coupon coupon : roomCouponEntry.getValue()) {
-                responses.add(CouponRoomResponse.from(coupon, roomPrice - coupon.getCouponPrice()));
+                result.add(CouponRoomResponse.from(coupon, roomPrice - coupon.getCouponPrice()));
             }
-
-            result.add(CouponRoomDetailResponse.from(room.getName(), "FLAT", responses));
         }
         return result;
     }
 
     @Transactional(readOnly = true)
-    public List<CouponRoomDetailResponse> getSortedPercentageCouponInAccommodation(
+    public List<CouponRoomResponse> getSortedPercentageCouponInAccommodation(
         Long accommodationId
     ) {
-        List<CouponRoomDetailResponse> result = new ArrayList<>();
+        List<CouponRoomResponse> result = new ArrayList<>();
         Map<Long, TreeSet<Coupon>> couponRoomMap = getTypeCouponWithRoom(
             accommodationId, Type.PERCENTAGE
         );
@@ -117,17 +114,14 @@ public class CouponService {
 
         for (Entry<Long, TreeSet<Coupon>> roomCouponEntry : couponRoomMap.entrySet()) {
             Room room = roomService.findRoomById(roomCouponEntry.getKey());
-            List<CouponRoomResponse> responses = new ArrayList<>();
             int roomPrice = room.getRoomPrice().getOffWeekDaysMinFee();
 
             for (Coupon coupon : roomCouponEntry.getValue()) {
-                responses.add(CouponRoomResponse.from(
+                result.add(CouponRoomResponse.from(
                         coupon, (int) Math.round((1 - 0.01 * coupon.getCouponPrice()) * roomPrice)
                     )
                 );
             }
-
-            result.add(CouponRoomDetailResponse.from(room.getName(), "PERCENTAGE", responses));
         }
         return result;
     }
@@ -163,7 +157,35 @@ public class CouponService {
     }
 
     @Transactional(readOnly = true)
-    public String getMainCouponName() {
-        return null;
+    public List<CouponRoomResponse> getSortedTotalCouponInRoom(
+        Room room
+    ) {
+        List<CouponRoom> couponRooms = couponRoomRepository.findByRoom(room)
+            .orElse(new ArrayList<>());
+        TreeMap<Integer, Coupon> coupons = new TreeMap<>();
+
+        if (couponRooms.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        for (CouponRoom couponRoom: couponRooms) {
+            Type type = couponRoom.getCoupon().getType();
+            int roomPrice = room.getRoomPrice().getOffWeekDaysMinFee();
+            int couponPrice = couponRoom.getCoupon().getCouponPrice();
+
+            switch (type) {
+                case FLAT:
+                    coupons.put(roomPrice - couponPrice, couponRoom.getCoupon());
+                    break;
+                case PERCENTAGE:
+                    coupons.put((int) Math.round((1 - 0.01 * couponPrice) * roomPrice), couponRoom.getCoupon());
+                    break;
+            }
+        }
+
+        return coupons.entrySet().stream()
+            .map(coupon -> CouponRoomResponse.from(coupon.getValue(),coupon.getKey()))
+            .toList();
     }
+
 }

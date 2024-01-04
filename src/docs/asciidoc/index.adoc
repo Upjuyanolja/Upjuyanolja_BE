@@ -21,7 +21,7 @@
 
 == API Common Response
 
-[[overview-status-code]]
+[[overview-couponStatus-code]]
 === 1. HTTP Status Code
 
 |===

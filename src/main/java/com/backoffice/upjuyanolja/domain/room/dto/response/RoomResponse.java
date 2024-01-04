@@ -1,11 +1,9 @@
 package com.backoffice.upjuyanolja.domain.room.dto.response;
 
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Stream;
 import lombok.Builder;
 
 @Builder
@@ -27,20 +25,13 @@ public record RoomResponse(
 
     public static RoomResponse from(
         Room room, int discountPrice, boolean soldOut,
-        CouponRoomDetailResponse couponRoomDetailResponse
+        List<CouponRoomResponse> couponRoomResponses
 
     ) {
         return RoomResponse.builder()
             .id(room.getId())
             .name(room.getName())
-            .basePrice(
-                Stream.of(
-                        room.getRoomPrice().getOffWeekDaysMinFee(),
-                        room.getRoomPrice().getOffWeekendMinFee(),
-                        room.getRoomPrice().getPeakWeekDaysMinFee(),
-                        room.getRoomPrice().getPeakWeekendMinFee())
-                    .reduce(Math::min).orElse(0)
-            )
+            .basePrice(room.getRoomPrice().getOffWeekDaysMinFee())
             .discountPrice(discountPrice)
             .defaultCapacity(room.getDefaultCapacity())
             .maxCapacity(room.getMaxCapacity())
@@ -49,11 +40,7 @@ public record RoomResponse(
             .soldOut(soldOut)
             .count(room.getCount())
             .coupons(
-                Stream.of(couponRoomDetailResponse)
-                    .filter(response -> response.roomName().equals(room.getName()))
-                    .map(response -> response.couponRooms())
-                    .flatMap(List::stream)
-                    .toList()
+                couponRoomResponses
             )
             .images(
                 room.getRoomImages().stream()

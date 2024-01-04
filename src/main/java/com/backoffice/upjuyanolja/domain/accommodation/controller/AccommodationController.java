@@ -6,6 +6,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationServ
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -50,8 +51,8 @@ public class AccommodationController {
     @GetMapping("/{accommodationId}")
     public ResponseEntity<SuccessResponse<AccommodationDetailResponse>> getAccommodationWithRooms(
         @PathVariable Long accommodationId,
-        @RequestParam LocalDate startDate,
-        @RequestParam LocalDate endDate
+        @RequestParam(defaultValue = "2023-12-20", required = false) LocalDate startDate,
+        @RequestParam(defaultValue = "2024-12-21", required = false) LocalDate endDate
     ) {
         log.info("GET /api/accommodations/{accommodationId}");
 

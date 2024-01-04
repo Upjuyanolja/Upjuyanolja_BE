@@ -21,7 +21,7 @@ public record CouponDetailResponse(
             .couponName(coupon.getCouponPrice() + coupon.getType().getName())
             .startDate(coupon.getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
             .endDate(coupon.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
-            .status(coupon.getStatus().getDescription())
+            .status(coupon.getCouponStatus().getDescription())
             .count(coupon.getCount())
             .build();
     }
