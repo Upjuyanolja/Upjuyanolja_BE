@@ -14,6 +14,7 @@ public class CouponType {
 
     @Getter
     public enum Type {
+
         FLAT("원 할인", price -> (price >= MIN_WON_DISCOUNT && price <= MAX_WON_DISCOUNT)
             && price % 1000 == 0),
 

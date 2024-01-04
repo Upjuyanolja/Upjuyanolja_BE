@@ -1,6 +1,5 @@
 package com.backoffice.upjuyanolja.domain.coupon.repository;
 
-import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponRoom;
 import java.util.List;
 import java.util.Optional;

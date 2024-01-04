@@ -45,4 +45,5 @@ public class CouponRoom extends BaseTime {
         this.coupon = coupon;
         this.room = room;
     }
+
 }

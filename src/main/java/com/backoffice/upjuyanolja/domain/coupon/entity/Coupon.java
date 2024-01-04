@@ -94,4 +94,5 @@ public class Coupon extends BaseTime {
         this.reservations = reservations;
         this.couponRooms = couponRooms;
     }
+
 }
