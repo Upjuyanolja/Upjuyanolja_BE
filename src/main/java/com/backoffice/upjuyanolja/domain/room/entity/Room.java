@@ -30,34 +30,40 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("객실 식별자")
     private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accommodation_id")
     @Comment("숙소 식별자")
     private Accommodation accommodation;
-    @Column(nullable = false)
-    @Comment("객실 코드")
-    private long code;
+
     @Column(nullable = false)
     @Comment("객실 이름")
     private String name;
+
     @Column(columnDefinition = "TINYINT")
     @Comment("객실 기준인원")
     private int standard;
+
     @Column(columnDefinition = "TINYINT")
     @Comment("객실 최대인원")
     private int capacity;
+
     @Column(columnDefinition = "TIME")
     @Comment("객실 체크인 시간")
     private LocalTime checkIn;
+
     @Column(columnDefinition = "TIME")
     @Comment("객실 체크아웃 시간")
     private LocalTime checkOut;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 가격")
     private RoomPrice price;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 옵션 식별자")
     private RoomOption roomOption;
+
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 이미지 식별자")
     private List<RoomImage> images = new ArrayList<>();
@@ -66,7 +72,6 @@ public class Room {
     public Room(
         Long id,
         Accommodation accommodation,
-        long code,
         String name,
         int standard,
         int capacity,
@@ -78,7 +83,6 @@ public class Room {
     ) {
         this.id = id;
         this.accommodation = accommodation;
-        this.code = code;
         this.name = name;
         this.standard = standard;
         this.capacity = capacity;
