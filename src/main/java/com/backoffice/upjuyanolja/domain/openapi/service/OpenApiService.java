@@ -13,12 +13,16 @@ import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
@@ -48,11 +52,13 @@ public class OpenApiService {
     private final String BASE_URL = "https://apis.data.go.kr/B551011/KorService1";
     private final String DEFAULT_QUERY_PARAMS = "&MobileOS=ETC&MobileApp=AppTest&_type=json";
     private final int CONTENT_TYPE_ID = 32;
+    private final int DEFAULT_PRICE = 100000;
 
     private final AccommodationRepository accommodationRepository;
     private final AccommodationImageRepository accommodationImageRepository;
     private final RoomRepository roomRepository;
     private final RoomImageRepository roomImageRepository;
+    private final RoomStockRepository roomStockRepository;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -231,7 +237,7 @@ public class OpenApiService {
             .name(base.getString("title"))
             .address(
                 Address.builder()
-                    .shortAddress(base.getString("addr1"))
+                    .address(base.getString("addr1"))
                     .detailAddress(base.getString("addr2"))
                     .mapX(base.getDouble("mapx"))
                     .mapY(base.getDouble("mapy"))
@@ -240,8 +246,8 @@ public class OpenApiService {
             .category(Category.getByCode(base.getString("cat3")))
             .description(common.getString("overview"))
             .thumbnail(base.getString("firstimage"))
-            .accommodationImages(new ArrayList<>())
-            .accommodationOption(productOption)
+            .images(new ArrayList<>())
+            .productOption(productOption)
             .build();
 
         return accommodationRepository.save(accommodation);
@@ -275,46 +281,63 @@ public class OpenApiService {
                     LocalTime checkIn = getTimeFromString(stringCheckIn);
                     LocalTime checkOut = getTimeFromString(stringCheckOut);
 
-                    RoomPrice roomPrice = RoomPrice.builder()
-                        .offWeekDaysMinFee(Integer.parseInt(
-                            roomJson.getString("roomoffseasonminfee1")))
-                        .offWeekendMinFee(Integer.parseInt(
-                            roomJson.getString("roomoffseasonminfee2")))
-                        .peakWeekDaysMinFee(Integer.parseInt(
-                            roomJson.getString("roompeakseasonminfee1")))
-                        .peakWeekendMinFee(Integer.parseInt(
-                            roomJson.getString("roompeakseasonminfee2")))
-                        .build();
-                    RoomOption roomOption = RoomOption.builder()
-                        .airCondition(roomJson.get("roomaircondition").equals("Y"))
-                        .tv(roomJson.get("roomtv").equals("Y"))
-                        .internet(roomJson.get("roominternet").equals("Y"))
-                        .build();
-                    Room room = roomRepository.save(Room.builder()
-                        .accommodation(accommodation)
-                        .code(roomJson.getLong("roomcode"))
-                        .name(roomJson.getString("roomtitle"))
-                        .defaultCapacity(
-                            roomJson.getInt("roombasecount"))
-                        .maxCapacity(Math.max(roomJson.getInt("roombasecount"),
-                            roomJson.getInt("roommaxcount")))
-                        .checkInTime(checkIn)
-                        .checkOutTime(checkOut)
-                        .roomPrice(roomPrice)
-                        .roomOption(roomOption)
-                        .roomImages(new ArrayList<>())
-                        .build());
+                int offWeekDaysMinFee = Integer.parseInt(
+                    roomJson.getString("roomoffseasonminfee1")) == 0 ? DEFAULT_PRICE
+                    : Integer.parseInt(
+                        roomJson.getString("roomoffseasonminfee1"));
+                int offWeekendMinFee = Math.max(Integer.parseInt(
+                    roomJson.getString("roomoffseasonminfee2")) == 0 ? DEFAULT_PRICE
+                    : Integer.parseInt(
+                        roomJson.getString("roomoffseasonminfee2")), offWeekDaysMinFee);
+                int peakWeekDaysMinFee = Math.max(Integer.parseInt(
+                    roomJson.getString("roompeakseasonminfee1")) == 0 ? DEFAULT_PRICE
+                    : Integer.parseInt(
+                        roomJson.getString("roompeakseasonminfee1")), offWeekendMinFee);
+                int peakWeekendMinFee = Math.max(Integer.parseInt(
+                    roomJson.getString("roompeakseasonminfee2")) == 0 ? DEFAULT_PRICE
+                    : Integer.parseInt(
+                        roomJson.getString("roompeakseasonminfee2")), peakWeekDaysMinFee);
 
-                    for (int k = 1; k <= 5; k++) {
-                        if (!roomJson.get("roomimg" + k).equals("")) {
-                            roomImageRepository.save
-                                (
-                                    RoomImage.builder()
-                                        .room(room)
-                                        .url(roomJson.getString("roomimg" + k))
-                                        .build()
-                                );
-                        }
+                RoomPrice roomPrice = RoomPrice.builder()
+                    .offWeekDaysMinFee(offWeekDaysMinFee)
+                    .offWeekendMinFee(offWeekendMinFee)
+                    .peakWeekDaysMinFee(peakWeekDaysMinFee)
+                    .peakWeekendMinFee(peakWeekendMinFee)
+                    .build();
+                RoomOption roomOption = RoomOption.builder()
+                    .airCondition(roomJson.get("roomaircondition").equals("Y"))
+                    .tv(roomJson.get("roomtv").equals("Y"))
+                    .internet(roomJson.get("roominternet").equals("Y"))
+                    .build();
+
+                Room room = roomRepository.save(Room.builder()
+                    .accommodation(accommodation)
+                    .name(roomJson.getString("roomtitle"))
+                    .standard(
+                        roomJson.getInt("roombasecount"))
+                    .capacity(Math.max(roomJson.getInt("roombasecount"),
+                        roomJson.getInt("roommaxcount")))
+                    .checkIn(checkIn)
+                    .checkOut(checkOut)
+                    .price(roomPrice)
+                    .roomOption(roomOption)
+                    .images(new ArrayList<>())
+                    .build());
+
+                roomStockRepository.save(RoomStock.builder()
+                    .room(room)
+                    .count(Integer.parseInt(roomJson.getString("roomcount")))
+                    .status(RoomStatus.SELLING)
+                    .applyDate(LocalDateTime.now())
+                    .stopDate(null)
+                    .build());
+
+                for (int k = 1; k <= 5; k++) {
+                    if (!roomJson.get("roomimg" + k).equals("")) {
+                        roomImageRepository.save(RoomImage.builder()
+                            .room(room)
+                            .url(roomJson.getString("roomimg" + k))
+                            .build());
                     }
                 }
             }

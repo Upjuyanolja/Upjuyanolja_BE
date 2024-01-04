@@ -13,17 +13,17 @@ import static org.springframework.restdocs.request.RequestDocumentation.queryPar
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.restdocs.payload.JsonFieldType;
 
-public class MemberControllerDocsTest extends RestDocsSupport {
+public class MemberAuthControllerDocsTest extends RestDocsSupport {
 
     @MockBean
-    private MemberRegisterService memberRegisterService;
+    private MemberAuthService memberAuthService;
 
     @MockBean
     private MemberGetService memberGetService;
@@ -36,11 +36,11 @@ public class MemberControllerDocsTest extends RestDocsSupport {
             .isExists(true)
             .build();
 
-        given(memberRegisterService.checkEmailDuplicate(any(String.class)))
+        given(memberAuthService.checkEmailDuplicate(any(String.class)))
             .willReturn(checkEmailDuplicateResponse);
 
         // when then
-        mockMvc.perform(get("/api/members/email")
+        mockMvc.perform(get("/api/auth/members/email")
                 .queryParam("email", "test@mail.com"))
             .andDo(restDoc.document(
                 queryParameters(
@@ -68,7 +68,7 @@ public class MemberControllerDocsTest extends RestDocsSupport {
             .willReturn(memberInfoResponse);
 
         // when then
-        mockMvc.perform(get("/api/members/{memberId}", 1L))
+        mockMvc.perform(get("/api/auth/members/{memberId}", 1L))
             .andDo(restDoc.document(
                 responseFields(successResponseCommon()).and(
                     fieldWithPath("data.memberId").type(JsonFieldType.NUMBER)

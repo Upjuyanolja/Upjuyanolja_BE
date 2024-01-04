@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface CouponRoomRepository extends JpaRepository<CouponRoom, Long> {
+
     @Query(value = "select cr from CouponRoom cr join cr.room r where r.accommodation.id = :accommodationId")
     Optional<List<CouponRoom>> findByAccommodationId(Long accommodationId);
 }

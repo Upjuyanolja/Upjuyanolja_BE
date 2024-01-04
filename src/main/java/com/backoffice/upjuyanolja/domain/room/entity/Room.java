@@ -38,35 +38,41 @@ public class Room {
     private Accommodation accommodation;
 
     @Column(nullable = false)
-    @Comment("객실 코드")
-    private long code;
-
-    @Column(nullable = false)
     @Comment("객실 이름")
     private String name;
 
-    @Column(nullable = false)
-    @Comment("객실 갯수")
-    private int count;
-
     @Column(columnDefinition = "TINYINT")
+    @Comment("객실 기준인원")
+    private int standard;
+
     @Comment("객실 기준 인원")
     private int defaultCapacity;
 
     @Column(columnDefinition = "TINYINT")
+    @Comment("객실 최대인원")
+    private int capacity;
+
     @Comment("객실 최대 인원")
     private int maxCapacity;
 
     @Column(columnDefinition = "TIME")
+    @Comment("객실 체크인 시간")
+    private LocalTime checkIn;
+
     @Comment("객실 체크 인 시간")
     private LocalTime checkInTime;
 
     @Column(columnDefinition = "TIME")
+    @Comment("객실 체크아웃 시간")
+    private LocalTime checkOut;
+
     @Comment("객실 체크 아웃 시간")
     private LocalTime checkOutTime;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 가격")
+    private RoomPrice price;
+
     private RoomPrice roomPrice;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -86,8 +92,6 @@ public class Room {
     public Room(
         Long id,
         Accommodation accommodation,
-        long code,
-        int count,
         String name,
         int defaultCapacity,
         int maxCapacity,
@@ -100,8 +104,6 @@ public class Room {
     ) {
         this.id = id;
         this.accommodation = accommodation;
-        this.code = code;
-        this.count = count;
         this.name = name;
         this.defaultCapacity = defaultCapacity;
         this.maxCapacity = maxCapacity;
