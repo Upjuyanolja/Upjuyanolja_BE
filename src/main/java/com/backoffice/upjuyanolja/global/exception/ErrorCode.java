@@ -31,6 +31,7 @@ public enum ErrorCode {
 
     // Coupon
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, 4000, "쿠폰 정보를 찾을 수 없습니다."),
+    WRONG_COUPON_INFO(HttpStatus.BAD_REQUEST, 4001, "쿠폰 정보가 올바르지 않습니다."),
 
     // OpenAPI
     OPEN_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "오픈 API를 이용하는 중 에러가 발생했습니다."),
