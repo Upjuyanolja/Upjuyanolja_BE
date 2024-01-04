@@ -52,7 +52,7 @@ public class AccommodationController {
     public ResponseEntity<SuccessResponse<AccommodationDetailResponse>> getAccommodationWithRooms(
         @PathVariable Long accommodationId,
         @RequestParam(defaultValue = "2023-12-20", required = false) LocalDate startDate,
-        @RequestParam(defaultValue = "2024-12-21", required = false) LocalDate endDate
+        @RequestParam(defaultValue = "2023-12-21", required = false) LocalDate endDate
     ) {
         log.info("GET /api/accommodations/{accommodationId}");
 
