@@ -6,7 +6,7 @@ import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.TokenRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
-import com.backoffice.upjuyanolja.domain.member.dto.response.RefreshTokenDto;
+import com.backoffice.upjuyanolja.domain.member.dto.response.RefreshTokenResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponse;
@@ -111,7 +111,7 @@ public class MemberAuthService {
         return memberRepository.existsByEmail(email);
     }
 
-    public RefreshTokenDto refresh(TokenRequest request) {
+    public RefreshTokenResponse refresh(TokenRequest request) {
 
         // 1. Refresh Token 검증
         if (!jwtTokenProvider.validateToken(request.getRefreshToken())) {
@@ -141,6 +141,6 @@ public class MemberAuthService {
         RefreshToken newRefreshToken = refreshToken.updateRefreshToken(newToken.getRefreshToken());
         refreshTokenRepository.save(newRefreshToken);
 
-        return new RefreshTokenDto(newRefreshToken.getToken());
+        return new RefreshTokenResponse(newRefreshToken.getToken());
     }
 }

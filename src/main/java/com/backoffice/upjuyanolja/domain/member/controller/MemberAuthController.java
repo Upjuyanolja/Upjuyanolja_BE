@@ -5,7 +5,7 @@ import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.TokenRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
-import com.backoffice.upjuyanolja.domain.member.dto.response.RefreshTokenDto;
+import com.backoffice.upjuyanolja.domain.member.dto.response.RefreshTokenResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
@@ -74,10 +74,10 @@ public class MemberAuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<SuccessResponse<RefreshTokenDto>> refresh(
+    public ResponseEntity<SuccessResponse<RefreshTokenResponse>> refresh(
         @Valid @RequestBody TokenRequest request) {
         return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<RefreshTokenDto>builder()
+            SuccessResponse.<RefreshTokenResponse>builder()
                 .message("리프레쉬 토큰 재발급이 성공적으로 완료되었습니다.")
                 .data(memberAuthService.refresh(request))
                 .build());
