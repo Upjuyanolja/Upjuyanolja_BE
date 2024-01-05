@@ -45,7 +45,7 @@ public class Coupon extends BaseTime {
     private int discount;
 
     @Column(nullable = false)
-    @Comment("구폰 노출 만료일")
+    @Comment("쿠폰 노출 만료일")
     private LocalDate endDate;
 
     @Column(nullable = false)
