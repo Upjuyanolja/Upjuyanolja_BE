@@ -36,8 +36,8 @@ public enum DiscountType {
     ),
 
     RATE(
-        "%할인 쿠폰",
-        "%쿠폰",
+        "% 할인 쿠폰",
+        "% 쿠폰",
         (titleName, discount) -> {
             StringBuilder sb = new StringBuilder(discount);
             sb.append(titleName);
