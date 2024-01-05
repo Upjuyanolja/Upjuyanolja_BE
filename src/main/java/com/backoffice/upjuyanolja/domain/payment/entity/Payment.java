@@ -1,13 +1,19 @@
 package com.backoffice.upjuyanolja.domain.payment.entity;
 
+import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
 import com.backoffice.upjuyanolja.global.common.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,6 +29,16 @@ public class Payment extends BaseTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("결제 식별자")
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "member_id")
+    @Comment("회원 식별자")
+    private Member member;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "reservation_id")
+    @Comment("예약 식별자")
+    private Reservation reservation;
 
     @Column(nullable = false, name = "pay_method")
     @Enumerated(value = EnumType.STRING)
@@ -44,12 +60,16 @@ public class Payment extends BaseTime {
     @Builder
     public Payment(
         Long id,
+        Member member,
+        Reservation reservation,
         PayMethod payMethod,
         Integer roomPrice,
         Boolean usedCoupon,
         Integer amount
     ) {
         this.id = id;
+        this.member = member;
+        this.reservation = reservation;
         this.payMethod = payMethod;
         this.roomPrice = roomPrice;
         this.usedCoupon = usedCoupon;

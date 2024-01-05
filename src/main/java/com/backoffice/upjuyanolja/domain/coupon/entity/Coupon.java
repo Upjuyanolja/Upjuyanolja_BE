@@ -1,6 +1,5 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType.Type;
 import com.backoffice.upjuyanolja.global.common.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,15 +25,20 @@ public class Coupon extends BaseTime {
     @Comment("쿠폰 식별자")
     private Long id;
 
+    @Column(nullable = false, name = "coupon_type")
+    @Enumerated(EnumType.STRING)
+    @Comment("쿠폰 유형")
+    private CouponType couponType;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Comment("할인 유형")
+    private DiscountType discountType;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @Comment("쿠폰 상태")
     private CouponStatus status;
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    @Comment("할인 종류")
-    private Type type;
 
     @Column(nullable = false)
     @Comment("할인 가격(할인 율)")
@@ -55,16 +59,18 @@ public class Coupon extends BaseTime {
     @Builder
     public Coupon(
         Long id,
+        CouponType couponType,
+        DiscountType discountType,
         CouponStatus status,
-        Type type,
         int discount,
         LocalDate endDate,
         int dayLimit,
         int count
     ) {
         this.id = id;
+        this.couponType = couponType;
+        this.discountType = discountType;
         this.status = status;
-        this.type = type;
         this.discount = discount;
         this.endDate = endDate;
         this.dayLimit = dayLimit;

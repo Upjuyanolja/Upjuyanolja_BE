@@ -1,19 +1,11 @@
 package com.backoffice.upjuyanolja.domain.reservation.entity;
 
-import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
-import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.global.common.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -30,21 +22,6 @@ public class Reservation extends BaseTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("예약 식별자")
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "member_id")
-    @Comment("회원 식별자")
-    private Member member;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "room_id")
-    @Comment("객실 식별자")
-    private RoomStock roomStock;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "payment_id")
-    @Comment("결제 식별자")
-    private Payment payment;
 
     @Column(nullable = false, name = "visitor_name")
     @Comment("방문자 성함")
@@ -64,14 +41,11 @@ public class Reservation extends BaseTime {
 
     @Column(nullable = false, name = "cancelled")
     @Comment("예약 취소 여부")
-    private Boolean cancelled; // 기본값 false / true면 예약 취소
+    private Boolean cancelled; // true: 예약 취소
 
     @Builder
     public Reservation(
         Long id,
-        Member member,
-        RoomStock roomStock,
-        Payment payment,
         String visitorName,
         String visitorPhone,
         LocalDate startDate,
@@ -79,9 +53,6 @@ public class Reservation extends BaseTime {
         Boolean cancelled
     ) {
         this.id = id;
-        this.member = member;
-        this.roomStock = roomStock;
-        this.payment = payment;
         this.visitorName = visitorName;
         this.visitorPhone = visitorPhone;
         this.startDate = startDate;

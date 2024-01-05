@@ -1,5 +1,6 @@
 package com.backoffice.upjuyanolja.domain.room.entity;
 
+import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -32,6 +33,11 @@ public class RoomStock {
     @Comment("객실 식별자")
     private Room room;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "payment_id")
+    @Comment("결제 식별자")
+    private Payment payment;
+
     @Column(nullable = false)
     @Comment("개수")
     private int count;
@@ -50,9 +56,9 @@ public class RoomStock {
     private LocalDateTime stopDate;
 
     @Builder
-    public RoomStock(
-        Long id,
+    public RoomStock(Long id,
         Room room,
+        Payment payment,
         int count,
         RoomStatus status,
         LocalDateTime applyDate,
@@ -60,6 +66,7 @@ public class RoomStock {
     ) {
         this.id = id;
         this.room = room;
+        this.payment = payment;
         this.count = count;
         this.status = status;
         this.applyDate = applyDate;
