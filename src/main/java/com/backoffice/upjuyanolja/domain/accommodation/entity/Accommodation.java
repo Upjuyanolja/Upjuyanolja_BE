@@ -30,27 +30,35 @@ public class Accommodation extends BaseTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("숙소 식별자")
     private Long id;
+
     @Column(nullable = false)
     @Comment("숙소 이름")
     private String name;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("숙소 위치")
     private Address address;
+
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
-    @Comment("숙소 카테고리")
-    private Category category;
+    @Comment("숙소 종류")
+    private AccommodationType type;
+
     @Column(columnDefinition = "TEXT", nullable = false)
     @Comment("숙소 설명")
     private String description;
+
     @Column(columnDefinition = "TEXT", nullable = false)
     @Comment("숙소 대표 이미지 URL")
     private String thumbnail;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("숙소 옵션 식별자")
     private AccommodationOption productOption;
+
     @OneToMany(mappedBy = "accommodation", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AccommodationImage> images = new ArrayList<>();
+
     @OneToMany(mappedBy = "accommodation", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Room> rooms = new ArrayList<>();
 
@@ -59,7 +67,7 @@ public class Accommodation extends BaseTime {
         Long id,
         String name,
         Address address,
-        Category category,
+        AccommodationType type,
         String description,
         String thumbnail,
         AccommodationOption productOption,
@@ -69,7 +77,7 @@ public class Accommodation extends BaseTime {
         this.id = id;
         this.name = name;
         this.address = address;
-        this.category = category;
+        this.type = type;
         this.description = description;
         this.thumbnail = thumbnail;
         this.productOption = productOption;
