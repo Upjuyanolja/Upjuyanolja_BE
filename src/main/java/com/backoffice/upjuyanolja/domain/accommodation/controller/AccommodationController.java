@@ -5,13 +5,16 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationService;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
+import jakarta.validation.Valid;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/accommodations")
 @RequiredArgsConstructor
+@Validated
 public class AccommodationController {
 
     private final AccommodationService accommodationService;
@@ -30,7 +34,9 @@ public class AccommodationController {
     public ResponseEntity<SuccessResponse<AccommodationPageResponse>> getAccommodations(
         @RequestParam(defaultValue = "ALL", required = false) String category,
         @RequestParam(defaultValue = "false", required = false) boolean onlyHasCoupon,
-        @RequestParam(required = false) String keyword,
+        @Valid @RequestParam(required = false)
+        @Length(min = 1, max = 30, message = "검색어는 1 글자 ~ 30 글자 사이 여야 합니다")
+        String keyword,
         @PageableDefault(page = 1, size = 12) Pageable pageable
     ) {
         log.info("GET /api/accommodations");

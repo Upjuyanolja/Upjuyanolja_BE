@@ -54,7 +54,7 @@ public class AccommodationCustomRepositoryImpl implements AccommodationCustomRep
         if (StringUtils.isNullOrEmpty(keyword)) {
             return null;
         }
-        return qAccommodation.name.eq(keyword);
+        return qAccommodation.name.like("%" + keyword + "%");
     }
 
 }
