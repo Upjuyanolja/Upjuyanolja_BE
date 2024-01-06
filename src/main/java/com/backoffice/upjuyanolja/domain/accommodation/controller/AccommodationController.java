@@ -41,7 +41,7 @@ public class AccommodationController {
         return ApiResponse.success(
             HttpStatus.OK,
             SuccessResponse.<AccommodationPageResponse>builder()
-                .message("성공적으로 숙소 목록을 조회 했습니다.")
+                .message("숙소 목록 조회에 성공 했습니다.")
                 .data(response)
                 .build()
         );
@@ -61,7 +61,7 @@ public class AccommodationController {
         return ApiResponse.success(
             HttpStatus.OK,
             SuccessResponse.<AccommodationDetailResponse>builder()
-                .message("성공적으로 숙소 상세 목록을 조회 했습니다.")
+                .message("숙소 상세 목록 조회에 성공 했습니다.")
                 .data(response)
                 .build()
         );
