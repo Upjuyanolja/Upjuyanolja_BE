@@ -42,37 +42,23 @@ public class Room {
     private String name;
 
     @Column(columnDefinition = "TINYINT")
-    @Comment("객실 기준인원")
+    @Comment("객실 기준 인원")
     private int standard;
 
-    @Comment("객실 기준 인원")
-    private int defaultCapacity;
-
     @Column(columnDefinition = "TINYINT")
-    @Comment("객실 최대인원")
+    @Comment("객실 최대 인원")
     private int capacity;
 
-    @Comment("객실 최대 인원")
-    private int maxCapacity;
-
     @Column(columnDefinition = "TIME")
-    @Comment("객실 체크인 시간")
-    private LocalTime checkIn;
-
     @Comment("객실 체크 인 시간")
     private LocalTime checkInTime;
 
     @Column(columnDefinition = "TIME")
-    @Comment("객실 체크아웃 시간")
-    private LocalTime checkOut;
-
     @Comment("객실 체크 아웃 시간")
     private LocalTime checkOutTime;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 가격")
-    private RoomPrice price;
-
     private RoomPrice roomPrice;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -82,6 +68,10 @@ public class Room {
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 이미지 식별자")
     private List<RoomImage> roomImages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Comment("객실 재고 식별자")
+    private List<RoomStock> roomStocks = new ArrayList<>();
 
     @OneToMany(mappedBy = "room",
         cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
@@ -93,25 +83,27 @@ public class Room {
         Long id,
         Accommodation accommodation,
         String name,
-        int defaultCapacity,
-        int maxCapacity,
+        int standard,
+        int capacity,
         LocalTime checkInTime,
         LocalTime checkOutTime,
         RoomPrice roomPrice,
         RoomOption roomOption,
         List<RoomImage> roomImages,
+        List<RoomStock> roomStocks,
         List<CouponRoom> couponRooms
     ) {
         this.id = id;
         this.accommodation = accommodation;
         this.name = name;
-        this.defaultCapacity = defaultCapacity;
-        this.maxCapacity = maxCapacity;
+        this.standard = standard;
+        this.capacity = capacity;
         this.checkInTime = checkInTime;
         this.checkOutTime = checkOutTime;
         this.roomPrice = roomPrice;
         this.roomOption = roomOption;
         this.roomImages = roomImages;
+        this.roomStocks = roomStocks;
         this.couponRooms = couponRooms;
     }
 }

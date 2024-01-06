@@ -27,6 +27,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -237,7 +238,7 @@ public class OpenApiService {
             .name(base.getString("title"))
             .address(
                 Address.builder()
-                    .address(base.getString("addr1"))
+                    .shortAddress(base.getString("addr1"))
                     .detailAddress(base.getString("addr2"))
                     .mapX(base.getDouble("mapx"))
                     .mapY(base.getDouble("mapy"))
@@ -246,8 +247,8 @@ public class OpenApiService {
             .category(Category.getByCode(base.getString("cat3")))
             .description(common.getString("overview"))
             .thumbnail(base.getString("firstimage"))
-            .images(new ArrayList<>())
-            .productOption(productOption)
+            .accommodationImages(new ArrayList<>())
+            .accommodationOption(productOption)
             .build();
 
         return accommodationRepository.save(accommodation);
@@ -317,11 +318,11 @@ public class OpenApiService {
                         roomJson.getInt("roombasecount"))
                     .capacity(Math.max(roomJson.getInt("roombasecount"),
                         roomJson.getInt("roommaxcount")))
-                    .checkIn(checkIn)
-                    .checkOut(checkOut)
-                    .price(roomPrice)
+                    .checkInTime(checkIn)
+                    .checkOutTime(checkOut)
+                    .roomPrice(roomPrice)
                     .roomOption(roomOption)
-                    .images(new ArrayList<>())
+                    .roomImages(new ArrayList<>())
                     .build());
 
                 roomStockRepository.save(RoomStock.builder()
@@ -342,6 +343,7 @@ public class OpenApiService {
                 }
             }
         }
+    }
     }
 
     private boolean isEmpty(JSONObject body) throws JSONException {
@@ -430,3 +432,4 @@ public class OpenApiService {
         }
     }
 }
+
