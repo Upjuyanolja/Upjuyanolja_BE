@@ -18,7 +18,7 @@ import org.hibernate.annotations.Comment;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class CouponRoom extends BaseTime {
+public class CouponIssuance extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +36,7 @@ public class CouponRoom extends BaseTime {
     private Room room;
 
     @Builder
-    public CouponRoom(
+    public CouponIssuance(
         Long id,
         Coupon coupon,
         Room room

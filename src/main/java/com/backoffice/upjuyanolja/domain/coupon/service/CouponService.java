@@ -1,13 +1,12 @@
 package com.backoffice.upjuyanolja.domain.coupon.service;
 
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponAccommodationResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponPageResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponRoom;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType.Type;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRoomRepository;
@@ -20,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -48,23 +46,23 @@ public class CouponService {
         );
     }
 
-    private List<CouponRoom> getCouponRoomsByAccommodation(Long accommodationId) {
-        List<CouponRoom> couponRooms =
+    private List<CouponIssuance> getCouponRoomsByAccommodation(Long accommodationId) {
+        List<CouponIssuance> couponIssuances =
             couponRoomRepository.findByAccommodationId(accommodationId).orElseGet(ArrayList::new);
-        return couponRooms;
+        return couponIssuances;
     }
 
     @Transactional(readOnly = true)
     public List<CouponAccommodationResponse> findCouponInAccommodation(Long accommodationId) {
-        List<CouponRoom> couponRooms = getCouponRoomsByAccommodation(accommodationId);
+        List<CouponIssuance> couponIssuances = getCouponRoomsByAccommodation(accommodationId);
 
-        if (couponRooms.isEmpty()) {
+        if (couponIssuances.isEmpty()) {
             return new ArrayList<>();
         }
 
-        Map<Coupon, List<String>> couponRoomMap = couponRooms.stream()
+        Map<Coupon, List<String>> couponRoomMap = couponIssuances.stream()
             .collect(Collectors.groupingBy(
-                    CouponRoom::getCoupon,
+                    CouponIssuance::getCoupon,
                     Collectors.mapping(
                         couponRoom -> couponRoom.getRoom().getName(),
                         Collectors.toList()
@@ -135,17 +133,17 @@ public class CouponService {
     private Map<Long, TreeSet<Coupon>> getTypeCouponWithRoom(
         Long accommodationId, Type type
     ) {
-        List<CouponRoom> couponRooms = getCouponRoomsByAccommodation(accommodationId);
+        List<CouponIssuance> couponIssuances = getCouponRoomsByAccommodation(accommodationId);
         Map<Long, TreeSet<Coupon>> couponRoomMap = new HashMap<>();
 
-        if (couponRooms.isEmpty()) {
+        if (couponIssuances.isEmpty()) {
             return Collections.emptyMap();
         }
 
-        for (CouponRoom couponRoom : couponRooms) {
-            if (couponRoom.getCoupon().getType() == type) {
-                Long key = couponRoom.getRoom().getId();
-                Coupon value = couponRoom.getCoupon();
+        for (CouponIssuance couponIssuance : couponIssuances) {
+            if (couponIssuance.getCoupon().getType() == type) {
+                Long key = couponIssuance.getRoom().getId();
+                Coupon value = couponIssuance.getCoupon();
 
                 if (couponRoomMap.containsKey(key)) {
                     couponRoomMap.get(key).add(value);

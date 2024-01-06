@@ -54,7 +54,7 @@ public class AccommodationService {
 
     private boolean checkCouponAvailability(Accommodation accommodation) {
         return accommodation.getRooms().stream()
-            .anyMatch(room -> !room.getCouponRooms().isEmpty());
+            .anyMatch(room -> !room.getCouponIssuances().isEmpty());
     }
 
     private int getLowestPrice(Long accommodationId) {

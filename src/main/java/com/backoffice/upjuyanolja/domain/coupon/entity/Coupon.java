@@ -68,7 +68,7 @@ public class Coupon extends BaseTime {
 
     @OneToMany(mappedBy = "coupon",
         cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<CouponRoom> couponRooms = new ArrayList<>();
+    private List<CouponIssuance> couponIssuances = new ArrayList<>();
 
     @Builder
     public Coupon(
@@ -81,7 +81,7 @@ public class Coupon extends BaseTime {
         int dayLimit,
         int count,
         List<Reservation> reservations,
-        List<CouponRoom> couponRooms
+        List<CouponIssuance> couponIssuances
     ) {
         this.id = id;
         this.couponStatus = couponStatus;
@@ -92,6 +92,6 @@ public class Coupon extends BaseTime {
         this.dayLimit = dayLimit;
         this.count = count;
         this.reservations = reservations;
-        this.couponRooms = couponRooms;
+        this.couponIssuances = couponIssuances;
     }
 }

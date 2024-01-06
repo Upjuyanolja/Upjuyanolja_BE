@@ -1,7 +1,7 @@
 package com.backoffice.upjuyanolja.domain.room.entity;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponRoom;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -76,7 +76,7 @@ public class Room {
     @OneToMany(mappedBy = "room",
         cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
     @Comment("쿠폰-객실 식별자")
-    private List<CouponRoom> couponRooms = new ArrayList<>();
+    private List<CouponIssuance> couponIssuances = new ArrayList<>();
 
     @Builder
     public Room(
@@ -91,7 +91,7 @@ public class Room {
         RoomOption roomOption,
         List<RoomImage> roomImages,
         List<RoomStock> roomStocks,
-        List<CouponRoom> couponRooms
+        List<CouponIssuance> couponIssuances
     ) {
         this.id = id;
         this.accommodation = accommodation;
@@ -104,6 +104,6 @@ public class Room {
         this.roomOption = roomOption;
         this.roomImages = roomImages;
         this.roomStocks = roomStocks;
-        this.couponRooms = couponRooms;
+        this.couponIssuances = couponIssuances;
     }
 }
