@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.room.entity;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,24 +42,24 @@ public class Room {
     private String name;
 
     @Column(columnDefinition = "TINYINT")
-    @Comment("객실 기준인원")
+    @Comment("객실 기준 인원")
     private int standard;
 
     @Column(columnDefinition = "TINYINT")
-    @Comment("객실 최대인원")
+    @Comment("객실 최대 인원")
     private int capacity;
 
     @Column(columnDefinition = "TIME")
-    @Comment("객실 체크인 시간")
-    private LocalTime checkIn;
+    @Comment("객실 체크 인 시간")
+    private LocalTime checkInTime;
 
     @Column(columnDefinition = "TIME")
-    @Comment("객실 체크아웃 시간")
-    private LocalTime checkOut;
+    @Comment("객실 체크 아웃 시간")
+    private LocalTime checkOutTime;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 가격")
-    private RoomPrice price;
+    private RoomPrice roomPrice;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 옵션 식별자")
@@ -66,7 +67,16 @@ public class Room {
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 이미지 식별자")
-    private List<RoomImage> images = new ArrayList<>();
+    private List<RoomImage> roomImages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Comment("객실 재고 식별자")
+    private List<RoomStock> roomStocks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room",
+        cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @Comment("쿠폰-객실 식별자")
+    private List<CouponIssuance> couponIssuances = new ArrayList<>();
 
     @Builder
     public Room(
@@ -75,21 +85,25 @@ public class Room {
         String name,
         int standard,
         int capacity,
-        LocalTime checkIn,
-        LocalTime checkOut,
-        RoomPrice price,
+        LocalTime checkInTime,
+        LocalTime checkOutTime,
+        RoomPrice roomPrice,
         RoomOption roomOption,
-        List<RoomImage> images
+        List<RoomImage> roomImages,
+        List<RoomStock> roomStocks,
+        List<CouponIssuance> couponIssuances
     ) {
         this.id = id;
         this.accommodation = accommodation;
         this.name = name;
         this.standard = standard;
         this.capacity = capacity;
-        this.checkIn = checkIn;
-        this.checkOut = checkOut;
-        this.price = price;
+        this.checkInTime = checkInTime;
+        this.checkOutTime = checkOutTime;
+        this.roomPrice = roomPrice;
         this.roomOption = roomOption;
-        this.images = images;
+        this.roomImages = roomImages;
+        this.roomStocks = roomStocks;
+        this.couponIssuances = couponIssuances;
     }
 }

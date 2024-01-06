@@ -20,15 +20,19 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("주소 식별자")
     private Long id;
+
     @Column(nullable = false)
-    @Comment("주소")
-    private String address;
+    @Comment("간단 주소")
+    private String shortAddress;
+
     @Column(nullable = false)
     @Comment("상세 주소")
     private String detailAddress;
+
     @Column(nullable = false)
     @Comment("X좌표")
     private double mapX;
+
     @Column(nullable = false)
     @Comment("Y좌표")
     private double mapY;
@@ -36,13 +40,13 @@ public class Address {
     @Builder
     public Address(
         Long id,
-        String address,
+        String shortAddress,
         String detailAddress,
         double mapX,
         double mapY
     ) {
         this.id = id;
-        this.address = address;
+        this.shortAddress = shortAddress;
         this.detailAddress = detailAddress;
         this.mapX = mapX;
         this.mapY = mapY;

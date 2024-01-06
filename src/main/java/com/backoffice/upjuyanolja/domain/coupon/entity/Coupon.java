@@ -3,7 +3,7 @@ package com.backoffice.upjuyanolja.domain.coupon.entity;
 
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType.Type;
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
-import com.backoffice.upjuyanolja.global.common.BaseTime;
+import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,7 +36,7 @@ public class Coupon extends BaseTime {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @Comment("쿠폰 상태")
-    private CouponStatus status;
+    private CouponStatus couponStatus;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -68,12 +68,12 @@ public class Coupon extends BaseTime {
 
     @OneToMany(mappedBy = "coupon",
         cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<CouponRoom> couponRooms = new ArrayList<>();
+    private List<CouponIssuance> couponIssuances = new ArrayList<>();
 
     @Builder
     public Coupon(
         Long id,
-        CouponStatus status,
+        CouponStatus couponStatus,
         Type type,
         int couponPrice,
         LocalDate startDate,
@@ -81,10 +81,10 @@ public class Coupon extends BaseTime {
         int dayLimit,
         int count,
         List<Reservation> reservations,
-        List<CouponRoom> couponRooms
+        List<CouponIssuance> couponIssuances
     ) {
         this.id = id;
-        this.status = status;
+        this.couponStatus = couponStatus;
         this.type = type;
         this.couponPrice = couponPrice;
         this.startDate = startDate;
@@ -92,6 +92,6 @@ public class Coupon extends BaseTime {
         this.dayLimit = dayLimit;
         this.count = count;
         this.reservations = reservations;
-        this.couponRooms = couponRooms;
+        this.couponIssuances = couponIssuances;
     }
 }

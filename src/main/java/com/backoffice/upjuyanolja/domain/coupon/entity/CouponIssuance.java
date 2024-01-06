@@ -1,7 +1,7 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.global.common.BaseTime;
+import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -18,7 +18,7 @@ import org.hibernate.annotations.Comment;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class CouponRoom extends BaseTime {
+public class CouponIssuance extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +36,7 @@ public class CouponRoom extends BaseTime {
     private Room room;
 
     @Builder
-    public CouponRoom(
+    public CouponIssuance(
         Long id,
         Coupon coupon,
         Room room

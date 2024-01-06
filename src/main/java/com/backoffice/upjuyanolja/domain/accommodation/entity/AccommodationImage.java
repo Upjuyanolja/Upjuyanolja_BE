@@ -23,10 +23,12 @@ public class AccommodationImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("숙소 이미지 식별자")
     private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "accommodation_id")
     @Comment("숙소 식별자")
     private Accommodation accommodation;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     @Comment("이미지 URL")
     private String url;

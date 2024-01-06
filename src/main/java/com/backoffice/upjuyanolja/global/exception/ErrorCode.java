@@ -20,29 +20,35 @@ public enum ErrorCode {
     RESERVATION_NOT_POSSIBLE(HttpStatus.BAD_REQUEST, 2001, "예약이 불가능한 방입니다."),
 
     // Room
-    ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 2002, "객실 정보를 찾을 수 없습니다."),
+    ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 3000, "객실 정보를 찾을 수 없습니다."),
 
     // Reservation
-    RESERVATION_FAILED(HttpStatus.BAD_REQUEST, 3000, "예약할 수 없습니다."),
-    INVALID_COUPON(HttpStatus.BAD_REQUEST, 3001, "쿠폰이 유효하지 않습니다."),
-    PREEMPTION_EXPIRED(HttpStatus.BAD_REQUEST, 3002, "선점 기한이 만료되어 예약할 수 없습니다."),
-    RESERVATION_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 3003, "예약 숙소 정보를 찾을 수 없습니다."),
-    INVALID_VISITOR_NAME(HttpStatus.BAD_REQUEST, 3004, "유효하지 않는 방문자 전화번호 입니다."),
-    INVALID_VISITOR_PHONE_NUMBER(HttpStatus.BAD_REQUEST, 3005, "유효하지 않는 방문자 전화번호입니다."),
+    RESERVATION_FAILED(HttpStatus.BAD_REQUEST, 4000, "예약할 수 없습니다."),
+    INVALID_COUPON(HttpStatus.BAD_REQUEST, 4001, "쿠폰이 유효하지 않습니다."),
+    PREEMPTION_EXPIRED(HttpStatus.BAD_REQUEST, 4002, "선점 기한이 만료되어 예약할 수 없습니다."),
+    RESERVATION_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 4003, "예약 숙소 정보를 찾을 수 없습니다."),
+    INVALID_VISITOR_NAME(HttpStatus.BAD_REQUEST, 4004, "유효하지 않는 방문자 전화번호 입니다."),
+    INVALID_VISITOR_PHONE_NUMBER(HttpStatus.BAD_REQUEST, 4005, "유효하지 않는 방문자 전화번호입니다."),
 
     // Coupon
-    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, 4000, "쿠폰 정보를 찾을 수 없습니다."),
-    WRONG_COUPON_INFO(HttpStatus.BAD_REQUEST, 4001, "쿠폰 정보가 올바르지 않습니다."),
+    WRONG_COUPON_INFO(HttpStatus.BAD_REQUEST, 5000, "쿠폰 정보가 올바르지 않습니다."),
+    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, 5001, "쿠폰 정보를 찾을 수 없습니다."),
+
+    // Point
+    TOSS_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6000, "토스 API 요청에 실패 했습니다."),
+    PAYMENT_AUTHORIZATION_FAILED(HttpStatus.BAD_REQUEST, 6001, "결제 승인에 실패 했습니다."),
+    WRONG_REFUND_INFO(HttpStatus.BAD_REQUEST, 6002, "포인트 환불 요청 정보가 잘못 됐습니다."),
+    POINT_NOT_FOUND(HttpStatus.NOT_FOUND, 6003, "포인트 정보를 찾을 수 없습니다."),
 
     // OpenAPI
-    OPEN_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "오픈 API를 이용하는 중 에러가 발생했습니다."),
-    DATA_NOT_FOUND(HttpStatus.NOT_FOUND, 5001, "오픈 API에서 가져온 숙소 데이터에서 필요한 정보가 없어, 다음 숙소를 조회합니다."),
+    OPEN_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 8000, "오픈 API를 이용하는 중 에러가 발생했습니다."),
+    DATA_NOT_FOUND(HttpStatus.NOT_FOUND, 8001, "오픈 API에서 가져온 숙소 데이터에서 필요한 정보가 없어, 다음 숙소를 조회합니다."),
 
     // Common
-    DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6000, "데이터베이스 오류가 발생했습니다."),
-    INVALID_REQUEST_BODY(HttpStatus.BAD_REQUEST, 6001, "유효하지 않은 요청 바디입니다."),
-    SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6002, "서버에 알 수 없는 에러가 발생했습니다."),
-    INVALID_DATE(HttpStatus.BAD_REQUEST, 6003, "유효하지 않는 날짜입니다.");
+    DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 9000, "데이터베이스 오류가 발생했습니다."),
+    INVALID_REQUEST_BODY(HttpStatus.BAD_REQUEST, 9001, "유효하지 않은 요청 바디입니다."),
+    SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 9002, "서버에 알 수 없는 에러가 발생했습니다."),
+    INVALID_DATE(HttpStatus.BAD_REQUEST, 9003, "유효하지 않는 날짜입니다.");
 
     private final HttpStatus httpStatus;
     private final int code;

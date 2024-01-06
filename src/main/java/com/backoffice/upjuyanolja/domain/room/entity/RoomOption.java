@@ -20,12 +20,15 @@ public class RoomOption {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("객실 옵션 식별자")
     private Long id;
+
     @Column(nullable = false)
     @Comment("에어컨 여부")
     private boolean airCondition;
+
     @Column(nullable = false)
     @Comment("TV 여부")
     private boolean tv;
+
     @Column(nullable = false)
     @Comment("인터넷 여부")
     private boolean internet;

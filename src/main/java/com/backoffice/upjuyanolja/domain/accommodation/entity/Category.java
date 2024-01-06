@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 public enum Category {
 
+    ALL("전체", ""),
     TOURIST_HOTEL("관광호텔", "B02010100"),
     CONDOMINIUM("콘도미니엄", "B02010500"),
     YOUTH_HOSTEL("유스호스텔", "B02010600"),

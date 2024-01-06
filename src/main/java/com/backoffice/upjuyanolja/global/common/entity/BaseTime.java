@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.global.common;
+package com.backoffice.upjuyanolja.global.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
@@ -16,14 +16,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 public abstract class BaseTime {
 
     @CreatedDate
-    @Comment("생성일시")
+    @Comment("생성 일시")
     private LocalDateTime createdAt;
+
     @Column(insertable = false)
     @LastModifiedDate
-    @Comment("수정일시")
+    @Comment("수정 일시")
     private LocalDateTime updatedAt;
+
     @Column(insertable = false)
-    @Comment("삭제일시")
+    @Comment("삭제 일시")
     private LocalDateTime deletedAt;
 
     protected void delete(LocalDateTime currentTime) {

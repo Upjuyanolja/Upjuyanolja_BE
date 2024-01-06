@@ -20,32 +20,41 @@ public class AccommodationOption {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("숙소 옵션 식별자")
     private Long id;
+
     @Column(nullable = false)
     @Comment("객실 내 취사 여부")
     private boolean cooking;
+
     @Column(nullable = false)
     @Comment("주차 시설 여부")
     private boolean parking;
+
     @Column(nullable = false)
     @Comment("픽업 서비스 여부")
     private boolean pickup;
+
     @Column(nullable = false)
-    @Comment("바비큐장 여부")
+    @Comment("바비큐 장 여부")
     private boolean barbecue;
+
     @Column(nullable = false)
-    @Comment("휘트니스 센터 여부")
+    @Comment("피트니스 센터 여부")
     private boolean fitness;
+
     @Column(nullable = false)
     @Comment("노래방 여부")
     private boolean karaoke;
+
     @Column(nullable = false)
     @Comment("사우나 여부")
     private boolean sauna;
+
     @Column(nullable = false)
     @Comment("스포츠 시설 여부")
     private boolean sports;
+
     @Column(nullable = false)
-    @Comment("세미나실 여부")
+    @Comment("세미나 실 여부")
     private boolean seminar;
 
     @Builder

@@ -1,7 +1,7 @@
 package com.backoffice.upjuyanolja.global.exception;
 
-import com.backoffice.upjuyanolja.global.common.ApiResponse;
-import com.backoffice.upjuyanolja.global.common.ApiResponse.FailResponse;
+import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
+import com.backoffice.upjuyanolja.global.common.response.ApiResponse.FailResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
