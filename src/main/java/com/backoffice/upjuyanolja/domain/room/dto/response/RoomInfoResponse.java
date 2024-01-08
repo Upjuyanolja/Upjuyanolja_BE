@@ -9,13 +9,13 @@ import lombok.Builder;
 public record RoomInfoResponse(
     long id,
     String name,
-    String status,
     int defaultCapacity,
     int maxCapacity,
     String checkInTime,
     String checkOutTime,
     int price,
     int amount,
+    String status,
     List<RoomImageResponse> images,
     RoomOptionResponse option
 ) {
@@ -30,6 +30,7 @@ public record RoomInfoResponse(
             .checkOutTime(room.getCheckOut().format(DateTimeFormatter.ofPattern("HH:mm")))
             .price(room.getPrice().getOffWeekDaysMinFee())
             .amount(room.getAmount())
+            .status(room.getStatus().name())
             .images(RoomImageResponse.of(room.getImages()))
             .option(RoomOptionResponse.of(room.getOption()))
             .build();
