@@ -26,25 +26,15 @@ public class Address {
     @Column(nullable = false)
     @Comment("상세 주소")
     private String detailAddress;
-    @Column(nullable = false)
-    @Comment("X좌표")
-    private double mapX;
-    @Column(nullable = false)
-    @Comment("Y좌표")
-    private double mapY;
 
     @Builder
     public Address(
         Long id,
         String address,
-        String detailAddress,
-        double mapX,
-        double mapY
+        String detailAddress
     ) {
         this.id = id;
         this.address = address;
         this.detailAddress = detailAddress;
-        this.mapX = mapX;
-        this.mapY = mapY;
     }
 }
