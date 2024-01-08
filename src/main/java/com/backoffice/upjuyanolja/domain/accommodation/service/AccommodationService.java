@@ -6,6 +6,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
@@ -35,6 +36,7 @@ public class AccommodationService {
         Accommodation accommodation = saveAccommodation(request);
         saveOwnership(member, accommodation);
         saveRooms(accommodation, request.rooms());
+        accommodation = getAccommodationById(accommodation.getId());
 
         return AccommodationInfoResponse.of(accommodation);
     }
@@ -58,5 +60,10 @@ public class AccommodationService {
 
     private void saveRooms(Accommodation accommodation, List<RoomRegisterRequest> requests) {
         requests.forEach(request -> roomService.saveRoom(accommodation, request));
+    }
+
+    private Accommodation getAccommodationById(long accommodationId) {
+        return accommodationRepository.findById(accommodationId)
+            .orElseThrow(AccommodationNotFoundException::new);
     }
 }
