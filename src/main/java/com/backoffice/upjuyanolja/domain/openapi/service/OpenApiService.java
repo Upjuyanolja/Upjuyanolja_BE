@@ -99,7 +99,7 @@ public class OpenApiService {
                     checkStay(stay);
 
                     Accommodation accommodation = saveAccommodation(stay, commonItem, introItem);
-                    saveProductImages(accommodation, images);
+                    saveAccommodationImages(accommodation, images);
                     saveRooms(accommodation, introItem, rooms);
                 } catch (InvalidDataException | WrongAccommodationTypeException e) {
                     log.info("[OpenAPI] {}", e.getMessage());
@@ -253,7 +253,7 @@ public class OpenApiService {
         return accommodationRepository.save(accommodation);
     }
 
-    private void saveProductImages(Accommodation accommodation, JSONArray images) {
+    private void saveAccommodationImages(Accommodation accommodation, JSONArray images) {
         for (int k = 0; k < images.length(); k++) {
             accommodationImageRepository.save(AccommodationImage.builder()
                 .accommodation(accommodation)
@@ -320,6 +320,7 @@ public class OpenApiService {
                     .checkOut(checkOut)
                     .price(roomPrice)
                     .amount(Integer.parseInt(roomJson.getString("roomcount")))
+                    .status(RoomStatus.SELLING)
                     .option(option)
                     .images(new ArrayList<>())
                     .build());
