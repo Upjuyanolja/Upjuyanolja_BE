@@ -60,9 +60,13 @@ public class Room {
     @Comment("객실 가격")
     private RoomPrice price;
 
+    @Column(nullable = false)
+    @Comment("객실 개수")
+    private int amount;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 옵션 식별자")
-    private RoomOption roomOption;
+    private RoomOption option;
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 이미지 식별자")
@@ -78,7 +82,8 @@ public class Room {
         LocalTime checkIn,
         LocalTime checkOut,
         RoomPrice price,
-        RoomOption roomOption,
+        int amount,
+        RoomOption option,
         List<RoomImage> images
     ) {
         this.id = id;
@@ -89,7 +94,8 @@ public class Room {
         this.checkIn = checkIn;
         this.checkOut = checkOut;
         this.price = price;
-        this.roomOption = roomOption;
+        this.amount = amount;
+        this.option = option;
         this.images = images;
     }
 }
