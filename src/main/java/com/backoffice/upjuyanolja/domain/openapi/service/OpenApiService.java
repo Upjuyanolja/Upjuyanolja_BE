@@ -241,8 +241,6 @@ public class OpenApiService {
                 Address.builder()
                     .address(base.getString("addr1"))
                     .detailAddress(base.getString("addr2"))
-                    .mapX(base.getDouble("mapx"))
-                    .mapY(base.getDouble("mapy"))
                     .build()
             )
             .type(AccommodationType.getByCode(base.getString("cat3")))
@@ -305,7 +303,7 @@ public class OpenApiService {
                     .peakWeekDaysMinFee(peakWeekDaysMinFee)
                     .peakWeekendMinFee(peakWeekendMinFee)
                     .build();
-                RoomOption roomOption = RoomOption.builder()
+                RoomOption option = RoomOption.builder()
                     .airCondition(roomJson.get("roomaircondition").equals("Y"))
                     .tv(roomJson.get("roomtv").equals("Y"))
                     .internet(roomJson.get("roominternet").equals("Y"))
@@ -321,7 +319,8 @@ public class OpenApiService {
                     .checkIn(checkIn)
                     .checkOut(checkOut)
                     .price(roomPrice)
-                    .roomOption(roomOption)
+                    .amount(Integer.parseInt(roomJson.getString("roomcount")))
+                    .option(option)
                     .images(new ArrayList<>())
                     .build());
 
