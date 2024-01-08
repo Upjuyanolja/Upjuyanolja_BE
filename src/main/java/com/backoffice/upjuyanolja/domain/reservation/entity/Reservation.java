@@ -1,10 +1,9 @@
 package com.backoffice.upjuyanolja.domain.reservation.entity;
 
+import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
 import com.backoffice.upjuyanolja.global.common.BaseTime;
 import jakarta.persistence.*;
-
-import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,6 +20,16 @@ public class Reservation extends BaseTime {
     @Comment("예약 식별자")
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "member_id")
+    @Comment("회원 식별자")
+    private Member member;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "reservation_room_id")
+    @Comment("예약 객실 식별자")
+    private ReservationRoom reservationRoom;
+
     @Column(nullable = false, name = "visitor_name")
     @Comment("방문자 성함")
     private String visitorName;
@@ -29,39 +38,38 @@ public class Reservation extends BaseTime {
     @Comment("방문자 전화번호")
     private String visitorPhone;
 
-    @Column(nullable = false, name = "start_date")
-    @Comment("입실 일자")
-    private LocalDate startDate;
-
-    @Column(nullable = false, name = "end_date")
-    @Comment("퇴실 일자")
-    private LocalDate endDate;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id")
     @Comment("결제 식별자")
     private Payment payment;
 
-    @Column(nullable = false, name = "cancelled")
-    @Comment("예약 취소 여부")
-    private Boolean cancelled; // true: 예약 취소
+    @Column(nullable = false, name = "is_coupon_used")
+    @Comment("쿠폰 사용 여부")
+    private Boolean isCouponUsed;
+
+    @Column(nullable = false, name = "status")
+    @Enumerated(value = EnumType.STRING)
+    @Comment("예약 상태")
+    private ReservationStatus status;
 
     @Builder
     public Reservation(
-        Long id,
-        String visitorName,
-        String visitorPhone,
-        LocalDate startDate,
-        LocalDate endDate,
-        Payment payment,
-        Boolean cancelled
+            Long id,
+            Member member,
+            ReservationRoom reservationRoom,
+            String visitorName,
+            String visitorPhone,
+            Payment payment,
+            Boolean isCouponUsed,
+            ReservationStatus status
     ) {
         this.id = id;
+        this.member = member;
+        this.reservationRoom = reservationRoom;
         this.visitorName = visitorName;
         this.visitorPhone = visitorPhone;
-        this.startDate = startDate;
-        this.endDate = endDate;
         this.payment = payment;
-        this.cancelled = cancelled;
+        this.isCouponUsed = isCouponUsed;
+        this.status = status;
     }
 }
