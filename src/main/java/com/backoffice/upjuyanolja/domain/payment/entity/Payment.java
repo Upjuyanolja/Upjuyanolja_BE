@@ -40,17 +40,17 @@ public class Payment extends BaseTime {
     @Comment("결제 수단")
     private PayMethod payMethod;
 
-    @Column(nullable = false, name = "room__price")
-    @Comment("객실 이용료")
-    private Integer roomPrice; // 결제 당시의 객실 이용료
+    @Column(nullable = false, name = "room_price")
+    @Comment("객실 가격")
+    private Integer roomPrice; // 결제 당시의 객실 가격
 
-    @Column(nullable = false, name = "used_coupon")
-    @Comment("쿠폰 사용 여부")
-    private Boolean usedCoupon;
+    @Column(nullable = false, name = "discount_amount")
+    @Comment("할인 금액")
+    private Integer discountAmount; // 결제 당시의 할인 금액
 
-    @Column(nullable = false, name = "total_price")
+    @Column(nullable = false, name = "total_amount")
     @Comment("결제 금액")
-    private Integer amount;
+    private Integer totalAmount;    // 총 결제 금액
 
     @Builder
     public Payment(
@@ -58,14 +58,14 @@ public class Payment extends BaseTime {
         Member member,
         PayMethod payMethod,
         Integer roomPrice,
-        Boolean usedCoupon,
-        Integer amount
+        Integer discountAmount,
+        Integer totalAmount
     ) {
         this.id = id;
         this.member = member;
         this.payMethod = payMethod;
         this.roomPrice = roomPrice;
-        this.usedCoupon = usedCoupon;
-        this.amount = amount;
+        this.discountAmount = discountAmount;
+        this.totalAmount = totalAmount;
     }
 }
