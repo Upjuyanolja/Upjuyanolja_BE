@@ -6,6 +6,7 @@ import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.exception.DuplicateRoomNameException;
+import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class RoomService {
         roomNameValidate(request.name());
         Room room = roomRepository.save(RoomRegisterRequest.toEntity(accommodation, request));
         roomImageRepository.saveAll(RoomImageRequest.toEntity(room, request.images()));
+        room = roomRepository.findById(room.getId()).orElseThrow(RoomNotFoundException::new);
         return RoomInfoResponse.of(room);
     }
 
