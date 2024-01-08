@@ -64,6 +64,10 @@ public class Room {
     @Comment("객실 개수")
     private int amount;
 
+    @Column(nullable = false)
+    @Comment("객실 상태")
+    private RoomStatus status;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 옵션 식별자")
     private RoomOption option;
@@ -83,6 +87,7 @@ public class Room {
         LocalTime checkOut,
         RoomPrice price,
         int amount,
+        RoomStatus status,
         RoomOption option,
         List<RoomImage> images
     ) {
@@ -95,6 +100,7 @@ public class Room {
         this.checkOut = checkOut;
         this.price = price;
         this.amount = amount;
+        this.status = status;
         this.option = option;
         this.images = images;
     }
