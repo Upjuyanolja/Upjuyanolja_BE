@@ -1,11 +1,9 @@
 package com.backoffice.upjuyanolja.domain.reservation.entity;
 
+import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
 import com.backoffice.upjuyanolja.global.common.BaseTime;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -39,6 +37,11 @@ public class Reservation extends BaseTime {
     @Comment("퇴실 일자")
     private LocalDate endDate;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
+    @Comment("결제 식별자")
+    private Payment payment;
+
     @Column(nullable = false, name = "cancelled")
     @Comment("예약 취소 여부")
     private Boolean cancelled; // true: 예약 취소
@@ -50,6 +53,7 @@ public class Reservation extends BaseTime {
         String visitorPhone,
         LocalDate startDate,
         LocalDate endDate,
+        Payment payment,
         Boolean cancelled
     ) {
         this.id = id;
@@ -57,6 +61,7 @@ public class Reservation extends BaseTime {
         this.visitorPhone = visitorPhone;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.payment = payment;
         this.cancelled = cancelled;
     }
 }

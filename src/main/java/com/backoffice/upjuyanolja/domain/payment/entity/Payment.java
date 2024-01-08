@@ -35,11 +35,6 @@ public class Payment extends BaseTime {
     @Comment("회원 식별자")
     private Member member;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "reservation_id")
-    @Comment("예약 식별자")
-    private Reservation reservation;
-
     @Column(nullable = false, name = "pay_method")
     @Enumerated(value = EnumType.STRING)
     @Comment("결제 수단")
@@ -61,7 +56,6 @@ public class Payment extends BaseTime {
     public Payment(
         Long id,
         Member member,
-        Reservation reservation,
         PayMethod payMethod,
         Integer roomPrice,
         Boolean usedCoupon,
@@ -69,7 +63,6 @@ public class Payment extends BaseTime {
     ) {
         this.id = id;
         this.member = member;
-        this.reservation = reservation;
         this.payMethod = payMethod;
         this.roomPrice = roomPrice;
         this.usedCoupon = usedCoupon;
