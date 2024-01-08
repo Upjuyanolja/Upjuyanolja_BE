@@ -18,7 +18,7 @@ public class GlobalRestControllerAdvice {
     public ResponseEntity<FailResponse> ApplicationException(ApplicationException e) {
         log.error(e.getMessage(), e);
         return ApiResponse.error(FailResponse.builder()
-            .code(e.getErrorCode())
+            .code(e.getErrorCode().getCode())
             .message(e.getErrorCode().getMessage())
             .build()
         );
@@ -28,7 +28,7 @@ public class GlobalRestControllerAdvice {
     public ResponseEntity<FailResponse> bindException(BindException e) {
         log.error(e.getMessage(), e);
         return ApiResponse.error(FailResponse.builder()
-            .code(ErrorCode.INVALID_DATE)
+            .code(ErrorCode.INVALID_DATE.getCode())
             .message(e.getMessage())
             .build()
         );
@@ -38,7 +38,7 @@ public class GlobalRestControllerAdvice {
     public ResponseEntity<FailResponse> dbException(DataAccessException e) {
         log.error(e.getMessage(), e);
         return ApiResponse.error(FailResponse.builder()
-            .code(ErrorCode.DATABASE_ERROR)
+            .code(ErrorCode.DATABASE_ERROR.getCode())
             .message(ErrorCode.DATABASE_ERROR.getMessage())
             .build()
         );
@@ -48,7 +48,7 @@ public class GlobalRestControllerAdvice {
     public ResponseEntity<FailResponse> serverException(RuntimeException e) {
         log.error(e.getMessage(), e);
         return ApiResponse.error(FailResponse.builder()
-            .code(ErrorCode.SERVER_ERROR)
+            .code(ErrorCode.SERVER_ERROR.getCode())
             .message(ErrorCode.SERVER_ERROR.getMessage())
             .build()
         );
@@ -65,7 +65,7 @@ public class GlobalRestControllerAdvice {
         MethodArgumentNotValidException e) {
         log.error(e.getMessage(), e);
         return ApiResponse.error(FailResponse.builder()
-            .code(ErrorCode.INVALID_REQUEST_BODY)
+            .code(ErrorCode.INVALID_REQUEST_BODY.getCode())
             .message(ErrorCode.INVALID_REQUEST_BODY.getMessage())
             .build()
         );

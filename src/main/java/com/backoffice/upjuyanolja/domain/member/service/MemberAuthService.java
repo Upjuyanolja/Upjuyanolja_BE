@@ -11,14 +11,12 @@ import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.entity.RefreshToken;
 import com.backoffice.upjuyanolja.domain.member.exception.IncorrectPasswordException;
 import com.backoffice.upjuyanolja.domain.member.exception.InvalidRefreshTokenException;
-import com.backoffice.upjuyanolja.domain.member.exception.LoggedOutMemberException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberEmailDuplicationException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
-import com.backoffice.upjuyanolja.domain.member.repository.RefreshTokenRepository;
+import com.backoffice.upjuyanolja.global.redis.RedisService;
 import com.backoffice.upjuyanolja.global.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +35,7 @@ public class MemberAuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final BCryptPasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RedisService redisService;
 
     @Transactional
     public SignUpResponse signup(SignUpRequest request) {
@@ -77,13 +75,8 @@ public class MemberAuthService {
             .orElseThrow(MemberNotFoundException::new);
         log.info("authentication get name is :{}", authentication.getName());
 
-        //토큰 객체 생성 및 저장
-        RefreshToken refreshToken = RefreshToken.builder()
-            .id(authentication.getName())
-            .token(tokenResponse.getRefreshToken())
-            .build();
-
-        refreshTokenRepository.save(refreshToken);
+        //Redis에 RefreshToken 저장
+        redisService.setValues(authentication.getName(), tokenResponse.getRefreshToken());
 
         return SignInResponse.builder()
             .accessToken(tokenResponse.getAccessToken())
@@ -124,23 +117,21 @@ public class MemberAuthService {
         log.info("멤버 아이디: {}", authentication.getName());
 
         // 3. 저장소에서 Member ID 를 기반으로 Refresh Token 값 가져옴
-        RefreshToken refreshToken = refreshTokenRepository.findById(authentication.getName())
-            .orElseThrow(LoggedOutMemberException::new);
+        String refreshToken = redisService.getValues(authentication.getName());
 
         // 4. Refresh Token 일치하는지 검사
-        if (!refreshToken.getToken().equals(request.getRefreshToken())) {
+        if (!refreshToken.equals(request.getRefreshToken())) {
             throw new InvalidRefreshTokenException();
         }
         log.info("요청한 리프레쉬 토큰: {} ", request.getRefreshToken());
-        log.info("디비에 저장된 리프레쉬 토큰: {} ", refreshToken.getToken());
+        log.info("Redis에 저장된 리프레쉬 토큰: {} ", refreshToken);
 
         // 5. 새로운 토큰 생성
         TokenResponse newToken = jwtTokenProvider.generateToken(authentication);
 
         // 6. 저장소 정보 업데이트
-        RefreshToken newRefreshToken = refreshToken.updateRefreshToken(newToken.getRefreshToken());
-        refreshTokenRepository.save(newRefreshToken);
+        redisService.setValues(authentication.getName(), newToken.getRefreshToken());
 
-        return new RefreshTokenResponse(newRefreshToken.getToken());
+        return new RefreshTokenResponse(newToken.getRefreshToken());
     }
 }

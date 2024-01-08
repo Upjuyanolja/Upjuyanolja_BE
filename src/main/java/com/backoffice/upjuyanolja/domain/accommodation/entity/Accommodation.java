@@ -41,8 +41,8 @@ public class Accommodation extends BaseTime {
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
-    @Comment("숙소 카테고리")
-    private Category category;
+    @Comment("숙소 종류")
+    private AccommodationType type;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     @Comment("숙소 설명")
@@ -67,7 +67,7 @@ public class Accommodation extends BaseTime {
         Long id,
         String name,
         Address address,
-        Category category,
+        AccommodationType type,
         String description,
         String thumbnail,
         AccommodationOption accommodationOption,
@@ -77,7 +77,7 @@ public class Accommodation extends BaseTime {
         this.id = id;
         this.name = name;
         this.address = address;
-        this.category = category;
+        this.type = type;
         this.description = description;
         this.thumbnail = thumbnail;
         this.accommodationOption = accommodationOption;

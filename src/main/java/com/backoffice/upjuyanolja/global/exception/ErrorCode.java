@@ -18,6 +18,8 @@ public enum ErrorCode {
     // Accommodation
     ACCOMMODATION_NOT_FOUND(HttpStatus.NOT_FOUND, 2000, "숙소 정보를 찾을 수 없습니다."),
     RESERVATION_NOT_POSSIBLE(HttpStatus.BAD_REQUEST, 2001, "예약이 불가능한 방입니다."),
+    WRONG_ACCOMMODATION_TYPE(HttpStatus.BAD_REQUEST, 2002, "알맞지 않은 숙소 종류입니다."),
+    WRONG_CATEGORY(HttpStatus.BAD_REQUEST, 2003, "알맞지 않은 카테고리입니다."),
 
     // Room
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 3000, "객실 정보를 찾을 수 없습니다."),
