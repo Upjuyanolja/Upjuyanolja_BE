@@ -1,15 +1,8 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
-import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
+import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
 import com.backoffice.upjuyanolja.global.common.BaseTime;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,24 +25,18 @@ public class CouponRedeem extends BaseTime {
     private Coupon coupon;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id")
-    @Comment("결제 식별자")
-    private Payment payment;
-
-    @Column(nullable = false, name = "coupon_balance")
-    @Comment("쿠폰 잔여수량")
-    private Integer couponBalance;
+    @JoinColumn(name = "reservation_id")
+    @Comment("예약 식별자")
+    private Reservation reservation;
 
     @Builder
     public CouponRedeem(
-        Long id,
-        Coupon coupon,
-        Payment payment,
-        Integer couponBalance
+            Long id,
+            Coupon coupon,
+            Reservation reservation
     ) {
         this.id = id;
         this.coupon = coupon;
-        this.payment = payment;
-        this.couponBalance = couponBalance;
+        this.reservation = reservation;
     }
 }
