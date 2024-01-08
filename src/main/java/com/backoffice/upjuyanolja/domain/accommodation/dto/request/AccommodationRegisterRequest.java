@@ -48,7 +48,7 @@ public record AccommodationRegisterRequest(
                 .address(request.address())
                 .detailAddress(request.detailAddress())
                 .build())
-            .type(AccommodationType.getByName(request.type()))
+            .type(AccommodationType.valueOf(request.type()))
             .description(request.description())
             .thumbnail(request.thumbnail())
             .images(new ArrayList<>())
