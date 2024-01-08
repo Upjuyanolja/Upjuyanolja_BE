@@ -22,7 +22,11 @@ import org.hibernate.annotations.Comment;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class RoomStock {
-
+    /*
+    * @Todo 객실 재고 엔티티 논의 필요
+    *  1. 객실 재고는 날짜 별로 저장 되어야 하는가?
+    *  2. 예약 시 객실 가격은 어디서 참조 하는가? 재고 등록시 가격을 저장 하는가?
+    *  */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("객실 재고 식별자")
@@ -32,11 +36,6 @@ public class RoomStock {
     @JoinColumn(nullable = false, name = "room_id")
     @Comment("객실 식별자")
     private Room room;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "payment_id")
-    @Comment("결제 식별자")
-    private Payment payment;
 
     @Column(nullable = false)
     @Comment("개수")
@@ -58,7 +57,6 @@ public class RoomStock {
     @Builder
     public RoomStock(Long id,
         Room room,
-        Payment payment,
         int count,
         RoomStatus status,
         LocalDateTime applyDate,
@@ -66,7 +64,6 @@ public class RoomStock {
     ) {
         this.id = id;
         this.room = room;
-        this.payment = payment;
         this.count = count;
         this.status = status;
         this.applyDate = applyDate;
