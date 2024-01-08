@@ -1,6 +1,6 @@
 package com.backoffice.upjuyanolja.domain.accommodation.entity;
 
-import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -30,18 +30,18 @@ public class AccommodationOwnership {
     private Accommodation accommodation;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
-    @Comment("객실 식별자")
-    private Room room;
+    @JoinColumn(name = "member_id")
+    @Comment("회원 식별자")
+    private Member member;
 
     @Builder
     public AccommodationOwnership(
         Long id,
         Accommodation accommodation,
-        Room room
+        Member member
     ) {
         this.id = id;
         this.accommodation = accommodation;
-        this.room = room;
+        this.member = member;
     }
 }
