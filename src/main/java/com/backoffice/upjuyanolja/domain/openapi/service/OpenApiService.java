@@ -246,7 +246,7 @@ public class OpenApiService {
                     .mapY(base.getDouble("mapy"))
                     .build()
             )
-            .type(AccommodationType.getByCode(base.getString("cat3")))
+            .accommodationType(AccommodationType.getByCode(base.getString("cat3")))
             .description(common.getString("overview"))
             .thumbnail(base.getString("firstimage"))
             .accommodationImages(new ArrayList<>())

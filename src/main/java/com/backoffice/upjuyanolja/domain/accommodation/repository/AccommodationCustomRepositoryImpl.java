@@ -1,7 +1,7 @@
 package com.backoffice.upjuyanolja.domain.accommodation.repository;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationType;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.QAccommodation;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
@@ -47,7 +47,7 @@ public class AccommodationCustomRepositoryImpl implements AccommodationCustomRep
         if (category.equals("ALL")) {
             return null;
         }
-        return qAccommodation.category.eq(Category.valueOf(category));
+        return qAccommodation.accommodationType.eq(AccommodationType.valueOf(category));
     }
 
     private BooleanExpression eqKeyword(String keyword) {
