@@ -1,4 +1,4 @@
-= 빨리 잡아! API 문서
+= 빨리 잡아! 쿠폰 센터 API 문서
 :doctype: book
 :icons: font
 :source-highlighter: highlightjs
@@ -47,18 +47,21 @@
 | `404 NotFound` | 1005 | 회원 정보를 찾을 수 없는 경우 발생
 | `404 NotFound` | 2000 | 숙소 정보를 찾을 수 없는 경우 발생
 | `400 Bad Request` | 2001 | 예약 불가능한 객실인 경우 발생
-| `404 NotFound` | 2002 | 객실 정보를 찾을 수 없는 경우 발생
-| `400 Bad Request` | 3000 | 결제를 실패한 경우 발생
-| `400 Bad Request` | 3001 | 결제 시 선택한 쿠폰이 유효하지 않는 경우 발생
-| `400 Bad Request` | 3002 | 예약 선점 기한이 만료되었거나, 잘못된 예약 요청인 경우 발생
-| `400 Bad Request` | 3003 | 예약 숙소 정보를 찾을 수 없는 경우 발생
-| `400 Bad Request` | 3004 | 방문자 성함이 유효하지 않는 경우 발생
-| `400 Bad Request` | 3005 | 방문자 전화번호가 유효하지 않는 경우 발생
-| `400 Bad Request` | 4000 | 쿠폰 정보를 찾을 수 없는 경우 발생
-| `500 Internal Server Error` | 5000 | 오픈 API 이용 중 오류가 생긴 경우 발생
-| `404 NotFound` | 5001 | 오픈 API에서 가져온 숙소 데이터에서 필요한 정보를 찾을 수 없는 경우 발생
-| `500 Internal Server Error` | 6000 | DB 에러
-| `400 Bad Request` | 6001 | Request Body가 유효하지 않는 경우 발생
-| `500 Internal Server Error` | 6002 | 서버 에러
-| `400 Bad Request` | 6003 | 날짜 데이터가 유효하지 않는 경우 발생
+| `400 Bad Request` | 2002 | 알맞지 않은 숙소 종류일 경우 발생
+| `400 Bad Request` | 2003 | 알맞지 않은 카테고리일 경우 발생
+| `404 NotFound` | 3000 | 객실 정보를 찾을 수 없는 경우 발생
+| `400 Bad Request` | 4000 | 결제를 실패한 경우 발생
+| `400 Bad Request` | 4001 | 결제 시 선택한 쿠폰이 유효하지 않는 경우 발생
+| `400 Bad Request` | 4002 | 예약 선점 기한이 만료되었거나, 잘못된 예약 요청인 경우 발생
+| `400 Bad Request` | 4003 | 예약 숙소 정보를 찾을 수 없는 경우 발생
+| `400 Bad Request` | 4004 | 방문자 성함이 유효하지 않는 경우 발생
+| `400 Bad Request` | 4005 | 방문자 전화번호가 유효하지 않는 경우 발생
+| `404 NotFound` | 5000 | 쿠폰 정보를 찾을 수 없는 경우 발생
+| `400 Bad Request` | 5001 | 쿠폰 정보가 올바르지 않는 경우 발생
+| `500 Internal Server Error` | 8000 | 오픈 API 이용 중 오류가 생긴 경우 발생
+| `404 NotFound` | 8001 | 오픈 API에서 가져온 숙소 데이터에서 필요한 정보를 찾을 수 없는 경우 발생
+| `500 Internal Server Error` | 9000 | DB 에러
+| `400 Bad Request` | 9001 | Request Body가 유효하지 않는 경우 발생
+| `500 Internal Server Error` | 9002 | 서버 에러
+| `400 Bad Request` | 9003 | 날짜 데이터가 유효하지 않는 경우 발생
 |===

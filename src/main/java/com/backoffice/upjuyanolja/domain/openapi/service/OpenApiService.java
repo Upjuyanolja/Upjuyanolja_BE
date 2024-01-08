@@ -3,8 +3,9 @@ package com.backoffice.upjuyanolja.domain.openapi.service;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationType;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongAccommodationTypeException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.openapi.exception.InvalidDataException;
@@ -100,7 +101,7 @@ public class OpenApiService {
                     Accommodation accommodation = saveAccommodation(stay, commonItem, introItem);
                     saveProductImages(accommodation, images);
                     saveRooms(accommodation, introItem, rooms);
-                } catch (InvalidDataException e) {
+                } catch (InvalidDataException | WrongAccommodationTypeException e) {
                     log.info("[OpenAPI] {}", e.getMessage());
                 }
             }
@@ -233,6 +234,7 @@ public class OpenApiService {
             .sports(intro.get("sports").equals("1"))
             .seminar(intro.get("seminar").equals("1"))
             .build();
+
         Accommodation accommodation = Accommodation.builder()
             .name(base.getString("title"))
             .address(
@@ -243,7 +245,7 @@ public class OpenApiService {
                     .mapY(base.getDouble("mapy"))
                     .build()
             )
-            .category(Category.getByCode(base.getString("cat3")))
+            .type(AccommodationType.getByCode(base.getString("cat3")))
             .description(common.getString("overview"))
             .thumbnail(base.getString("firstimage"))
             .images(new ArrayList<>())
@@ -387,7 +389,7 @@ public class OpenApiService {
 
             if (Integer.parseInt(roomJson.getString("roomcount")) != 0) {
                 if (roomJson.get("roomimg1").equals("")) {
-                    log.info("[OpenAPI] 객실 이미지가 없습니다.다음 숙소를 조회합니다.");
+                    log.info("[OpenAPI] 객실 이미지가 없습니다. 다음 숙소를 조회합니다.");
                     throw new InvalidDataException();
                 }
             }
