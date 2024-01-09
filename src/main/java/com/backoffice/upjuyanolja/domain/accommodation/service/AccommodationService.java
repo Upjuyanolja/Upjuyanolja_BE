@@ -29,10 +29,10 @@ public class AccommodationService {
 
     @Transactional(readOnly = true)
     public AccommodationPageResponse findAccommodations(
-        String category, boolean onlyHasCoupon, String keyword, Pageable pageable
+        String category, String type, boolean onlyHasCoupon, String keyword, Pageable pageable
     ) {
         List<Accommodation> accommodations = accommodationRepository
-            .findAllByCategoryAndName(category, keyword);
+            .findByCategoryWithTypeAndName(category, type, keyword);
 
         return AccommodationPageResponse.from(
             new PageImpl<>(

@@ -11,6 +11,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import java.util.ArrayList;
@@ -39,10 +41,10 @@ public class Accommodation extends BaseTime {
     @Comment("숙소 위치")
     private Address address;
 
-    @Column(nullable = false)
-    @Enumerated(value = EnumType.STRING)
-    @Comment("숙소 종류")
-    private AccommodationType accommodationType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="category_id")
+    @Comment("숙소 카테고리")
+    private Category category;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     @Comment("숙소 설명")
@@ -67,7 +69,7 @@ public class Accommodation extends BaseTime {
         Long id,
         String name,
         Address address,
-        AccommodationType accommodationType,
+        Category category,
         String description,
         String thumbnail,
         AccommodationOption accommodationOption,
@@ -77,7 +79,7 @@ public class Accommodation extends BaseTime {
         this.id = id;
         this.name = name;
         this.address = address;
-        this.accommodationType = accommodationType;
+        this.category = category;
         this.description = description;
         this.thumbnail = thumbnail;
         this.accommodationOption = accommodationOption;

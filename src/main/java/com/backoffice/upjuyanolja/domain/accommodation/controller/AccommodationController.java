@@ -33,6 +33,7 @@ public class AccommodationController {
     @GetMapping
     public ResponseEntity<SuccessResponse<AccommodationPageResponse>> getAccommodations(
         @RequestParam(defaultValue = "ALL", required = false) String category,
+        @RequestParam(defaultValue = "ALL", required = false) String type,
         @RequestParam(defaultValue = "false", required = false) boolean onlyHasCoupon,
         @Valid @RequestParam(required = false)
         @Length(min = 1, max = 30, message = "검색어는 1 글자 ~ 30 글자 사이 여야 합니다")
@@ -42,7 +43,7 @@ public class AccommodationController {
         log.info("GET /api/accommodations");
 
         AccommodationPageResponse response = accommodationService.findAccommodations(
-            category, onlyHasCoupon, keyword, pageable
+            category, type, onlyHasCoupon, keyword, pageable
         );
         return ApiResponse.success(
             HttpStatus.OK,

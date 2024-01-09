@@ -33,7 +33,7 @@ public record AccommodationDetailResponse(
             .mapX(String.valueOf(accommodation.getAddress().getMapX()))
             .mapY(String.valueOf(accommodation.getAddress().getMapY()))
             .description(accommodation.getDescription())
-            .category(accommodation.getAccommodationType().getName())
+            .category(accommodation.getCategory().getName())
             .mainCoupon(mainCoupon)
             .images(
                 accommodation.getAccommodationImages().stream()
