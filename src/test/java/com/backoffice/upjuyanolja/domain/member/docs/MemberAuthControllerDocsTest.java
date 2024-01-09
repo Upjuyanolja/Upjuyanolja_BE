@@ -14,6 +14,7 @@ import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicate
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.OwnerAuthService;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,9 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private MemberGetService memberGetService;
+
+    @MockBean
+    private OwnerAuthService ownerAuthService;
 
     @Test
     @DisplayName("checkEmailDuplicate()는 이메일 중복 검사를 할 수 있다.")
