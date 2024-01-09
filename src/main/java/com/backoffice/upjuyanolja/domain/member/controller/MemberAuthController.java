@@ -1,15 +1,20 @@
 package com.backoffice.upjuyanolja.domain.member.controller;
 
+import com.backoffice.upjuyanolja.domain.member.dto.request.OwnerEmailRequest;
+import com.backoffice.upjuyanolja.domain.member.dto.request.OwnerSignupRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.TokenRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.OwnerEmailResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.OwnerSignupResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.RefreshTokenResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.OwnerAuthService;
 import com.backoffice.upjuyanolja.global.common.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.ApiResponse.SuccessResponse;
 import jakarta.validation.Valid;
