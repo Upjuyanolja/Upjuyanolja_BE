@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationImageRequest;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.constraints.ConstraintDescriptions;
 import org.springframework.restdocs.payload.JsonFieldType;
 
 public class AccommodationControllerDocsTest extends RestDocsSupport {
@@ -39,9 +41,23 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
     @MockBean
     private SecurityUtil securityUtil;
 
+    private final ConstraintDescriptions accommodationRegisterDescriptions = new ConstraintDescriptions(
+        AccommodationRegisterRequest.class);
+    private final ConstraintDescriptions accommodationImageRequestDescriptions = new ConstraintDescriptions(
+        AccommodationImageRequest.class);
+    private final ConstraintDescriptions accommodationOptionRequestDescriptions = new ConstraintDescriptions(
+        AccommodationOptionRequest.class);
+    private final ConstraintDescriptions roomRegisterRequestDescriptions = new ConstraintDescriptions(
+        RoomRegisterRequest.class);
+    private final ConstraintDescriptions roomImageRequestDescriptions = new ConstraintDescriptions(
+        RoomImageRequest.class);
+    private final ConstraintDescriptions roomOptionRequestDescriptions = new ConstraintDescriptions(
+        RoomOptionRequest.class);
+
+
     @Test
     @DisplayName("객실을 등록할 수 있다.")
-    void _willSuccess() throws Exception {
+    void registerAccommodation() throws Exception {
         // given
         AccommodationRegisterRequest request = AccommodationRegisterRequest.builder()
             .name("그랜드 하얏트 제주")
@@ -137,38 +153,119 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
                 .contentType(MediaType.APPLICATION_JSON))
             .andDo(restDoc.document(
                 requestFields(
-                    fieldWithPath("name").description("숙소 이름"),
-                    fieldWithPath("address").description("숙소 주소"),
-                    fieldWithPath("detailAddress").description("숙소 상세 주소"),
-                    fieldWithPath("description").description("숙소 설명"),
-                    fieldWithPath("type").description("숙소 유형"),
-                    fieldWithPath("thumbnail").description("숙소 대표 이미지"),
+                    fieldWithPath("name").description("숙소 이름")
+                        .attributes(key("constraints")
+                            .value(accommodationRegisterDescriptions.descriptionsForProperty(
+                                "name"))),
+                    fieldWithPath("address").description("숙소 주소")
+                        .attributes(key("constraints")
+                            .value(accommodationRegisterDescriptions.descriptionsForProperty(
+                                "address"))),
+                    fieldWithPath("detailAddress").description("숙소 상세 주소")
+                        .attributes(key("constraints")
+                            .value(accommodationRegisterDescriptions.descriptionsForProperty(
+                                "detailAddress"))),
+                    fieldWithPath("description").description("숙소 설명")
+                        .attributes(key("constraints")
+                            .value(accommodationRegisterDescriptions.descriptionsForProperty(
+                                "description"))),
+                    fieldWithPath("type").description("숙소 유형")
+                        .attributes(key("constraints")
+                            .value(accommodationRegisterDescriptions.descriptionsForProperty(
+                                "type"))),
+                    fieldWithPath("thumbnail").description("숙소 대표 이미지")
+                        .attributes(key("constraints")
+                            .value(accommodationRegisterDescriptions.descriptionsForProperty(
+                                "thumbnail"))),
                     fieldWithPath("images").description("숙소 이미지"),
-                    fieldWithPath("images[].url").description("숙소 이미지 URL"),
+                    fieldWithPath("images[].url").description("숙소 이미지 URL")
+                        .attributes(key("constraints")
+                            .value(accommodationImageRequestDescriptions.descriptionsForProperty(
+                                "url"))),
                     fieldWithPath("option").description("숙소 옵션"),
-                    fieldWithPath("option.cooking").description("객실 내 취사 여부"),
-                    fieldWithPath("option.parking").description("주차 시설 여부"),
-                    fieldWithPath("option.pickup").description("픽업 서비스 여부"),
-                    fieldWithPath("option.barbecue").description("바베큐장 여부"),
-                    fieldWithPath("option.fitness").description("피트니스 센터 여부"),
-                    fieldWithPath("option.karaoke").description("노래방 여부"),
-                    fieldWithPath("option.sauna").description("사우나실 여부"),
-                    fieldWithPath("option.sports").description("스포츠 시설 여부"),
-                    fieldWithPath("option.seminar").description("세미나실 여부"),
+                    fieldWithPath("option.cooking").description("객실 내 취사 여부")
+                        .attributes(key("constraints")
+                            .value(accommodationOptionRequestDescriptions.descriptionsForProperty(
+                                "cooking"))),
+                    fieldWithPath("option.parking").description("주차 시설 여부")
+                        .attributes(key("constraints")
+                            .value(accommodationOptionRequestDescriptions.descriptionsForProperty(
+                                "parking"))),
+                    fieldWithPath("option.pickup").description("픽업 서비스 여부")
+                        .attributes(key("constraints")
+                            .value(accommodationOptionRequestDescriptions.descriptionsForProperty(
+                                "pickup"))),
+                    fieldWithPath("option.barbecue").description("바베큐장 여부")
+                        .attributes(key("constraints")
+                            .value(accommodationOptionRequestDescriptions.descriptionsForProperty(
+                                "barbecue"))),
+                    fieldWithPath("option.fitness").description("피트니스 센터 여부")
+                        .attributes(key("constraints")
+                            .value(accommodationOptionRequestDescriptions.descriptionsForProperty(
+                                "fitness"))),
+                    fieldWithPath("option.karaoke").description("노래방 여부")
+                        .attributes(key("constraints")
+                            .value(accommodationOptionRequestDescriptions.descriptionsForProperty(
+                                "karaoke"))),
+                    fieldWithPath("option.sauna").description("사우나실 여부")
+                        .attributes(key("constraints")
+                            .value(accommodationOptionRequestDescriptions.descriptionsForProperty(
+                                "sauna"))),
+                    fieldWithPath("option.sports").description("스포츠 시설 여부")
+                        .attributes(key("constraints")
+                            .value(accommodationOptionRequestDescriptions.descriptionsForProperty(
+                                "sports"))),
+                    fieldWithPath("option.seminar").description("세미나실 여부")
+                        .attributes(key("constraints")
+                            .value(accommodationOptionRequestDescriptions.descriptionsForProperty(
+                                "seminar"))),
                     fieldWithPath("rooms").description("객실 배열"),
-                    fieldWithPath("rooms[].name").description("객실 이름"),
-                    fieldWithPath("rooms[].price").description("객실 가격"),
-                    fieldWithPath("rooms[].defaultCapacity").description("객실 기본 인원"),
-                    fieldWithPath("rooms[].maxCapacity").description("객실 최대 인원"),
-                    fieldWithPath("rooms[].checkInTime").description("객실 체크인 시간"),
-                    fieldWithPath("rooms[].checkOutTime").description("객실 체크아웃 시간"),
-                    fieldWithPath("rooms[].amount").description("객실 개수"),
+                    fieldWithPath("rooms[].name").description("객실 이름")
+                        .attributes(key("constraints")
+                            .value(roomRegisterRequestDescriptions.descriptionsForProperty(
+                                "name"))),
+                    fieldWithPath("rooms[].price").description("객실 가격")
+                        .attributes(key("constraints")
+                            .value(roomRegisterRequestDescriptions.descriptionsForProperty(
+                                "price"))),
+                    fieldWithPath("rooms[].defaultCapacity").description("객실 기본 인원")
+                        .attributes(key("constraints")
+                            .value(roomRegisterRequestDescriptions.descriptionsForProperty(
+                                "defaultCapacity"))),
+                    fieldWithPath("rooms[].maxCapacity").description("객실 최대 인원")
+                        .attributes(key("constraints")
+                            .value(roomRegisterRequestDescriptions.descriptionsForProperty(
+                                "maxCapacity"))),
+                    fieldWithPath("rooms[].checkInTime").description("객실 체크인 시간")
+                        .attributes(key("constraints")
+                            .value(roomRegisterRequestDescriptions.descriptionsForProperty(
+                                "checkInTime"))),
+                    fieldWithPath("rooms[].checkOutTime").description("객실 체크아웃 시간")
+                        .attributes(key("constraints")
+                            .value(roomRegisterRequestDescriptions.descriptionsForProperty(
+                                "checkOutTime"))),
+                    fieldWithPath("rooms[].amount").description("객실 개수")
+                        .attributes(key("constraints")
+                            .value(roomRegisterRequestDescriptions.descriptionsForProperty(
+                                "amount"))),
                     fieldWithPath("rooms[].images").description("객실 이미지 배열"),
-                    fieldWithPath("rooms[].images[].url").description("객실 이미지 URL"),
+                    fieldWithPath("rooms[].images[].url").description("객실 이미지 URL")
+                        .attributes(key("constraints")
+                            .value(roomImageRequestDescriptions.descriptionsForProperty(
+                                "url"))),
                     fieldWithPath("rooms[].option").description("객실 옵션"),
-                    fieldWithPath("rooms[].option.airCondition").description("객실 에어컨 여부"),
-                    fieldWithPath("rooms[].option.tv").description("객실 TV 여부"),
+                    fieldWithPath("rooms[].option.airCondition").description("객실 에어컨 여부")
+                        .attributes(key("constraints")
+                            .value(roomOptionRequestDescriptions.descriptionsForProperty(
+                                "airCondition"))),
+                    fieldWithPath("rooms[].option.tv").description("객실 TV 여부")
+                        .attributes(key("constraints")
+                            .value(roomOptionRequestDescriptions.descriptionsForProperty(
+                                "tv"))),
                     fieldWithPath("rooms[].option.internet").description("객실 인터넷 여부")
+                        .attributes(key("constraints")
+                            .value(roomOptionRequestDescriptions.descriptionsForProperty(
+                                "internet")))
                 ),
                 responseFields(successResponseCommon()).and(
                     fieldWithPath("data").type(JsonFieldType.OBJECT)
