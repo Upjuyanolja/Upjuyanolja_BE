@@ -21,41 +21,41 @@ import org.hibernate.annotations.Comment;
 @Entity
 public class CouponIssuance extends BaseTime {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Comment("쿠폰 발급 식별자")
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Comment("쿠폰 발급 식별자")
+  private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id")
-    @Comment("쿠폰 식별자")
-    private Coupon coupon;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "coupon_id")
+  @Comment("쿠폰 식별자")
+  private Coupon coupon;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
-    @Comment("객실 식별자")
-    private Room room;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "room_id")
+  @Comment("객실 식별자")
+  private Room room;
 
-    @Column(nullable = false, name = "coupon_amount")
-    @Comment("쿠폰 발급수량")
-    private Integer couponAmount;
+  @Column(nullable = false, name = "coupon_amount")
+  @Comment("쿠폰 발급수량")
+  private Integer couponAmount;
 
-    @Column(nullable = false, name = "coupon_balance")
-    @Comment("쿠폰 잔여수량")
-    private Integer couponBalance;
+  @Column(nullable = false, name = "coupon_balance")
+  @Comment("쿠폰 잔여수량")
+  private Integer couponBalance;
 
-    @Builder
-    public CouponIssuance(
-        Long id,
-        Coupon coupon,
-        Room room,
-        Integer couponAmount,
-        Integer couponBalance
-    ) {
-        this.id = id;
-        this.coupon = coupon;
-        this.room = room;
-        this.couponAmount = couponAmount;
-        this.couponBalance = couponBalance;
-    }
+  @Builder
+  public CouponIssuance(
+      Long id,
+      Coupon coupon,
+      Room room,
+      Integer couponAmount,
+      Integer couponBalance
+  ) {
+    this.id = id;
+    this.coupon = coupon;
+    this.room = room;
+    this.couponAmount = couponAmount;
+    this.couponBalance = couponBalance;
+  }
 }
