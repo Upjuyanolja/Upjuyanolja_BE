@@ -3,9 +3,9 @@ package com.backoffice.upjuyanolja.domain.member.exception;
 import com.backoffice.upjuyanolja.global.exception.ApplicationException;
 import com.backoffice.upjuyanolja.global.exception.ErrorCode;
 
-public class MemberEmailDuplicationException extends ApplicationException {
+public class IncorrectVerificationCodeException extends ApplicationException {
 
-    public MemberEmailDuplicationException() {
-        super(ErrorCode.EMAIL_NOT_FOUND);
+    public IncorrectVerificationCodeException() {
+        super(ErrorCode.INCORRECT_VERIFICATION_CODE);
     }
 }
