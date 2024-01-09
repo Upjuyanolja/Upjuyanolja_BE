@@ -14,7 +14,6 @@ import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicate
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.domain.member.service.OwnerAuthService;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.catalina.security.SecurityConfig;

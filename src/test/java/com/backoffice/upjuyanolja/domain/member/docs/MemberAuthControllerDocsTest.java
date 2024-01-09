@@ -14,7 +14,6 @@ import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicate
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.domain.member.service.OwnerAuthService;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
