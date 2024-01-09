@@ -12,8 +12,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.backoffice.upjuyanolja.domain.member.controller.MemberAuthController;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.member.service.OwnerAuthService;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,13 +43,13 @@ public class MemberAuthControllerTest {
     protected ObjectMapper objectMapper;
 
     @MockBean
+    private OwnerAuthService ownerAuthService;
+
+    @MockBean
     private MemberAuthService memberAuthService;
 
     @MockBean
     private MemberGetService memberGetService;
-
-    @MockBean
-    OwnerAuthService ownerAuthService;
 
     @Nested
     @DisplayName("checkEmailDuplicate()는")
