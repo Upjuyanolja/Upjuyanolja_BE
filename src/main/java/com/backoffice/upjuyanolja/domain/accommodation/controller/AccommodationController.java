@@ -38,7 +38,7 @@ public class AccommodationController {
         @Valid @RequestParam(required = false)
         @Length(min = 1, max = 30, message = "검색어는 1 글자 ~ 30 글자 사이 여야 합니다")
         String keyword,
-        @PageableDefault(page = 1, size = 12) Pageable pageable
+        @PageableDefault(page = 0, size = 12) Pageable pageable
     ) {
         log.info("GET /api/accommodations");
 
