@@ -1,0 +1,25 @@
+ifndef::snippets[]
+:snippets: build/generated-snippets
+endif::[]
+
+= Accommodation REST API Docs
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+
+[[Register-Accommodation]]
+== 숙소 등록
+
+숙소 등록 API 입니다.
+
+=== HttpRequest
+
+include::{snippets}/accommodation-controller-docs-test/register-accommodation/http-request.adoc[]
+include::{snippets}/accommodation-controller-docs-test/register-accommodation/request-fields.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/accommodation-controller-docs-test/register-accommodation/http-response.adoc[]
+include::{snippets}/accommodation-controller-docs-test/register-accommodation/response-fields.adoc[]
