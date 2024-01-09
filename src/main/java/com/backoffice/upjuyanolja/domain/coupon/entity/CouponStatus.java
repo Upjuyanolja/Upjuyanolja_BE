@@ -5,9 +5,9 @@ import lombok.Getter;
 @Getter
 public enum CouponStatus {
 
-    ISSUING("발급 중"),
-    SUSPENDED("발급 중지"),
-    EXHAUSTED("소진");
+    ACTIVE("발급 중"),
+    DISABLE("발급 중지"),
+    SOLD_OUT("소진");
 
     private final String description;
 

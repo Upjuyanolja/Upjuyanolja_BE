@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.domain.reservation.entity;
+package com.backoffice.upjuyanolja.domain.coupon.entity;
 
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.global.common.BaseTime;
@@ -9,8 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import java.time.LocalDate;
+import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,42 +19,43 @@ import org.hibernate.annotations.Comment;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class ReservationRoom extends BaseTime {
+public class CouponIssuance extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Comment("예약 객실 식별자")
+  @Comment("쿠폰 발급 식별자")
   private Long id;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "coupon_id")
+  @Comment("쿠폰 식별자")
+  private Coupon coupon;
+
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "room_id")
   @Comment("객실 식별자")
   private Room room;
 
-  @Column(nullable = false, name = "start_date")
-  @Comment("입실 일자")
-  private LocalDate startDate;
+  @Column(nullable = false, name = "coupon_amount")
+  @Comment("쿠폰 발급수량")
+  private Integer couponAmount;
 
-  @Column(nullable = false, name = "end_date")
-  @Comment("퇴실 일자")
-  private LocalDate endDate;
-
-  @Column(nullable = false, name = "price")
-  @Comment("객실 가격") // 예약 결제 할 당시의 객실 가격
-  private Integer price;
+  @Column(nullable = false, name = "coupon_balance")
+  @Comment("쿠폰 잔여수량")
+  private Integer couponBalance;
 
   @Builder
-  public ReservationRoom(
+  public CouponIssuance(
       Long id,
+      Coupon coupon,
       Room room,
-      LocalDate startDate,
-      LocalDate endDate,
-      Integer price
+      Integer couponAmount,
+      Integer couponBalance
   ) {
     this.id = id;
+    this.coupon = coupon;
     this.room = room;
-    this.startDate = startDate;
-    this.endDate = endDate;
-    this.price = price;
+    this.couponAmount = couponAmount;
+    this.couponBalance = couponBalance;
   }
 }
