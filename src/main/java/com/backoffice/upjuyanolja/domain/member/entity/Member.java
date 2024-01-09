@@ -48,7 +48,7 @@ public class Member extends BaseTime {
 
     @Enumerated(EnumType.STRING)
     @Comment("권한")
-    private Authority authority = ROLE_USER;
+    private Authority authority;
 
     @Builder
     public Member(
