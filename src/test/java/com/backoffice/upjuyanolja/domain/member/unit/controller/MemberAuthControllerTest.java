@@ -43,9 +43,6 @@ public class MemberAuthControllerTest {
     protected ObjectMapper objectMapper;
 
     @MockBean
-    private OwnerAuthService ownerAuthService;
-
-    @MockBean
     private MemberAuthService memberAuthService;
 
     @MockBean

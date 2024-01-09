@@ -29,9 +29,6 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
     @MockBean
     private MemberGetService memberGetService;
 
-    @MockBean
-    private OwnerAuthService ownerAuthService;
-
     @Test
     @DisplayName("checkEmailDuplicate()는 이메일 중복 검사를 할 수 있다.")
     void checkEmailDuplicate() throws Exception {
