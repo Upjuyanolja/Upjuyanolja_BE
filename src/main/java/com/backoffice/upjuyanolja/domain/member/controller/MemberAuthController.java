@@ -36,7 +36,6 @@ public class MemberAuthController {
 
     private final MemberAuthService memberAuthService;
     private final MemberGetService memberGetService;
-    private final OwnerAuthService ownerAuthService;
 
     @PostMapping("members/signup")
     public ResponseEntity<SuccessResponse<SignUpResponse>> signup(
@@ -45,39 +44,6 @@ public class MemberAuthController {
             SuccessResponse.<SignUpResponse>builder()
                 .message("회원가입이 성공적으로 완료되었습니다.")
                 .data(memberAuthService.signup(request))
-                .build());
-    }
-
-    @PostMapping("owners/request-email")
-    public ResponseEntity<SuccessResponse<OwnerEmailResponse>> sendMessage(
-        @Valid @RequestBody OwnerEmailRequest request){
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<OwnerEmailResponse>builder()
-                .message("이메일 인증요청이 성공적으로 완료되었습니다")
-                .data(ownerAuthService.sendVerificationCodeToEmail(request))
-                .build());
-    }
-
-    @GetMapping("owners/verify")
-    public ResponseEntity<SuccessResponse<String>> verifyMessage(
-        @Valid @RequestParam(name = "email") String email,
-        @RequestParam(name = "verification-code") String authCode
-    ){
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<String>builder()
-                .message("이메일 인증이 성공적으로 완료되었습니다.")
-                .data(ownerAuthService.verifyCode(email, authCode))
-                .build());
-    }
-
-    @PostMapping("owners/signup")
-    public ResponseEntity<SuccessResponse<OwnerSignupResponse>> ownerSingup(
-        @Valid @RequestBody OwnerEmailRequest request
-    ){
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<OwnerSignupResponse>builder()
-                .message("업주 회원가입이 성공적으로 완료되었습니다.")
-                .data(ownerAuthService.ownerSignup(request))
                 .build());
     }
 
