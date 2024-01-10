@@ -4,6 +4,8 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -60,13 +62,26 @@ public class Room {
     @Comment("객실 가격")
     private RoomPrice price;
 
+    @Column(nullable = false)
+    @Comment("객실 개수")
+    private int amount;
+
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    @Comment("객실 상태")
+    private RoomStatus status;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 옵션 식별자")
-    private RoomOption roomOption;
+    private RoomOption option;
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 이미지 식별자")
     private List<RoomImage> images = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Comment("객실 재고 식별자")
+    private List<RoomStock> stocks = new ArrayList<>();
 
     @Builder
     public Room(
@@ -78,7 +93,9 @@ public class Room {
         LocalTime checkIn,
         LocalTime checkOut,
         RoomPrice price,
-        RoomOption roomOption,
+        int amount,
+        RoomStatus status,
+        RoomOption option,
         List<RoomImage> images
     ) {
         this.id = id;
@@ -89,7 +106,9 @@ public class Room {
         this.checkIn = checkIn;
         this.checkOut = checkOut;
         this.price = price;
-        this.roomOption = roomOption;
+        this.amount = amount;
+        this.status = status;
+        this.option = option;
         this.images = images;
     }
 }
