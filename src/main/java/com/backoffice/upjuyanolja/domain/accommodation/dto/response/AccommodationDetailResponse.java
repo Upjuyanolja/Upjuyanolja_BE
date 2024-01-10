@@ -10,8 +10,6 @@ public record AccommodationDetailResponse(
     Long id,
     String name,
     String address,
-    String mapX,
-    String mapY,
     String description,
     String category,
     String mainCoupon,
@@ -27,11 +25,9 @@ public record AccommodationDetailResponse(
             .id(accommodation.getId())
             .name(accommodation.getName())
             .address(
-                accommodation.getAddress().getShortAddress() + "\n"
+                accommodation.getAddress().getAddress() + "\n"
                     + accommodation.getAddress().getDetailAddress()
             )
-            .mapX(String.valueOf(accommodation.getAddress().getMapX()))
-            .mapY(String.valueOf(accommodation.getAddress().getMapY()))
             .description(accommodation.getDescription())
             .category(accommodation.getCategory().getName())
             .mainCoupon(mainCoupon)

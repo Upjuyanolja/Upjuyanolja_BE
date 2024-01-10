@@ -239,10 +239,8 @@ public class OpenApiService {
             .name(base.getString("title"))
             .address(
                 Address.builder()
-                    .shortAddress(base.getString("addr1"))
+                    .address(base.getString("addr1"))
                     .detailAddress(base.getString("addr2"))
-                    .mapX(base.getDouble("mapx"))
-                    .mapY(base.getDouble("mapy"))
                     .build()
             )
             .description(common.getString("overview"))

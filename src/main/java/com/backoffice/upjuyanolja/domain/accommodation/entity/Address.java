@@ -22,33 +22,22 @@ public class Address {
     private Long id;
 
     @Column(nullable = false)
-    @Comment("간단 주소")
-    private String shortAddress;
+    @Comment("주소")
+    private String address;
 
     @Column(nullable = false)
     @Comment("상세 주소")
     private String detailAddress;
 
-    @Column(nullable = false)
-    @Comment("X좌표")
-    private double mapX;
-
-    @Column(nullable = false)
-    @Comment("Y좌표")
-    private double mapY;
 
     @Builder
     public Address(
         Long id,
-        String shortAddress,
-        String detailAddress,
-        double mapX,
-        double mapY
+        String address,
+        String detailAddress
     ) {
         this.id = id;
-        this.shortAddress = shortAddress;
+        this.address = address;
         this.detailAddress = detailAddress;
-        this.mapX = mapX;
-        this.mapY = mapY;
     }
 }

@@ -23,7 +23,7 @@ public record AccommodationSummaryResponse(
         return AccommodationSummaryResponse.builder()
             .id(accommodation.getId())
             .name(accommodation.getName())
-            .shortAddress(accommodation.getAddress().getShortAddress())
+            .shortAddress(accommodation.getAddress().getAddress())
             .category(accommodation.getCategory().getName())
             .lowestPrice(lowestPrice)
             .discountPrice(discountPrice)

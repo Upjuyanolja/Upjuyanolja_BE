@@ -48,7 +48,7 @@ public record AccommodationRegisterRequest(
         return Accommodation.builder()
             .name(request.name())
             .address(Address.builder()
-                .shortAddress(request.address())
+                .address(request.address())
                 .detailAddress(request.detailAddress())
                 .build())
             .category(category)

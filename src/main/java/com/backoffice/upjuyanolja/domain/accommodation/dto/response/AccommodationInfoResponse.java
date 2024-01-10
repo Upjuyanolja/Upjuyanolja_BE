@@ -26,7 +26,7 @@ public record AccommodationInfoResponse(
             .name(accommodation.getName())
             .category(accommodation.getCategory().getName())
             .description(accommodation.getDescription())
-            .address(accommodation.getAddress().getShortAddress()
+            .address(accommodation.getAddress().getAddress()
                 + " "
                 + accommodation.getAddress().getDetailAddress())
             .images(AccommodationImageResponse.of(accommodation.getAccommodationImages()))
