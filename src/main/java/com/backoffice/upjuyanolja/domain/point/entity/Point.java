@@ -38,12 +38,12 @@ public class Point extends BaseTime {
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
-    @Comment("보유 포인트")
+    @Comment("포인트 유형")
     private PointType pointType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    @Comment("객실 식별자")
+    @Comment("회원 식별자")
     private Member member;
 
     @OneToMany(mappedBy = "point", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

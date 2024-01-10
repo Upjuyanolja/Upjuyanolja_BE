@@ -37,7 +37,7 @@ public class PointRefunds extends BaseTime {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "point_charges_id")
-    @Comment("포인트 식별자")
+    @Comment("포인트 충전 식별자")
     private PointCharges pointCharges;
 
     @Builder
