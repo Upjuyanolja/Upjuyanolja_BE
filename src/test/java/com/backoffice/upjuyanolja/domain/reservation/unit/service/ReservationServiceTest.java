@@ -38,7 +38,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -59,7 +58,7 @@ class ReservationServiceTest {
 
   static Member mockMember;
 
-  static Page<Reservation> mockReservations;
+  static List<Reservation> mockReservations;
 
   @BeforeEach
   public void initTest() {
@@ -77,7 +76,7 @@ class ReservationServiceTest {
     mockReservations = createReservations();
   }
 
-  private Page<Reservation> createReservations() {
+  private List<Reservation> createReservations() {
     List<Reservation> reservations = new ArrayList<>();
 
     reservations.add(createReservation(
@@ -100,7 +99,7 @@ class ReservationServiceTest {
         0, false, ReservationStatus.CANCELLED
     ));
 
-    return new PageImpl<>(reservations);
+    return reservations;
   }
 
   private Reservation createReservation(
@@ -210,7 +209,7 @@ class ReservationServiceTest {
           eq(mockMember),
           eq(statuses),
           eq(pageable)
-      )).thenReturn(mockReservations);
+      )).thenReturn(new PageImpl<>(mockReservations));
 
 //      verify(reservationRepository).findAllByMemberAndStatusIn(eq(mockMember),
 //          eq(statuses),
@@ -236,7 +235,7 @@ class ReservationServiceTest {
           eq(mockMember),
           eq(statuses),
           eq(pageable)
-      )).thenReturn(mockReservations);
+      )).thenReturn(new PageImpl<>(mockReservations));
 
 //      verify(reservationRepository).findAllByMemberAndStatusIn(eq(mockMember),
 //          eq(statuses),
@@ -254,7 +253,7 @@ class ReservationServiceTest {
 //      // given
 //      int pageNumber = 0;
 //      int pageSize = 5;
-//      Sort sort = Sort.by(Sort.Direction.ASC, "id");
+//      Sort sort = Sort.by(Direction.ASC, "id");
 //      Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
 //
 //      Reservation wrongReservation = Reservation.builder()
@@ -268,13 +267,14 @@ class ReservationServiceTest {
 //          .build();
 //
 //      mockReservations.add(wrongReservation);
+//
 //      Collection<ReservationStatus> statuses = Arrays.asList(ReservationStatus.RESERVED,
 //          ReservationStatus.SERVICED);
 //      when(reservationRepository.findAllByMemberAndStatusIn(
 //          eq(mockMember),
 //          eq(statuses),
 //          eq(pageable)
-//      )).thenReturn(mockReservations);
+//      )).thenReturn(new PageImpl<>(mockReservations));
 //
 //      verify(reservationRepository).findAllByMemberAndStatusIn(eq(mockMember),
 //          eq(statuses),
