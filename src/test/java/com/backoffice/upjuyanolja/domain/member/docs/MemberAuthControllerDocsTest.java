@@ -12,8 +12,9 @@ import static org.springframework.restdocs.request.RequestDocumentation.queryPar
 
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,9 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private MemberGetService memberGetService;
+
+    @MockBean
+    private SecurityUtil securityUtil;
 
     @Test
     @DisplayName("checkEmailDuplicate()는 이메일 중복 검사를 할 수 있다.")
@@ -64,11 +68,12 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
             .phoneNumber("010-1234-1234")
             .build();
 
+        given(securityUtil.getCurrentMemberId()).willReturn(1L);
         given(memberGetService.getMember(any(Long.TYPE)))
             .willReturn(memberInfoResponse);
 
         // when then
-        mockMvc.perform(get("/api/auth/members/{memberId}", 1L))
+        mockMvc.perform(get("/api/auth/members"))
             .andDo(restDoc.document(
                 responseFields(successResponseCommon()).and(
                     fieldWithPath("data.memberId").type(JsonFieldType.NUMBER)
