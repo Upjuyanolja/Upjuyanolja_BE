@@ -12,6 +12,7 @@ import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.payment.entity.PayMethod;
 import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
+import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetCanceledResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationRoom;
@@ -195,8 +196,8 @@ class ReservationServiceTest {
   class SearchReservation {
 
     @Test
-    @DisplayName("getReserved()를 호출 시 DTO 리스트 반환")
-    void statusRESERVEDorSERVICED_call_getReserved() {
+    @DisplayName("getReserved()를 호출 시 GetReservedResponse 반환")
+    void returnGetReservedResponse_call_getReserved() {
       // given
       int pageNumber = 0;
       int pageSize = 4;
@@ -219,6 +220,32 @@ class ReservationServiceTest {
       // then
       assertEquals(GetReservedResponse.class,
           reservationService.getReserved(mockMember, pageable).getClass());
+    }
+
+    @Test
+    @DisplayName("getCanceled()를 호출 시 GetCanceledResponse 반환")
+    void returnGetCanceledResponse_call_getCanceled() {
+      // given
+      int pageNumber = 0;
+      int pageSize = 4;
+      Sort sort = Sort.by(Sort.Direction.ASC, "id");
+      Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
+
+      Collection<ReservationStatus> statuses = List.of(ReservationStatus.CANCELLED);
+      when(reservationRepository.findAllByMemberAndStatusIn(
+          eq(mockMember),
+          eq(statuses),
+          eq(pageable)
+      )).thenReturn(mockReservations);
+
+//      verify(reservationRepository).findAllByMemberAndStatusIn(eq(mockMember),
+//          eq(statuses),
+//          eq(pageable));
+
+      // when
+      // then
+      assertEquals(GetCanceledResponse.class,
+          reservationService.getCanceled(mockMember, pageable).getClass());
     }
 
 //    @Test
