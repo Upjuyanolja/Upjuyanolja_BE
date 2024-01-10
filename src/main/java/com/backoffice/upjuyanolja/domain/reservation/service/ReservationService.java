@@ -14,8 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ReservationService {
 
@@ -26,6 +28,7 @@ public class ReservationService {
     return null;
   }
 
+  @Transactional(readOnly = true)
   public GetReservedResponse getReserved(Member currentMember, Pageable pageable) {
     Page<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
         currentMember,
@@ -35,6 +38,7 @@ public class ReservationService {
     return new GetReservedResponse(reservations);
   }
 
+  @Transactional(readOnly = true)
   public GetCanceledResponse getCanceled(Member currentMember, Pageable pageable) {
     Page<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
         currentMember,
