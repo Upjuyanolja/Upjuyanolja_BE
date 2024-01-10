@@ -2,14 +2,13 @@ package com.backoffice.upjuyanolja.domain.room.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -33,36 +32,22 @@ public class RoomStock {
     private Room room;
 
     @Column(nullable = false)
-    @Comment("개수")
+    @Comment("객실 재고")
     private int count;
 
-    @Column(nullable = false)
-    @Enumerated(value = EnumType.STRING)
-    @Comment("상태")
-    private RoomStatus status;
-
-    @Column(nullable = false)
-    @Comment("적용일시")
-    private LocalDateTime applyDate;
-
-    @Column(nullable = true)
-    @Comment("종료일시")
-    private LocalDateTime stopDate;
+    @Comment("날짜")
+    private LocalDate date;
 
     @Builder
     public RoomStock(
         Long id,
         Room room,
         int count,
-        RoomStatus status,
-        LocalDateTime applyDate,
-        LocalDateTime stopDate
+        LocalDate date
     ) {
         this.id = id;
         this.room = room;
         this.count = count;
-        this.status = status;
-        this.applyDate = applyDate;
-        this.stopDate = stopDate;
+        this.date = date;
     }
 }
