@@ -1,8 +1,6 @@
 package com.backoffice.upjuyanolja.domain.reservation.service;
 
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.reservation.dto.request.CreateReservationRequest;
-import com.backoffice.upjuyanolja.domain.reservation.dto.response.CreateReservationResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetCanceledResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
@@ -22,11 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReservationService {
 
   private final ReservationRepository reservationRepository;
-
-  // @Todo 객실 재고 테이블 확정 후 구현(동시성 제어)
-  public CreateReservationResponse create(Member currentMember, CreateReservationRequest request) {
-    return null;
-  }
 
   @Transactional(readOnly = true)
   public GetReservedResponse getReserved(Member currentMember, Pageable pageable) {
