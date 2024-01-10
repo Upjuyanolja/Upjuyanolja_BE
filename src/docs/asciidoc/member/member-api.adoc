@@ -16,12 +16,12 @@ endif::[]
 
 === HttpRequest
 
-include::{snippets}/member-controller-docs-test/check-email-duplicate/http-request.adoc[]
+include::{snippets}/member-auth-controller-docs-test/check-email-duplicate/http-request.adoc[]
 
 === HttpResponse
 
-include::{snippets}/member-controller-docs-test/check-email-duplicate/http-response.adoc[]
-include::{snippets}/member-controller-docs-test/check-email-duplicate/response-fields.adoc[]
+include::{snippets}/member-auth-controller-docs-test/check-email-duplicate/http-response.adoc[]
+include::{snippets}/member-auth-controller-docs-test/check-email-duplicate/response-fields.adoc[]
 
 [[Get-Member]]
 == 회원 정보 조회
@@ -30,9 +30,9 @@ include::{snippets}/member-controller-docs-test/check-email-duplicate/response-f
 
 === HttpRequest
 
-include::{snippets}/member-controller-docs-test/get-member/http-request.adoc[]
+include::{snippets}/member-auth-controller-docs-test/get-member/http-request.adoc[]
 
 === HttpResponse
 
-include::{snippets}/member-controller-docs-test/get-member/http-response.adoc[]
-include::{snippets}/member-controller-docs-test/get-member/response-fields.adoc[]
+include::{snippets}/member-auth-controller-docs-test/get-member/http-response.adoc[]
+include::{snippets}/member-auth-controller-docs-test/get-member/response-fields.adoc[]
