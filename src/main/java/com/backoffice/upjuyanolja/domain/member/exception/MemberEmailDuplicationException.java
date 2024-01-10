@@ -6,6 +6,6 @@ import com.backoffice.upjuyanolja.global.exception.ErrorCode;
 public class MemberEmailDuplicationException extends ApplicationException {
 
     public MemberEmailDuplicationException() {
-        super(ErrorCode.EMAIL_NOT_FOUND);
+        super(ErrorCode.DUPLICATED_EMAIL);
     }
 }
