@@ -271,75 +271,75 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
                     fieldWithPath("data").type(JsonFieldType.OBJECT)
                         .description("응답 데이터"),
                     fieldWithPath("data.accommodationId").type(JsonFieldType.NUMBER)
-                        .description("이메일 중복 여부"),
+                        .description("숙소 식별자"),
                     fieldWithPath("data.name").type(JsonFieldType.STRING)
-                        .description("이메일 중복 여부"),
+                        .description("숙소 이름"),
                     fieldWithPath("data.type").type(JsonFieldType.STRING)
-                        .description("이메일 중복 여부"),
+                        .description("숙소 유형"),
                     fieldWithPath("data.address").type(JsonFieldType.STRING)
-                        .description("이메일 중복 여부"),
+                        .description("숙소 주소"),
                     fieldWithPath("data.description").type(JsonFieldType.STRING)
-                        .description("이메일 중복 여부"),
+                        .description("숙소 설명"),
                     fieldWithPath("data.images").type(JsonFieldType.ARRAY)
-                        .description("이메일 중복 여부"),
+                        .description("숙소 이미지 배열"),
                     fieldWithPath("data.images[].id").type(JsonFieldType.NUMBER)
-                        .description("이메일 중복 여부"),
+                        .description("숙소 이미지 식별자"),
                     fieldWithPath("data.images[].url").type(JsonFieldType.STRING)
-                        .description("이메일 중복 여부"),
+                        .description("숙소 이미지 URL"),
                     fieldWithPath("data.option").type(JsonFieldType.OBJECT)
-                        .description("이메일 중복 여부"),
+                        .description("숙소 옵션"),
                     fieldWithPath("data.option.cooking").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부"),
+                        .description("객실 내 취사 여부"),
                     fieldWithPath("data.option.parking").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부"),
+                        .description("주차 시설 여부"),
                     fieldWithPath("data.option.pickup").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부"),
+                        .description("픽업 여부"),
                     fieldWithPath("data.option.barbecue").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부"),
+                        .description("바베큐 여부"),
                     fieldWithPath("data.option.fitness").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부"),
+                        .description("피트니스 센터 여부"),
                     fieldWithPath("data.option.karaoke").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부"),
+                        .description("노래방 여부"),
                     fieldWithPath("data.option.sauna").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부"),
+                        .description("사우나 여부"),
                     fieldWithPath("data.option.sports").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부"),
+                        .description("스포츠 시설 여부"),
                     fieldWithPath("data.option.seminar").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부"),
+                        .description("세미나실 여부"),
                     fieldWithPath("data.rooms").type(JsonFieldType.ARRAY)
-                        .description("이메일 중복 여부"),
+                        .description("객실 배열"),
                     fieldWithPath("data.rooms[].id").type(JsonFieldType.NUMBER)
-                        .description("이메일 중복 여부"),
+                        .description("객실 식별자"),
                     fieldWithPath("data.rooms[].name").type(JsonFieldType.STRING)
-                        .description("이메일 중복 여부"),
+                        .description("객실 이름"),
                     fieldWithPath("data.rooms[].defaultCapacity").type(JsonFieldType.NUMBER)
-                        .description("이메일 중복 여부"),
+                        .description("객실 기본 인원"),
                     fieldWithPath("data.rooms[].maxCapacity").type(JsonFieldType.NUMBER)
-                        .description("이메일 중복 여부"),
+                        .description("객실 최대 인원"),
                     fieldWithPath("data.rooms[].checkInTime").type(JsonFieldType.STRING)
-                        .description("이메일 중복 여부"),
+                        .description("객실 체크인 시간"),
                     fieldWithPath("data.rooms[].checkOutTime").type(JsonFieldType.STRING)
-                        .description("이메일 중복 여부"),
+                        .description("객실 체크아웃 시간"),
                     fieldWithPath("data.rooms[].price").type(JsonFieldType.NUMBER)
-                        .description("이메일 중복 여부"),
+                        .description("객실 가격"),
                     fieldWithPath("data.rooms[].amount").type(JsonFieldType.NUMBER)
-                        .description("이메일 중복 여부"),
+                        .description("객실 개수"),
                     fieldWithPath("data.rooms[].status").type(JsonFieldType.STRING)
-                        .description("이메일 중복 여부"),
+                        .description("객실 상태"),
                     fieldWithPath("data.rooms[].images").type(JsonFieldType.ARRAY)
-                        .description("이메일 중복 여부"),
+                        .description("객실 이미지 배열"),
                     fieldWithPath("data.rooms[].images[].id").type(JsonFieldType.NUMBER)
-                        .description("이메일 중복 여부"),
+                        .description("객실 이미지 식별자"),
                     fieldWithPath("data.rooms[].images[].url").type(JsonFieldType.STRING)
-                        .description("이메일 중복 여부"),
+                        .description("객실 이미지 URL"),
                     fieldWithPath("data.rooms[].option").type(JsonFieldType.OBJECT)
-                        .description("이메일 중복 여부"),
+                        .description("객실 옵션"),
                     fieldWithPath("data.rooms[].option.airCondition").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부"),
+                        .description("에어컨 여부"),
                     fieldWithPath("data.rooms[].option.tv").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부"),
+                        .description("TV 여부"),
                     fieldWithPath("data.rooms[].option.internet").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부")
+                        .description("인터넷 여부")
                 )
             ));
 
