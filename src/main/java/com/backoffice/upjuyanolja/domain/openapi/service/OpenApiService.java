@@ -4,7 +4,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongAccommodationTypeException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
@@ -23,7 +22,7 @@ import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
@@ -100,7 +99,7 @@ public class OpenApiService {
                     checkStay(stay);
 
                     Accommodation accommodation = saveAccommodation(stay, commonItem, introItem);
-                    saveProductImages(accommodation, images);
+                    saveAccommodationImages(accommodation, images);
                     saveRooms(accommodation, introItem, rooms);
                 } catch (InvalidDataException | WrongAccommodationTypeException e) {
                     log.info("[OpenAPI] {}", e.getMessage());
@@ -225,7 +224,7 @@ public class OpenApiService {
         JSONObject common,
         JSONObject intro
     ) throws JSONException {
-        AccommodationOption productOption = AccommodationOption.builder()
+        AccommodationOption accommodationOption = AccommodationOption.builder()
             .cooking(intro.get("chkcooking").equals("가능"))
             .parking(intro.get("parkinglodging").equals("가능"))
             .pickup(intro.get("pickup").equals("가능"))
@@ -249,13 +248,13 @@ public class OpenApiService {
             .description(common.getString("overview"))
             .thumbnail(base.getString("firstimage"))
             .accommodationImages(new ArrayList<>())
-            .accommodationOption(productOption)
+            .accommodationOption(accommodationOption)
             .build();
 
         return accommodationRepository.save(accommodation);
     }
 
-    private void saveProductImages(Accommodation accommodation, JSONArray images) {
+    private void saveAccommodationImages(Accommodation accommodation, JSONArray images) {
         for (int k = 0; k < images.length(); k++) {
             accommodationImageRepository.save(AccommodationImage.builder()
                 .accommodation(accommodation)
@@ -277,11 +276,10 @@ public class OpenApiService {
             }
 
             if (Integer.parseInt(roomJson.getString("roomcount")) != 0) {
-                for (int j = 0; j < Integer.parseInt(roomJson.getString("roomcount")); j++) {
-                    String[] stringCheckIn = intro.getString("checkintime").split(":|;|시");
-                    String[] stringCheckOut = intro.getString("checkouttime").split(":|;|시");
-                    LocalTime checkIn = getTimeFromString(stringCheckIn);
-                    LocalTime checkOut = getTimeFromString(stringCheckOut);
+                String[] stringCheckIn = intro.getString("checkintime").split(":|;|시");
+                String[] stringCheckOut = intro.getString("checkouttime").split(":|;|시");
+                LocalTime checkIn = getTimeFromString(stringCheckIn);
+                LocalTime checkOut = getTimeFromString(stringCheckOut);
 
                 int offWeekDaysMinFee = Integer.parseInt(
                     roomJson.getString("roomoffseasonminfee1")) == 0 ? DEFAULT_PRICE
@@ -324,15 +322,19 @@ public class OpenApiService {
                     .roomPrice(roomPrice)
                     .roomOption(roomOption)
                     .roomImages(new ArrayList<>())
+                    .amount(Integer.parseInt(roomJson.getString("roomcount")))
+                    .roomStatus(RoomStatus.SELLING)
+                    .roomOption(roomOption)
+                    .roomImages(new ArrayList<>())
                     .build());
 
-                roomStockRepository.save(RoomStock.builder()
-                    .room(room)
-                    .count(Integer.parseInt(roomJson.getString("roomcount")))
-                    .status(RoomStatus.SELLING)
-                    .applyDate(LocalDateTime.now())
-                    .stopDate(null)
-                    .build());
+                for (int k = 0; k < 30; k++) {
+                    roomStockRepository.save(RoomStock.builder()
+                        .room(room)
+                        .count(Integer.parseInt(roomJson.getString("roomcount")))
+                        .date(LocalDate.now().plusDays(k))
+                        .build());
+                }
 
                 for (int k = 1; k <= 5; k++) {
                     if (!roomJson.get("roomimg" + k).equals("")) {
@@ -344,7 +346,6 @@ public class OpenApiService {
                 }
             }
         }
-    }
     }
 
     private boolean isEmpty(JSONObject body) throws JSONException {
@@ -433,4 +434,3 @@ public class OpenApiService {
         }
     }
 }
-

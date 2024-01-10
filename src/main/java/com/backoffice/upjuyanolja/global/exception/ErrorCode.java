@@ -23,6 +23,7 @@ public enum ErrorCode {
 
     // Room
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 3000, "객실 정보를 찾을 수 없습니다."),
+    DUPLICATED_ROOM_NAME(HttpStatus.BAD_REQUEST, 3001, "중복된 객실 이름입니다."),
 
     // Reservation
     RESERVATION_FAILED(HttpStatus.BAD_REQUEST, 4000, "예약할 수 없습니다."),

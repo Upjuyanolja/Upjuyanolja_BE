@@ -2,9 +2,12 @@ package com.backoffice.upjuyanolja.domain.room.entity;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
+import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,7 +28,7 @@ import org.hibernate.annotations.Comment;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class Room {
+public class Room extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,6 +64,15 @@ public class Room {
     @Comment("객실 가격")
     private RoomPrice roomPrice;
 
+    @Column(nullable = false)
+    @Comment("객실 개수")
+    private int amount;
+
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    @Comment("객실 상태")
+    private RoomStatus roomStatus;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 옵션 식별자")
     private RoomOption roomOption;
@@ -75,7 +87,7 @@ public class Room {
 
     @OneToMany(mappedBy = "room",
         cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
-    @Comment("쿠폰-객실 식별자")
+    @Comment("쿠폰 객실 식별자")
     private List<CouponIssuance> couponIssuances = new ArrayList<>();
 
     @Builder
@@ -85,9 +97,11 @@ public class Room {
         String name,
         int standard,
         int capacity,
+        int amount,
         LocalTime checkInTime,
         LocalTime checkOutTime,
         RoomPrice roomPrice,
+        RoomStatus roomStatus,
         RoomOption roomOption,
         List<RoomImage> roomImages,
         List<RoomStock> roomStocks,
@@ -98,6 +112,7 @@ public class Room {
         this.name = name;
         this.standard = standard;
         this.capacity = capacity;
+        this.amount = amount;
         this.checkInTime = checkInTime;
         this.checkOutTime = checkOutTime;
         this.roomPrice = roomPrice;

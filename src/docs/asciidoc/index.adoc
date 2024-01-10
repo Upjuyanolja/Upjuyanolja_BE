@@ -11,13 +11,13 @@
 
 === link:member/member-api.html[회원 API, window=blank]
 
-=== link:product/accommodation-api.html[숙소 API, window=blank]
+=== link:accommodation/accommodation-api.html[숙소 API, window=blank]
 
 === link:room/room-api.html[객실 API, window=blank]
 
 === link:reservation/reservation-api.html[예약 API, window=blank]
 
-=== link:coupon/reservation-api.html[쿠폰 API, window=blank]
+=== link:coupon/coupon-api.html[쿠폰 API, window=blank]
 
 == API Common Response
 

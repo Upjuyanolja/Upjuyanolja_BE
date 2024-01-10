@@ -24,7 +24,7 @@ public class AccommodationCustomRepositoryImpl implements AccommodationCustomRep
 
     ) {
         List<Accommodation> result = getAccommodations(
-            category, type, keyword
+            category, category, keyword
         );
 
         return result;
@@ -36,14 +36,14 @@ public class AccommodationCustomRepositoryImpl implements AccommodationCustomRep
         return query.selectFrom(qAccommodation)
             .leftJoin(qAccommodation)
             .where(
-                eqCategory(category, type),
+                eqCategory(category, category),
                 eqKeyword(keyword)
             )
             .fetch();
     }
 
     private BooleanExpression eqCategory(String category, String type) {
-        if (category.equals("ALL") && type.equals("ALL")) {
+        if (category.equals("ALL") && category.equals("ALL")) {
             return null;
         }
         BooleanExpression categoryExpression = qAccommodation.category.parent.name.eq(category);

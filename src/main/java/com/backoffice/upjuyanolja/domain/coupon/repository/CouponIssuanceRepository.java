@@ -6,8 +6,8 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-public interface CouponRoomRepository extends JpaRepository<CouponIssuance, Long> {
+public interface CouponIssuanceRepository extends JpaRepository<CouponIssuance, Long> {
 
-    @Query("select cr from CouponIssuance cr join cr.room r where r.accommodation.id = :accommodationId")
+    @Query("select ci from CouponIssuance ci join ci.room r where r.accommodation.id = :accommodationId")
     Optional<List<CouponIssuance>> findByAccommodationId(Long accommodationId);
 }

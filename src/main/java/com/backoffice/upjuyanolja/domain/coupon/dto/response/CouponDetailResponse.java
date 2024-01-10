@@ -8,18 +8,16 @@ import lombok.Builder;
 public record CouponDetailResponse(
     Long id,
     String couponName,
-    String startDate,
     String endDate,
     String status,
     int count
 
 ) {
 
-    public static CouponDetailResponse from(Coupon coupon) {
+    public static CouponDetailResponse of(Coupon coupon) {
         return CouponDetailResponse.builder()
             .id(coupon.getId())
-            .couponName(coupon.getCouponPrice() + coupon.getType().getName())
-            .startDate(coupon.getStartDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
+            .couponName(coupon.getDiscount() + coupon.getDiscountType().getTitleName())
             .endDate(coupon.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
             .status(coupon.getCouponStatus().getDescription())
             .count(coupon.getCount())

@@ -20,7 +20,7 @@ public record AccommodationDetailResponse(
     List<RoomResponse> rooms
 ) {
 
-    public static AccommodationDetailResponse from(
+    public static AccommodationDetailResponse of(
         Accommodation accommodation, String mainCoupon, List<RoomResponse> rooms
     ) {
         return AccommodationDetailResponse.builder()
@@ -41,7 +41,7 @@ public record AccommodationDetailResponse(
                     .toList()
             )
             .accommodationOption(
-                AccommodationOptionResponse.from(accommodation.getAccommodationOption())
+                AccommodationOptionResponse.of(accommodation.getAccommodationOption())
             )
             .rooms(rooms)
             .build();

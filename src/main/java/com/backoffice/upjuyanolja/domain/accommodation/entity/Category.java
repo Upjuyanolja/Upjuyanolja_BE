@@ -8,7 +8,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.util.Arrays;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -43,6 +42,10 @@ public class Category {
         this.id = id;
         this.name = name;
         this.parent = parent;
+    }
+
+    public void setSelfAsParent() {
+        this.parent = this;
     }
 
 }

@@ -16,7 +16,7 @@ public record AccommodationOptionResponse(
     boolean seminar
 ) {
 
-    public static AccommodationOptionResponse from(
+    public static AccommodationOptionResponse of(
         AccommodationOption accommodationOption
     ) {
         return AccommodationOptionResponse.builder()

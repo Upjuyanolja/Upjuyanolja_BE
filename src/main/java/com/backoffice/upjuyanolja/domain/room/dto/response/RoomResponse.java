@@ -60,7 +60,7 @@ public record RoomResponse(
                     .map(image -> image.getUrl())
                     .toList()
             )
-            .roomOption(RoomOptionResponse.from(room.getRoomOption()))
+            .roomOption(RoomOptionResponse.of(room.getRoomOption()))
             .build();
     }
 

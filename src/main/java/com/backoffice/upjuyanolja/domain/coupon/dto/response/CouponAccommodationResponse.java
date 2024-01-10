@@ -17,7 +17,7 @@ public record CouponAccommodationResponse(
     public static CouponAccommodationResponse from(Coupon coupon, List<String> rooms) {
         return CouponAccommodationResponse.builder()
             .id(coupon.getId())
-            .couponName(coupon.getCouponPrice() + coupon.getType().getName())
+            .couponName(coupon.getDiscount() + coupon.getDiscountType().getTitleName())
             .endDate(coupon.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
             .rooms(rooms)
             .build();

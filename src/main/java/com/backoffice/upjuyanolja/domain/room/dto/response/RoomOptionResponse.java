@@ -10,7 +10,7 @@ public record RoomOptionResponse(
     boolean internet
 ) {
 
-    public static RoomOptionResponse from(RoomOption roomOption) {
+    public static RoomOptionResponse of(RoomOption roomOption) {
         return RoomOptionResponse.builder()
             .airCondition(roomOption.isAirCondition())
             .tv(roomOption.isTv())
