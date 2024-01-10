@@ -1,8 +1,6 @@
 package com.backoffice.upjuyanolja.domain.member.service;
 
 import static com.backoffice.upjuyanolja.domain.member.entity.Authority.ROLE_ADMIN;
-import static com.backoffice.upjuyanolja.domain.member.entity.Authority.ROLE_USER;
-import static com.backoffice.upjuyanolja.global.exception.ErrorCode.CREATE_VERIFICATION_CODE_ERROR;
 
 import com.backoffice.upjuyanolja.domain.member.dto.request.OwnerEmailRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.OwnerEmailResponse;
@@ -11,8 +9,8 @@ import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.entity.Owner;
 import com.backoffice.upjuyanolja.domain.member.exception.CreateVerificationCodeException;
 import com.backoffice.upjuyanolja.domain.member.exception.IncorrectVerificationCodeException;
-import com.backoffice.upjuyanolja.domain.member.exception.MemberEmailDuplicationException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
+import com.backoffice.upjuyanolja.domain.member.exception.NotRegisteredEmailException;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
 import com.backoffice.upjuyanolja.domain.member.repository.OwnerRepository;
 import com.backoffice.upjuyanolja.global.redis.RedisService;
@@ -48,7 +46,7 @@ public class OwnerAuthService {
 
         //DB에 이미 존재하는 이메일인지 검증 (존재 해야 회원가입 가능)
         if (!ownerRepository.existsByEmail(request.getEmail())) {
-            throw new MemberEmailDuplicationException();
+            throw new NotRegisteredEmailException();
         }
 
         String title = "UPJUYANOLJA 이메일 인증번호";
