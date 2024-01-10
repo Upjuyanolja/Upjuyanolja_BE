@@ -1,37 +1,16 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
-import com.backoffice.upjuyanolja.domain.coupon.exception.WrongCouponInfoException;
-import java.util.function.Function;
 import lombok.Getter;
 
-public class CouponType {
+@Getter
+public enum CouponType {
+    WEEKDAYS("평일"),
+    WEEKENDS("주말"),
+    ALL_DAYS("상시");
 
-    public static final int MIN_WON_DISCOUNT = 1000;
-    public static final int MAX_WON_DISCOUNT = 50000;
+    private final String indicates;
 
-    public static final int MIN_PERCENT_DISCOUNT = 1;
-    public static final int MAX_PERCENT_DISCOUNT = 50;
-
-    @Getter
-    public enum Type {
-        FLAT("원 할인", price -> (price >= MIN_WON_DISCOUNT && price <= MAX_WON_DISCOUNT)
-            && price % 1000 == 0),
-
-        PERCENTAGE("% 할인", price -> (price >= MIN_PERCENT_DISCOUNT && price <= MAX_PERCENT_DISCOUNT)
-            && price % 1 == 0);
-
-        private final String name;
-        private final Function<Integer, Boolean> validateFunction;
-
-        private Type(String name, Function<Integer, Boolean> validateFunction) {
-            this.name = name;
-            this.validateFunction = validateFunction;
-        }
-
-        public void validatePrice(Integer price) {
-            if (!validateFunction.apply(price)) {
-                throw new WrongCouponInfoException();
-            }
-        }
+    CouponType(String indicates) {
+        this.indicates = indicates;
     }
 }
