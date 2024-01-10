@@ -15,6 +15,7 @@ import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.payment.entity.PayMethod;
 import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
 import com.backoffice.upjuyanolja.domain.reservation.controller.ReservationController;
+import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetCanceledResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationRoom;
@@ -85,32 +86,6 @@ class ReservationControllerTest {
             "https://fastly.picsum.photos/id/866/200/300.jpg?hmac=rcadCENKh4rD6MAp6V_ma-AyWv641M4iiOpe1RyFHeI")
         .authority(Authority.ROLE_USER)
         .build();
-  }
-
-  private List<Reservation> createReservations() {
-    List<Reservation> reservations = new ArrayList<>();
-
-    reservations.add(createReservation(
-        LocalDate.now(), LocalDate.now().plusDays(1),
-        0, false, ReservationStatus.RESERVED
-    ));
-
-    reservations.add(createReservation(
-        LocalDate.now(), LocalDate.now().plusDays(1),
-        1000, true, ReservationStatus.RESERVED
-    ));
-
-    reservations.add(createReservation(
-        LocalDate.now(), LocalDate.now().plusDays(1),
-        0, false, ReservationStatus.SERVICED
-    ));
-
-    reservations.add(createReservation(
-        LocalDate.now(), LocalDate.now().plusDays(1),
-        0, false, ReservationStatus.CANCELLED
-    ));
-
-    return reservations;
   }
 
   private Reservation createReservation(
@@ -206,12 +181,22 @@ class ReservationControllerTest {
   class SearchReserved {
 
     @Test
-    @DisplayName("조회된 예약 내역은 예약 완료 / 이용 완료 두 상태 값을 가진다")
+    @DisplayName("예약 내역 조회")
     void getReserved() throws Exception {
       // given
       Pageable pageable = PageRequest.of(0, 3);
 
-      Page<Reservation> mockPage = new PageImpl<>(createReservations(), pageable, 4);
+      List<Reservation> reservations = new ArrayList<>();
+      reservations.add(createReservation(
+          LocalDate.now(), LocalDate.now().plusDays(1),
+          0, false, ReservationStatus.RESERVED
+      ));
+      reservations.add(createReservation(
+          LocalDate.now(), LocalDate.now().plusDays(1),
+          0, false, ReservationStatus.SERVICED
+      ));
+
+      Page<Reservation> mockPage = new PageImpl<>(reservations, pageable, 4);
       GetReservedResponse mockResponse = new GetReservedResponse(mockPage);
 
       when(securityUtil.getCurrentMemberId()).thenReturn(1L);
@@ -258,6 +243,68 @@ class ReservationControllerTest {
           .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].endDate").isString())
           .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].status",
               Matchers.isOneOf("RESERVED", "SERVICED")))
+          .andDo(print());
+    }
+
+    @Test
+    @DisplayName("예약 취소 내역 조회")
+    void getCanceled() throws Exception {
+      // given
+      Pageable pageable = PageRequest.of(0, 3);
+
+      List<Reservation> reservations = new ArrayList<>();
+      reservations.add(createReservation(
+          LocalDate.now(), LocalDate.now().plusDays(1),
+          0, false, ReservationStatus.CANCELLED
+      ));
+
+      Page<Reservation> mockPage = new PageImpl<>(reservations, pageable, 4);
+      GetCanceledResponse mockResponse = new GetCanceledResponse(mockPage);
+
+      when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+      when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+      when(reservationService.getCanceled(any(Member.class), eq(pageable)))
+          .thenReturn(mockResponse);
+
+      // when
+      // then
+      mockMvc.perform(MockMvcRequestBuilders.get("/api/reservations/cancel")
+              .param("page", String.valueOf(pageable.getPageNumber()))
+              .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(MockMvcResultMatchers.status().is(HttpStatus.OK.value()))
+          .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("예약 취소 조회에 성공하였습니다."))
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.pageNum").value(pageable.getPageNumber()))
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.pageSize").value(pageable.getPageSize()))
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.totalPages").isNumber())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.totalElements").isNumber())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.isLast").isBoolean())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations").isArray())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].id").isNumber())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].isCouponUsed").isBoolean())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].roomPrice").isNumber())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].totalAmount").isNumber())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].accommodationId").isNumber())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].accommodationName").isString())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].roomId").isNumber())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].roomName").isString())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].checkInTime").isString())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].checkOutTime").isString())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].defaultCapacity").isNumber())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].maxCapacity").isNumber())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].startDate").isString())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].endDate").isString())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].status").value("CANCELLED"))
           .andDo(print());
     }
   }
