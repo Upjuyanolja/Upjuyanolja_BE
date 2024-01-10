@@ -4,6 +4,8 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -65,6 +67,7 @@ public class Room {
     private int amount;
 
     @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
     @Comment("객실 상태")
     private RoomStatus status;
 
@@ -75,6 +78,10 @@ public class Room {
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 이미지 식별자")
     private List<RoomImage> images = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Comment("객실 재고 식별자")
+    private List<RoomStock> stocks = new ArrayList<>();
 
     @Builder
     public Room(
