@@ -23,7 +23,7 @@ import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
@@ -325,13 +325,13 @@ public class OpenApiService {
                     .images(new ArrayList<>())
                     .build());
 
-                roomStockRepository.save(RoomStock.builder()
-                    .room(room)
-                    .count(Integer.parseInt(roomJson.getString("roomcount")))
-                    .status(RoomStatus.SELLING)
-                    .applyDate(LocalDateTime.now())
-                    .stopDate(null)
-                    .build());
+                for (int k = 0; k < 30; k++) {
+                    roomStockRepository.save(RoomStock.builder()
+                        .room(room)
+                        .count(Integer.parseInt(roomJson.getString("roomcount")))
+                        .date(LocalDate.now().plusDays(k))
+                        .build());
+                }
 
                 for (int k = 1; k <= 5; k++) {
                     if (!roomJson.get("roomimg" + k).equals("")) {
