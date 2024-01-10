@@ -39,6 +39,20 @@ public class ReservationController {
             .build());
   }
 
+  @GetMapping("/cancel")
+  public ResponseEntity<SuccessResponse<GetCanceledResponse>> getCanceled(
+      @PageableDefault(size = 3) Pageable pageable
+  ) {
+    Member currentMember = getCurrentMember();
+    GetCanceledResponse response = reservationService.getCanceled(currentMember, pageable);
+
+    return ApiResponse.success(HttpStatus.OK,
+        SuccessResponse.<GetCanceledResponse>builder()
+            .message("예약 취소 조회에 성공하였습니다.")
+            .data(response)
+            .build());
+  }
+
   private Member getCurrentMember() {
     Long memberId = securityUtil.getCurrentMemberId();
     return memberGetService.getMemberById(memberId);
