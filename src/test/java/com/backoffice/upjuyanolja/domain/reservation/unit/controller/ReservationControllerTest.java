@@ -1,8 +1,9 @@
-package com.backoffice.upjuyanolja.domain.reservation.unit.service;
+package com.backoffice.upjuyanolja.domain.reservation.unit.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
@@ -10,55 +11,67 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationType;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.payment.entity.PayMethod;
 import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
+import com.backoffice.upjuyanolja.domain.reservation.controller.ReservationController;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationRoom;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
-import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRepository;
 import com.backoffice.upjuyanolja.domain.reservation.service.ReservationService;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
+import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import org.apache.catalina.security.SecurityConfig;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-@Transactional
-@DataJpaTest
-@ExtendWith(MockitoExtension.class)
-@DisplayName("ReservationService 단위 테스트")
-class ReservationServiceTest {
+@WebMvcTest(value = ReservationController.class,
+    excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
+        SecurityConfig.class,
+        AuthenticationConfig.class})},
+    excludeAutoConfiguration = SecurityAutoConfiguration.class)
+class ReservationControllerTest {
 
-  @InjectMocks
-  ReservationService reservationService;
+  @Autowired
+  protected MockMvc mockMvc;
 
-  @Mock(lenient = true)
-  ReservationRepository reservationRepository;
+  @MockBean
+  private SecurityUtil securityUtil;
+
+  @MockBean
+  private MemberGetService memberGetService;
+
+  @MockBean
+  private ReservationService reservationService;
 
   static Member mockMember;
-
-  static Page<Reservation> mockReservations;
 
   @BeforeEach
   public void initTest() {
@@ -72,11 +85,9 @@ class ReservationServiceTest {
             "https://fastly.picsum.photos/id/866/200/300.jpg?hmac=rcadCENKh4rD6MAp6V_ma-AyWv641M4iiOpe1RyFHeI")
         .authority(Authority.ROLE_USER)
         .build();
-
-    mockReservations = createReservations();
   }
 
-  private Page<Reservation> createReservations() {
+  private List<Reservation> createReservations() {
     List<Reservation> reservations = new ArrayList<>();
 
     reservations.add(createReservation(
@@ -99,7 +110,7 @@ class ReservationServiceTest {
         0, false, ReservationStatus.CANCELLED
     ));
 
-    return new PageImpl<>(reservations);
+    return reservations;
   }
 
   private Reservation createReservation(
@@ -191,74 +202,63 @@ class ReservationServiceTest {
   }
 
   @Nested
-  @DisplayName("예약 내역 조회 서비스")
-  class SearchReservation {
+  @DisplayName("예약/예약 취소 내역 조회")
+  class SearchReserved {
 
     @Test
-    @DisplayName("getReserved()를 호출 시 DTO 리스트 반환")
-    void statusRESERVEDorSERVICED_call_getReserved() {
+    @DisplayName("조회된 예약 내역은 예약 완료 / 이용 완료 두 상태 값을 가진다")
+    void getReserved() throws Exception {
       // given
-      int pageNumber = 0;
-      int pageSize = 4;
-      Sort sort = Sort.by(Sort.Direction.ASC, "id");
-      Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
+      Pageable pageable = PageRequest.of(0, 3);
 
-      Collection<ReservationStatus> statuses = Arrays.asList(ReservationStatus.RESERVED,
-          ReservationStatus.SERVICED);
-      when(reservationRepository.findAllByMemberAndStatusIn(
-          eq(mockMember),
-          eq(statuses),
-          eq(pageable)
-      )).thenReturn(mockReservations);
+      Page<Reservation> mockPage = new PageImpl<>(createReservations(), pageable, 4);
+      GetReservedResponse mockResponse = new GetReservedResponse(mockPage);
 
-//      verify(reservationRepository).findAllByMemberAndStatusIn(eq(mockMember),
-//          eq(statuses),
-//          eq(pageable));
+      when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+      when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+      when(reservationService.getReserved(any(Member.class), eq(pageable)))
+          .thenReturn(mockResponse);
 
       // when
       // then
-      assertEquals(GetReservedResponse.class,
-          reservationService.getReserved(mockMember, pageable).getClass());
+      mockMvc.perform(MockMvcRequestBuilders.get("/api/reservations")
+              .param("page", String.valueOf(pageable.getPageNumber()))
+              .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(MockMvcResultMatchers.status().is(HttpStatus.OK.value()))
+          .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("예약 조회에 성공하였습니다."))
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.pageNum").value(pageable.getPageNumber()))
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.pageSize").value(pageable.getPageSize()))
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.totalPages").isNumber())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.totalElements").isNumber())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.isLast").isBoolean())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations").isArray())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].id").isNumber())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].isCouponUsed").isBoolean())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].roomPrice").isNumber())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].totalAmount").isNumber())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].accommodationId").isNumber())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].accommodationName").isString())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].roomId").isNumber())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].roomName").isString())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].checkInTime").isString())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].checkOutTime").isString())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].defaultCapacity").isNumber())
+          .andExpect(
+              MockMvcResultMatchers.jsonPath("$.data.reservations[0].maxCapacity").isNumber())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].startDate").isString())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].endDate").isString())
+          .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].status",
+              Matchers.isOneOf("RESERVED", "SERVICED")))
+          .andDo(print());
     }
-
-//    @Test
-//    @DisplayName("getReserved()를 호출 시 숙소 정보를 찾을 수 없는 경우 NoSuchReservationRoomException")
-//    void NoSuchReservationRoomException_noRoom() {
-//      // given
-//      int pageNumber = 0;
-//      int pageSize = 5;
-//      Sort sort = Sort.by(Sort.Direction.ASC, "id");
-//      Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
-//
-//      Reservation wrongReservation = Reservation.builder()
-//          .member(mockMember)
-//          .reservationRoom(null)
-//          .visitorName("홍길동")
-//          .visitorPhone("010-1234-5678")
-//          .payment(null)
-//          .isCouponUsed(false)
-//          .status(ReservationStatus.RESERVED)
-//          .build();
-//
-//      mockReservations.add(wrongReservation);
-//      Collection<ReservationStatus> statuses = Arrays.asList(ReservationStatus.RESERVED,
-//          ReservationStatus.SERVICED);
-//      when(reservationRepository.findAllByMemberAndStatusIn(
-//          eq(mockMember),
-//          eq(statuses),
-//          eq(pageable)
-//      )).thenReturn(mockReservations);
-//
-//      verify(reservationRepository).findAllByMemberAndStatusIn(eq(mockMember),
-//          eq(statuses),
-//          eq(pageable));
-//
-//      // when
-//      // then
-//      Throwable exception = assertThrows(NoSuchReservationRoomException.class, () -> {
-//        reservationService.getReserved(mockMember, pageable);
-//      });
-//      assertEquals("예약 숙소 정보를 찾을 수 없습니다.", exception.getMessage());
-//    }
   }
 }
