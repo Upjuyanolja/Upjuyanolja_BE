@@ -25,7 +25,7 @@ public record RoomResponse(
     RoomOptionResponse roomOption
 ) {
 
-    public static RoomResponse from(
+    public static RoomResponse of(
         Room room, int discountPrice, boolean soldOut,
         CouponRoomDetailResponse couponRoomDetailResponse
 

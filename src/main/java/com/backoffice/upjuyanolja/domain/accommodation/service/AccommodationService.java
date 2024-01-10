@@ -9,10 +9,13 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
@@ -38,6 +41,7 @@ public class AccommodationService {
     private final AccommodationRepository accommodationRepository;
     private final AccommodationImageRepository accommodationImageRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
+    private final CategoryRepository categoryRepository;
     private final CouponService couponService;
     private final RoomService roomService;
     private final MemberGetService memberGetService;
@@ -55,7 +59,7 @@ public class AccommodationService {
                     .filter(
                         accommodation -> !onlyHasCoupon || this.checkCouponAvailability(
                             accommodation))
-                    .map(accommodation -> AccommodationSummaryResponse.from(
+                    .map(accommodation -> AccommodationSummaryResponse.of(
                         accommodation, getLowestPrice(accommodation.getId()),
                         getDiscountPrice(accommodation.getId()),
                         getCouponName(accommodation.getId())
@@ -143,13 +147,19 @@ public class AccommodationService {
     }
 
     private Accommodation saveAccommodation(AccommodationRegisterRequest request) {
+        Category category = getCategoryByName(request.category());
         Accommodation accommodation = accommodationRepository
-            .save(AccommodationRegisterRequest.toEntity(request));
+            .save(AccommodationRegisterRequest.toEntity(request, category));
         List<AccommodationImage> images = AccommodationImageRequest
             .toEntity(accommodation, request.images());
         accommodationImageRepository.saveAll(images);
 
         return accommodation;
+    }
+
+    private Category getCategoryByName(String name){
+        return categoryRepository.findCategoryByName(name)
+            .orElseThrow(()-> new WrongCategoryException());
     }
 
     private void saveOwnership(Member member, Accommodation accommodation) {

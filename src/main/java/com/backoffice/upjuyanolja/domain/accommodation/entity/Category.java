@@ -44,8 +44,4 @@ public class Category {
         this.parent = parent;
     }
 
-    public void setSelfAsParent() {
-        this.parent = this;
-    }
-
 }

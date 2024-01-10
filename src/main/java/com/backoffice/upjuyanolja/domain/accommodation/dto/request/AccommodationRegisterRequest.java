@@ -26,7 +26,7 @@ public record AccommodationRegisterRequest(
     String description,
 
     @NotBlank(message = "숙소 유형을 입력하세요.")
-    Category category,
+    String category,
 
     @NotBlank(message = "숙소 대표 이미지를 입력하세요.")
     String thumbnail,
@@ -41,14 +41,17 @@ public record AccommodationRegisterRequest(
     List<RoomRegisterRequest> rooms
 ) {
 
-    public static Accommodation toEntity(AccommodationRegisterRequest request) {
+    public static Accommodation toEntity(
+        AccommodationRegisterRequest request,
+        Category category
+    ) {
         return Accommodation.builder()
             .name(request.name())
             .address(Address.builder()
                 .shortAddress(request.address())
                 .detailAddress(request.detailAddress())
                 .build())
-            .category(request.category())
+            .category(category)
             .description(request.description())
             .thumbnail(request.thumbnail())
             .accommodationImages(new ArrayList<>())

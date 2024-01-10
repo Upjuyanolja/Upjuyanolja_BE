@@ -16,7 +16,7 @@ public record AccommodationSummaryResponse(
 
 ) {
 
-    public static AccommodationSummaryResponse from(
+    public static AccommodationSummaryResponse of(
         Accommodation accommodation, int lowestPrice,
         int discountPrice, String couponName
     ) {

@@ -116,6 +116,7 @@ public class Room extends BaseTime {
         this.checkInTime = checkInTime;
         this.checkOutTime = checkOutTime;
         this.roomPrice = roomPrice;
+        this.roomStatus = roomStatus;
         this.roomOption = roomOption;
         this.roomImages = roomImages;
         this.roomStocks = roomStocks;

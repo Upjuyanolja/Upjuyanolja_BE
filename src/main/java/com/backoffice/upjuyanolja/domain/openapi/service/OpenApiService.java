@@ -4,7 +4,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
-import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongAccommodationTypeException;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.openapi.exception.InvalidDataException;
@@ -101,7 +101,7 @@ public class OpenApiService {
                     Accommodation accommodation = saveAccommodation(stay, commonItem, introItem);
                     saveAccommodationImages(accommodation, images);
                     saveRooms(accommodation, introItem, rooms);
-                } catch (InvalidDataException | WrongAccommodationTypeException e) {
+                } catch (InvalidDataException | WrongCategoryException e) {
                     log.info("[OpenAPI] {}", e.getMessage());
                 }
             }
