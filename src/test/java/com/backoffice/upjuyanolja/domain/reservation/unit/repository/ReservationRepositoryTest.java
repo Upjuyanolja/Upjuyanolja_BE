@@ -30,7 +30,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -39,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -221,7 +221,7 @@ class ReservationRepositoryTest {
       Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
 
       // when
-      List<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
+      Page<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
           member,
           Arrays.asList(ReservationStatus.RESERVED),
           pageable
@@ -245,7 +245,7 @@ class ReservationRepositoryTest {
       Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
 
       // when
-      List<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
+      Page<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
           member,
           Arrays.asList(ReservationStatus.RESERVED, ReservationStatus.SERVICED),
           pageable
@@ -270,7 +270,7 @@ class ReservationRepositoryTest {
       Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
 
       // when
-      List<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
+      Page<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
           member,
           Arrays.asList(ReservationStatus.CANCELLED),
           pageable
