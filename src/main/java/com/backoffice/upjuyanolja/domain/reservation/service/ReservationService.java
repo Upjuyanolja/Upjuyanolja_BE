@@ -3,11 +3,13 @@ package com.backoffice.upjuyanolja.domain.reservation.service;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.reservation.dto.request.CreateReservationRequest;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.CreateReservationResponse;
+import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetCanceledResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
 import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRepository;
 import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,5 +33,14 @@ public class ReservationService {
         pageable
     );
     return new GetReservedResponse(reservations);
+  }
+
+  public GetCanceledResponse getCanceled(Member currentMember, Pageable pageable) {
+    Page<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
+        currentMember,
+        List.of(ReservationStatus.CANCELLED),
+        pageable
+    );
+    return new GetCanceledResponse(reservations);
   }
 }
