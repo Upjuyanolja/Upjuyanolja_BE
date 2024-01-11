@@ -3,9 +3,8 @@ package com.backoffice.upjuyanolja.domain.openapi.service;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationType;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
-import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongAccommodationTypeException;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.openapi.exception.InvalidDataException;
@@ -23,11 +22,12 @@ import jakarta.annotation.PostConstruct;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -99,9 +99,9 @@ public class OpenApiService {
                     checkStay(stay);
 
                     Accommodation accommodation = saveAccommodation(stay, commonItem, introItem);
-                    saveProductImages(accommodation, images);
+                    saveAccommodationImages(accommodation, images);
                     saveRooms(accommodation, introItem, rooms);
-                } catch (InvalidDataException | WrongAccommodationTypeException e) {
+                } catch (InvalidDataException | WrongCategoryException e) {
                     log.info("[OpenAPI] {}", e.getMessage());
                 }
             }
@@ -224,7 +224,7 @@ public class OpenApiService {
         JSONObject common,
         JSONObject intro
     ) throws JSONException {
-        AccommodationOption productOption = AccommodationOption.builder()
+        AccommodationOption option = AccommodationOption.builder()
             .cooking(intro.get("chkcooking").equals("가능"))
             .parking(intro.get("parkinglodging").equals("가능"))
             .pickup(intro.get("pickup").equals("가능"))
@@ -241,21 +241,18 @@ public class OpenApiService {
                 Address.builder()
                     .address(base.getString("addr1"))
                     .detailAddress(base.getString("addr2"))
-                    .mapX(base.getDouble("mapx"))
-                    .mapY(base.getDouble("mapy"))
                     .build()
             )
-            .type(AccommodationType.getByCode(base.getString("cat3")))
             .description(common.getString("overview"))
             .thumbnail(base.getString("firstimage"))
             .images(new ArrayList<>())
-            .productOption(productOption)
+            .option(option)
             .build();
 
         return accommodationRepository.save(accommodation);
     }
 
-    private void saveProductImages(Accommodation accommodation, JSONArray images) {
+    private void saveAccommodationImages(Accommodation accommodation, JSONArray images) {
         for (int k = 0; k < images.length(); k++) {
             accommodationImageRepository.save(AccommodationImage.builder()
                 .accommodation(accommodation)
@@ -299,13 +296,13 @@ public class OpenApiService {
                     : Integer.parseInt(
                         roomJson.getString("roompeakseasonminfee2")), peakWeekDaysMinFee);
 
-                RoomPrice roomPrice = RoomPrice.builder()
+                RoomPrice price = RoomPrice.builder()
                     .offWeekDaysMinFee(offWeekDaysMinFee)
                     .offWeekendMinFee(offWeekendMinFee)
                     .peakWeekDaysMinFee(peakWeekDaysMinFee)
                     .peakWeekendMinFee(peakWeekendMinFee)
                     .build();
-                RoomOption roomOption = RoomOption.builder()
+                RoomOption option = RoomOption.builder()
                     .airCondition(roomJson.get("roomaircondition").equals("Y"))
                     .tv(roomJson.get("roomtv").equals("Y"))
                     .internet(roomJson.get("roominternet").equals("Y"))
@@ -318,20 +315,22 @@ public class OpenApiService {
                         roomJson.getInt("roombasecount"))
                     .capacity(Math.max(roomJson.getInt("roombasecount"),
                         roomJson.getInt("roommaxcount")))
-                    .checkIn(checkIn)
-                    .checkOut(checkOut)
-                    .price(roomPrice)
-                    .roomOption(roomOption)
+                    .checkInTime(checkIn)
+                    .checkOutTime(checkOut)
+                    .price(price)
+                    .option(option)
                     .images(new ArrayList<>())
+                    .amount(Integer.parseInt(roomJson.getString("roomcount")))
+                    .status(RoomStatus.SELLING)
                     .build());
 
-                roomStockRepository.save(RoomStock.builder()
-                    .room(room)
-                    .count(Integer.parseInt(roomJson.getString("roomcount")))
-                    .status(RoomStatus.SELLING)
-                    .applyDate(LocalDateTime.now())
-                    .stopDate(null)
-                    .build());
+                for (int k = 0; k < 30; k++) {
+                    roomStockRepository.save(RoomStock.builder()
+                        .room(room)
+                        .count(Integer.parseInt(roomJson.getString("roomcount")))
+                        .date(LocalDate.now().plusDays(k))
+                        .build());
+                }
 
                 for (int k = 1; k <= 5; k++) {
                     if (!roomJson.get("roomimg" + k).equals("")) {

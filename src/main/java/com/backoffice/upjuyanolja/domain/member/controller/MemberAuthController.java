@@ -10,8 +10,9 @@ import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.global.common.ApiResponse;
-import com.backoffice.upjuyanolja.global.common.ApiResponse.SuccessResponse;
+import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
+import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
+import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ public class MemberAuthController {
 
     private final MemberAuthService memberAuthService;
     private final MemberGetService memberGetService;
+    private final SecurityUtil securityUtill;
 
     @PostMapping("members/signup")
     public ResponseEntity<SuccessResponse<SignUpResponse>> signup(
@@ -63,13 +65,11 @@ public class MemberAuthController {
                 .build());
     }
 
-    @GetMapping("members/{memberId}")
-    public ResponseEntity<SuccessResponse<MemberInfoResponse>> getMember(
-        // TODO 시큐리티 로그인 적용 이후 토큰에서 memberId 받아오도록 수정
-        @PathVariable(name = "memberId") long memberId) {
+    @GetMapping("members")
+    public ResponseEntity<SuccessResponse<MemberInfoResponse>> getMember() {
         return ApiResponse.success(HttpStatus.OK, SuccessResponse.<MemberInfoResponse>builder()
             .message("성공적으로 회원 정보를 조회했습니다.")
-            .data(memberGetService.getMember(memberId))
+            .data(memberGetService.getMember(securityUtill.getCurrentMemberId()))
             .build());
     }
 

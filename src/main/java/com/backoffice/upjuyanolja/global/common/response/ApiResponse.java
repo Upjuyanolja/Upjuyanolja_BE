@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.global.common;
+package com.backoffice.upjuyanolja.global.common.response;
 
 import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
 import com.backoffice.upjuyanolja.global.exception.ErrorCode;

@@ -1,7 +1,6 @@
-package com.backoffice.upjuyanolja.domain.coupon.entity;
+package com.backoffice.upjuyanolja.domain.accommodation.entity;
 
-import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.global.common.BaseTime;
+import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -18,31 +17,31 @@ import org.hibernate.annotations.Comment;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class CouponRoom extends BaseTime {
+public class AccommodationOwnership {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Comment("쿠폰-객실 식별자")
+    @Comment("숙소 소유권 식별자")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id")
-    @Comment("쿠폰 식별자")
-    private Coupon coupon;
+    @JoinColumn(name = "accommodation_id")
+    @Comment("숙소 식별자")
+    private Accommodation accommodation;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
-    @Comment("객실 식별자")
-    private Room room;
+    @JoinColumn(name = "member_id")
+    @Comment("회원 식별자")
+    private Member member;
 
     @Builder
-    public CouponRoom(
+    public AccommodationOwnership(
         Long id,
-        Coupon coupon,
-        Room room
+        Accommodation accommodation,
+        Member member
     ) {
         this.id = id;
-        this.coupon = coupon;
-        this.room = room;
+        this.accommodation = accommodation;
+        this.member = member;
     }
 }

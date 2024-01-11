@@ -18,11 +18,11 @@ public enum ErrorCode {
     // Accommodation
     ACCOMMODATION_NOT_FOUND(HttpStatus.NOT_FOUND, 2000, "숙소 정보를 찾을 수 없습니다."),
     RESERVATION_NOT_POSSIBLE(HttpStatus.BAD_REQUEST, 2001, "예약이 불가능한 방입니다."),
-    WRONG_ACCOMMODATION_TYPE(HttpStatus.BAD_REQUEST, 2002, "알맞지 않은 숙소 종류입니다."),
-    WRONG_CATEGORY(HttpStatus.BAD_REQUEST, 2003, "알맞지 않은 카테고리입니다."),
+    WRONG_CATEGORY(HttpStatus.BAD_REQUEST, 2002, "알맞지 않은 카테고리입니다."),
 
     // Room
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 3000, "객실 정보를 찾을 수 없습니다."),
+    DUPLICATED_ROOM_NAME(HttpStatus.BAD_REQUEST, 3001, "중복된 객실 이름입니다."),
 
     // Reservation
     RESERVATION_FAILED(HttpStatus.BAD_REQUEST, 4000, "예약할 수 없습니다."),
@@ -33,8 +33,14 @@ public enum ErrorCode {
     INVALID_VISITOR_PHONE_NUMBER(HttpStatus.BAD_REQUEST, 4005, "유효하지 않는 방문자 전화번호입니다."),
 
     // Coupon
-    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, 5000, "쿠폰 정보를 찾을 수 없습니다."),
-    WRONG_COUPON_INFO(HttpStatus.BAD_REQUEST, 5001, "쿠폰 정보가 올바르지 않습니다."),
+    WRONG_COUPON_INFO(HttpStatus.BAD_REQUEST, 5000, "쿠폰 정보가 올바르지 않습니다."),
+    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, 5001, "쿠폰 정보를 찾을 수 없습니다."),
+
+    // Point
+    TOSS_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6000, "토스 API 요청에 실패 했습니다."),
+    PAYMENT_AUTHORIZATION_FAILED(HttpStatus.BAD_REQUEST, 6001, "결제 승인에 실패 했습니다."),
+    WRONG_REFUND_INFO(HttpStatus.BAD_REQUEST, 6002, "포인트 환불 요청 정보가 잘못 됐습니다."),
+    POINT_NOT_FOUND(HttpStatus.NOT_FOUND, 6003, "포인트 정보를 찾을 수 없습니다."),
 
     // OpenAPI
     OPEN_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 8000, "오픈 API를 이용하는 중 에러가 발생했습니다."),

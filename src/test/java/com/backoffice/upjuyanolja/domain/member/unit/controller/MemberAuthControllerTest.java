@@ -15,11 +15,13 @@ import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
+import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.catalina.security.SecurityConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -46,6 +48,9 @@ public class MemberAuthControllerTest {
 
     @MockBean
     private MemberGetService memberGetService;
+
+    @MockBean
+    private SecurityUtil securityUtil;
 
     @Nested
     @DisplayName("checkEmailDuplicate()는")
@@ -113,11 +118,12 @@ public class MemberAuthControllerTest {
                 .phoneNumber("010-1234-1234")
                 .build();
 
+            given(securityUtil.getCurrentMemberId()).willReturn(1L);
             given(memberGetService.getMember(any(Long.TYPE)))
                 .willReturn(memberInfoResponse);
 
             // when then
-            mockMvc.perform(get("/api/auth/members/{memberId}", 1L))
+            mockMvc.perform(get("/api/auth/members"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").isString())
                 .andExpect(jsonPath("$.data").isMap())
