@@ -85,10 +85,6 @@ public class Room extends BaseTime {
     @Comment("객실 재고 식별자")
     private List<RoomStock> stocks = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("객실 재고 식별자")
-    private List<RoomStock> roomStocks = new ArrayList<>();
-
     @OneToMany(mappedBy = "room",
         cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
     @Comment("쿠폰 객실 식별자")
