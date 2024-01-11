@@ -5,11 +5,15 @@ import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.exception.DuplicateRoomNameException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
+import com.backoffice.upjuyanolja.domain.room.exception.RoomStockNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +23,17 @@ import org.springframework.stereotype.Service;
 public class RoomService {
 
     private final RoomRepository roomRepository;
+    private final RoomStockRepository roomStockRepository;
     private final RoomImageRepository roomImageRepository;
 
     public Room findRoomById(Long roomId) {
         return roomRepository.findById(roomId)
             .orElseThrow(() -> new RoomNotFoundException());
+    }
+
+    public List<RoomStock> findStockByRoom(Room room){
+        return roomStockRepository.findByRoom(room)
+            .orElseThrow(()->new RoomStockNotFoundException());
     }
 
     public RoomInfoResponse saveRoom(Accommodation accommodation, RoomRegisterRequest request) {
