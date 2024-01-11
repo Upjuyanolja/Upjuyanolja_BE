@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.coupon.dto.response;
 
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
+import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import java.time.format.DateTimeFormatter;
 import lombok.Builder;
 
@@ -17,7 +18,7 @@ public record CouponDetailResponse(
     public static CouponDetailResponse of(Coupon coupon) {
         return CouponDetailResponse.builder()
             .id(coupon.getId())
-            .couponName(coupon.getDiscount() + coupon.getDiscountType().getTitleName())
+            .couponName(DiscountType.makeTitleName(coupon.getDiscountType(), coupon.getDiscount()))
             .endDate(coupon.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
             .status(coupon.getCouponStatus().getDescription())
             .count(coupon.getCount())

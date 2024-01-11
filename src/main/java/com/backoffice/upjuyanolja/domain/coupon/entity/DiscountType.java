@@ -57,7 +57,7 @@ public enum DiscountType {
         },
         (price, discount) -> {
             int p = price.intValue();
-            double d = 1 - (discount.intValue() / 100.0);
+            double d = 1 - (discount.intValue() * 0.01);
             return (int) (p * d);
         }
     );

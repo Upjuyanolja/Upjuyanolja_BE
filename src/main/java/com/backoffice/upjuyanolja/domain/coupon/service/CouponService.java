@@ -48,7 +48,8 @@ public class CouponService {
 
     private List<CouponIssuance> getCouponRoomsByAccommodation(Long accommodationId) {
         List<CouponIssuance> couponIssuances =
-            couponIssuanceRepository.findByAccommodationId(accommodationId).orElseGet(ArrayList::new);
+            couponIssuanceRepository.findByAccommodationId(accommodationId)
+                .orElseGet(ArrayList::new);
         return couponIssuances;
     }
 
@@ -92,7 +93,9 @@ public class CouponService {
             int price = room.getPrice().getOffWeekDaysMinFee();
 
             for (Coupon coupon : roomCouponEntry.getValue()) {
-                responses.add(CouponRoomResponse.from(coupon, price - coupon.getDiscount()));
+                responses.add(CouponRoomResponse.from(coupon,
+                    DiscountType.getPaymentPrice(DiscountType.FLAT, price, coupon.getDiscount()))
+                );
             }
 
             result.add(CouponRoomDetailResponse.from(room.getName(), "FLAT", responses));
@@ -101,7 +104,7 @@ public class CouponService {
     }
 
     @Transactional(readOnly = true)
-    public List<CouponRoomDetailResponse> getSortedPercentageCouponInAccommodation(
+    public List<CouponRoomDetailResponse> getSortedRateCouponInAccommodation(
         Long accommodationId
     ) {
         List<CouponRoomDetailResponse> result = new ArrayList<>();
@@ -116,16 +119,16 @@ public class CouponService {
         for (Entry<Long, TreeSet<Coupon>> roomCouponEntry : couponRoomMap.entrySet()) {
             Room room = roomService.findRoomById(roomCouponEntry.getKey());
             List<CouponRoomResponse> responses = new ArrayList<>();
-            int roomPrice = room.getPrice().getOffWeekDaysMinFee();
+            int price = room.getPrice().getOffWeekDaysMinFee();
 
             for (Coupon coupon : roomCouponEntry.getValue()) {
-                responses.add(CouponRoomResponse.from(
-                        coupon, (int) Math.round((1 - 0.01 * coupon.getDiscount()) * roomPrice)
+                responses.add(CouponRoomResponse.from(coupon,
+                        DiscountType.getPaymentPrice(DiscountType.RATE, price, coupon.getDiscount())
                     )
                 );
             }
 
-            result.add(CouponRoomDetailResponse.from(room.getName(), "PERCENTAGE", responses));
+            result.add(CouponRoomDetailResponse.from(room.getName(), "RATE", responses));
         }
         return result;
     }
