@@ -15,14 +15,13 @@ import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryEx
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
-import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
+import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.service.RoomService;
@@ -96,52 +95,49 @@ public class AccommodationService {
 
     private int getDiscountPrice(Long accommodationId) {
         return getDiscountInfo(accommodationId)
-            .map(couponRoom -> couponRoom.price())
+            .map(couponIssuance -> couponIssuance.price())
             .orElse(getLowestPrice(accommodationId));
     }
 
     private String getCouponName(Long accommodationId) {
         return getDiscountInfo(accommodationId)
-            .map(couponRoom -> couponRoom.name())
+            .map(couponIssuance -> couponIssuance.name())
             .orElse("");
     }
 
-    private String getMainCouponName(Long accommodationId) {
-        List<CouponRoomResponse> flatResponses =
-            couponService.getSortedFlatCouponInAccommodation(accommodationId);
-        List<CouponRoomResponse> percentageResponses =
-            couponService.getSortedPercentageCouponInAccommodation(accommodationId);
+    private Optional<CouponDetailResponse> getDiscountInfo(Long accommodationId) {
+        List<CouponDetailResponse> responses = new ArrayList<>();
+        responses.addAll(couponService.getSortedFlatCouponInAccommodation(accommodationId));
+        responses.addAll(couponService.getSortedRateCouponInAccommodation(accommodationId));
 
-        if (flatResponses.isEmpty() && percentageResponses.isEmpty()) {
+        return responses.stream()
+            .min(Comparator.comparingInt(CouponDetailResponse::price));
+    }
+
+    private String getMainCouponName(Long accommodationId) {
+        CouponDetailResponse flatResponse =
+            couponService.getSortedFlatCouponInAccommodation(accommodationId).stream()
+                .findFirst()
+                .orElse(null);
+
+        CouponDetailResponse rateResponse =
+            couponService.getSortedRateCouponInAccommodation(accommodationId).stream()
+                .findFirst()
+                .orElse(null);
+
+        if (Objects.isNull(flatResponse) && Objects.isNull(rateResponse)) {
             return "";
         }
 
-        if (!flatResponses.isEmpty() && !percentageResponses.isEmpty()) {
-            return flatResponses.get(0).name() + " or " + percentageResponses.get(0).name();
+        if (Objects.isNull(flatResponse)) {
+            return rateResponse.name();
         }
 
-        return flatResponses.isEmpty() ? percentageResponses.get(0).name()
-            : flatResponses.get(0).name();
-    }
-
-    private Optional<CouponRoomResponse> getDiscountInfo(Long accommodationId) {
-        List<CouponRoomResponse> flatResponses =
-            couponService.getSortedFlatCouponInAccommodation(accommodationId);
-        List<CouponRoomResponse> rateResponse =
-            couponService.getSortedRateCouponInAccommodation(accommodationId);
-
-        if (!flatResponses.isEmpty() && !rateResponse.isEmpty()) {
-            int flatPrice = flatResponses.get(0).price();
-            int percentPrice = rateResponse.get(0).price();
-
-            CouponRoomResponse bestCoupon =
-                flatPrice <= percentPrice ? flatResponses.get(0) : rateResponse.get(0);
-
-            return Optional.of(bestCoupon);
-
-        } else {
-            return Optional.empty();
+        if (Objects.isNull(rateResponse)) {
+            return rateResponse.name();
         }
+
+        return flatResponse.name() + " or " + rateResponse.name();
 
     }
 
@@ -153,14 +149,17 @@ public class AccommodationService {
             accommodationRepository.findById(accommodationId)
                 .orElseThrow(() -> new AccommodationNotFoundException());
 
-        List<Room> filterRoom = filterRoomsByDate(accommodation.getRooms(), startDate, endDate);
+        List<Room> filterRooms = getFilteredRoomsByDate(
+            accommodation.getRooms(), startDate, endDate
+        );
 
         return AccommodationDetailResponse.of(accommodation,
             getMainCouponName(accommodationId),
-            filterRoom.stream()
+            accommodation.getRooms().stream()
                 .map(room -> RoomResponse.of(
-                        room, couponService.getSortedTotalCouponInRoom(room).get(0).price(),
-                        checkSoldOut(filterRoom, room),
+                        room, getDiscountPrice(room),
+                        checkSoldOut(filterRooms, room),
+                        getMinFilteredRoomStock(room, startDate, endDate),
                         couponService.getSortedTotalCouponInRoom(room)
                     )
                 )
@@ -168,33 +167,48 @@ public class AccommodationService {
         );
     }
 
-    private Accommodation getAccommodationById(long accommodationId) {
-        return accommodationRepository.findById(accommodationId)
-            .orElseThrow(AccommodationNotFoundException::new);
+    private int getDiscountPrice(Room room) {
+        return couponService.getSortedTotalCouponInRoom(room)
+            .stream()
+            .findFirst()
+            .map(coupon -> coupon.price())
+            .orElse(room.getPrice().getOffWeekDaysMinFee());
     }
 
-    private List<Room> filterRoomsByDate(
+    private List<Room> getFilteredRoomsByDate(
         List<Room> rooms, LocalDate startDate, LocalDate endDate
     ) {
         List<Room> filterRoom = new ArrayList<>();
 
         for (Room room : rooms) {
-            List<RoomStock> filteredStocks = room.getRoomStocks().stream()
-                .filter(
-                    stock ->
-                        !(stock.getApplyDate().isBefore(startDate)) &&
-                            (
-                                !(stock.getStopDate().isBefore(endDate)) ||
-                                    Objects.isNull(stock.getStopDate())
-                            )
-                            && stock.getCount() != 0
-                )
-                .toList();
+            List<RoomStock> filteredStocks = getFilteredRoomStocksByDate(room, startDate, endDate);
             if (!filteredStocks.isEmpty()) {
                 filterRoom.add(room);
             }
         }
         return filterRoom;
+    }
+
+    private List<RoomStock> getFilteredRoomStocksByDate(
+        Room room, LocalDate startDate, LocalDate endDate
+    ) {
+        return roomService.findStockByRoom(room).stream()
+            .filter(
+                stock ->
+                    !(stock.getDate().isBefore(startDate)) &&
+                        !(stock.getDate().isBefore(endDate)) &&
+                        stock.getCount() != 0
+            )
+            .toList();
+    }
+
+    private int getMinFilteredRoomStock(
+        Room room, LocalDate startDate, LocalDate endDate
+    ) {
+        return getFilteredRoomStocksByDate(room, startDate, endDate).stream()
+            .mapToInt(RoomStock::getCount)
+            .min()
+            .orElse(0);
     }
 
     private boolean checkSoldOut(List<Room> rooms, Room room) {
@@ -214,6 +228,11 @@ public class AccommodationService {
         return AccommodationInfoResponse.of(accommodation);
     }
 
+    private Accommodation getAccommodationById(long accommodationId) {
+        return accommodationRepository.findById(accommodationId)
+            .orElseThrow(AccommodationNotFoundException::new);
+    }
+
     private Accommodation saveAccommodation(AccommodationRegisterRequest request) {
         Category category = getCategoryByName(request.category());
         Accommodation accommodation = accommodationRepository
@@ -225,9 +244,9 @@ public class AccommodationService {
         return accommodation;
     }
 
-    private Category getCategoryByName(String name){
+    private Category getCategoryByName(String name) {
         return categoryRepository.findCategoryByName(name)
-            .orElseThrow(()-> new WrongCategoryException());
+            .orElseThrow(() -> new WrongCategoryException());
     }
 
     private void saveOwnership(Member member, Accommodation accommodation) {
