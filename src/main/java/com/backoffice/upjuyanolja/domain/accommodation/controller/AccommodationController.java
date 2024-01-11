@@ -98,14 +98,14 @@ public class AccommodationController {
     }
 
     @GetMapping("/backoffice")
-    public ResponseEntity<SuccessResponse<AccommodationOwnershipResponse>> getAccommodationNames() {
+    public ResponseEntity<SuccessResponse<AccommodationOwnershipResponse>> getAccommodationOwnership() {
         log.info("GET /api/accommodations/backoffice");
 
         return ApiResponse.success(HttpStatus.OK,
             SuccessResponse.<AccommodationOwnershipResponse>builder()
                 .message("성공적으로 보유 숙소 목록을 조회했습니다.")
                 .data(accommodationCommandUseCase
-                    .getAccommodationNames(securityUtil.getCurrentMemberId()))
+                    .getAccommodationOwnership(securityUtil.getCurrentMemberId()))
                 .build()
         );
     }

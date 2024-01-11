@@ -29,5 +29,5 @@ public interface AccommodationCommandUseCase {
         LocalDate endDate
     );
 
-    AccommodationOwnershipResponse getAccommodationNames(long memberId);
+    AccommodationOwnershipResponse getAccommodationOwnership(long memberId);
 }

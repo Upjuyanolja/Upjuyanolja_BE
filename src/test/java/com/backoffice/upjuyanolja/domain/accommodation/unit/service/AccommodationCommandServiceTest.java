@@ -369,7 +369,7 @@ public class AccommodationCommandServiceTest {
 
             // when
             AccommodationOwnershipResponse result = accommodationCommandService
-                .getAccommodationNames(1L);
+                .getAccommodationOwnership(1L);
 
             // then
             assertThat(result).isNotNull();

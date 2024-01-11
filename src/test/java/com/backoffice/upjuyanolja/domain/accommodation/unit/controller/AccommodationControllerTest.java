@@ -226,7 +226,7 @@ public class AccommodationControllerTest {
                 .build();
 
             given(securityUtil.getCurrentMemberId()).willReturn(1L);
-            given(accommodationCommandService.getAccommodationNames(any(Long.TYPE)))
+            given(accommodationCommandService.getAccommodationOwnership(any(Long.TYPE)))
                 .willReturn(accommodationOwnershipResponse);
 
             // when then
@@ -239,7 +239,7 @@ public class AccommodationControllerTest {
                 .andExpect(jsonPath("$.data.accommodations[0].name").isString())
                 .andDo(print());
 
-            verify(accommodationCommandService, times(1)).getAccommodationNames(any(Long.TYPE));
+            verify(accommodationCommandService, times(1)).getAccommodationOwnership(any(Long.TYPE));
         }
     }
 }

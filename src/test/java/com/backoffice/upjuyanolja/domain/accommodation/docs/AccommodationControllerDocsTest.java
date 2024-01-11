@@ -368,7 +368,7 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
             .build();
 
         given(securityUtil.getCurrentMemberId()).willReturn(1L);
-        given(accommodationCommandService.getAccommodationNames(any(Long.TYPE)))
+        given(accommodationCommandService.getAccommodationOwnership(any(Long.TYPE)))
             .willReturn(accommodationOwnershipResponse);
 
         // when then
@@ -386,6 +386,6 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
                 )
             ));
 
-        verify(accommodationCommandService, times(1)).getAccommodationNames(any(Long.TYPE));
+        verify(accommodationCommandService, times(1)).getAccommodationOwnership(any(Long.TYPE));
     }
 }

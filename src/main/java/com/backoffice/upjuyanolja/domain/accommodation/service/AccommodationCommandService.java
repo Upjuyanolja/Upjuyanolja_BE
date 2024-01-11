@@ -88,7 +88,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
     @Override
     @Transactional(readOnly = true)
-    public AccommodationOwnershipResponse getAccommodationNames(long memberId) {
+    public AccommodationOwnershipResponse getAccommodationOwnership(long memberId) {
         Member member = memberGetService.getMemberById(memberId);
         List<AccommodationOwnership> ownerships = accommodationQueryUseCase
             .getOwnershipByMember(member);
