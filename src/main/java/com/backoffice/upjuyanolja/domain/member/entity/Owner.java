@@ -1,8 +1,7 @@
 package com.backoffice.upjuyanolja.domain.member.entity;
 
 import static com.backoffice.upjuyanolja.domain.member.entity.Authority.ROLE_ADMIN;
-
-import com.backoffice.upjuyanolja.global.common.BaseTime;
+import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
