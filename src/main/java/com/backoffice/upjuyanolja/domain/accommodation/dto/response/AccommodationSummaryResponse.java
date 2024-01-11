@@ -7,7 +7,7 @@ import lombok.Builder;
 public record AccommodationSummaryResponse(
     Long id,
     String name,
-    String shortAddress,
+    String address,
     String category,
     int lowestPrice,
     int discountPrice,
@@ -16,14 +16,14 @@ public record AccommodationSummaryResponse(
 
 ) {
 
-    public static AccommodationSummaryResponse from(
+    public static AccommodationSummaryResponse of(
         Accommodation accommodation, int lowestPrice,
         int discountPrice, String couponName
     ) {
         return AccommodationSummaryResponse.builder()
             .id(accommodation.getId())
             .name(accommodation.getName())
-            .shortAddress(accommodation.getAddress().getShortAddress())
+            .address(accommodation.getAddress().getAddress())
             .category(accommodation.getCategory().getName())
             .lowestPrice(lowestPrice)
             .discountPrice(discountPrice)

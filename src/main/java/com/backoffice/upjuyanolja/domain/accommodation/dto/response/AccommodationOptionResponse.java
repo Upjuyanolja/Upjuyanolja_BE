@@ -16,19 +16,19 @@ public record AccommodationOptionResponse(
     boolean seminar
 ) {
 
-    public static AccommodationOptionResponse from(
-        AccommodationOption accommodationOption
+    public static AccommodationOptionResponse of(
+        AccommodationOption option
     ) {
         return AccommodationOptionResponse.builder()
-            .cooking(accommodationOption.isCooking())
-            .parking(accommodationOption.isParking())
-            .pickup(accommodationOption.isPickup())
-            .barbecue(accommodationOption.isBarbecue())
-            .fitness(accommodationOption.isFitness())
-            .karaoke(accommodationOption.isKaraoke())
-            .sauna(accommodationOption.isSauna())
-            .sports(accommodationOption.isSports())
-            .seminar(accommodationOption.isSeminar())
+            .cooking(option.isCooking())
+            .parking(option.isParking())
+            .pickup(option.isPickup())
+            .barbecue(option.isBarbecue())
+            .fitness(option.isFitness())
+            .karaoke(option.isKaraoke())
+            .sauna(option.isSauna())
+            .sports(option.isSports())
+            .seminar(option.isSeminar())
             .build();
     }
 }

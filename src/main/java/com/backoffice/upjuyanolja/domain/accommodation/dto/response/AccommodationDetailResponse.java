@@ -10,38 +10,34 @@ public record AccommodationDetailResponse(
     Long id,
     String name,
     String address,
-    String mapX,
-    String mapY,
     String description,
     String category,
     String mainCoupon,
     List<String> images,
-    AccommodationOptionResponse accommodationOption,
+    AccommodationOptionResponse option,
     List<RoomResponse> rooms
 ) {
 
-    public static AccommodationDetailResponse from(
+    public static AccommodationDetailResponse of(
         Accommodation accommodation, String mainCoupon, List<RoomResponse> rooms
     ) {
         return AccommodationDetailResponse.builder()
             .id(accommodation.getId())
             .name(accommodation.getName())
             .address(
-                accommodation.getAddress().getShortAddress() + "\n"
+                accommodation.getAddress().getAddress() + "\n"
                     + accommodation.getAddress().getDetailAddress()
             )
-            .mapX(String.valueOf(accommodation.getAddress().getMapX()))
-            .mapY(String.valueOf(accommodation.getAddress().getMapY()))
             .description(accommodation.getDescription())
             .category(accommodation.getCategory().getName())
             .mainCoupon(mainCoupon)
             .images(
-                accommodation.getAccommodationImages().stream()
+                accommodation.getImages().stream()
                     .map(image -> image.getUrl())
                     .toList()
             )
-            .accommodationOption(
-                AccommodationOptionResponse.from(accommodation.getAccommodationOption())
+            .option(
+                AccommodationOptionResponse.of(accommodation.getOption())
             )
             .rooms(rooms)
             .build();

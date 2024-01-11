@@ -9,17 +9,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.backoffice.upjuyanolja.domain.member.controller.MemberController;
+import com.backoffice.upjuyanolja.domain.member.controller.MemberAuthController;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
+import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
+import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.catalina.security.SecurityConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -28,12 +30,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(value = MemberController.class,
+@WebMvcTest(value = MemberAuthController.class,
     excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
         SecurityConfig.class,
         AuthenticationConfig.class})},
     excludeAutoConfiguration = SecurityAutoConfiguration.class)
-public class MemberControllerTest {
+public class MemberAuthControllerTest {
 
     @Autowired
     protected MockMvc mockMvc;
@@ -42,10 +44,13 @@ public class MemberControllerTest {
     protected ObjectMapper objectMapper;
 
     @MockBean
-    private MemberRegisterService memberRegisterService;
+    private MemberAuthService memberAuthService;
 
     @MockBean
     private MemberGetService memberGetService;
+
+    @MockBean
+    private SecurityUtil securityUtil;
 
     @Nested
     @DisplayName("checkEmailDuplicate()는")
@@ -59,11 +64,11 @@ public class MemberControllerTest {
                 .isExists(true)
                 .build();
 
-            given(memberRegisterService.checkEmailDuplicate(any(String.class)))
+            given(memberAuthService.checkEmailDuplicate(any(String.class)))
                 .willReturn(checkEmailDuplicateResponse);
 
             // when then
-            mockMvc.perform(get("/api/members/email")
+            mockMvc.perform(get("/api/auth/members/email")
                     .queryParam("email", "test@mail.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").isString())
@@ -71,7 +76,7 @@ public class MemberControllerTest {
                 .andExpect(jsonPath("$.data.isExists").isBoolean())
                 .andDo(print());
 
-            verify(memberRegisterService, times(1)).checkEmailDuplicate(any(String.class));
+            verify(memberAuthService, times(1)).checkEmailDuplicate(any(String.class));
         }
 
         @Test
@@ -82,11 +87,11 @@ public class MemberControllerTest {
                 .isExists(false)
                 .build();
 
-            given(memberRegisterService.checkEmailDuplicate(any(String.class)))
+            given(memberAuthService.checkEmailDuplicate(any(String.class)))
                 .willReturn(checkEmailDuplicateResponse);
 
             // when then
-            mockMvc.perform(get("/api/members/email")
+            mockMvc.perform(get("/api/auth/members/email")
                     .queryParam("email", "test@mail.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").isString())
@@ -94,7 +99,7 @@ public class MemberControllerTest {
                 .andExpect(jsonPath("$.data.isExists").isBoolean())
                 .andDo(print());
 
-            verify(memberRegisterService, times(1)).checkEmailDuplicate(any(String.class));
+            verify(memberAuthService, times(1)).checkEmailDuplicate(any(String.class));
         }
     }
 
@@ -113,11 +118,12 @@ public class MemberControllerTest {
                 .phoneNumber("010-1234-1234")
                 .build();
 
+            given(securityUtil.getCurrentMemberId()).willReturn(1L);
             given(memberGetService.getMember(any(Long.TYPE)))
                 .willReturn(memberInfoResponse);
 
             // when then
-            mockMvc.perform(get("/api/members/{memberId}", 1L))
+            mockMvc.perform(get("/api/auth/members"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").isString())
                 .andExpect(jsonPath("$.data").isMap())

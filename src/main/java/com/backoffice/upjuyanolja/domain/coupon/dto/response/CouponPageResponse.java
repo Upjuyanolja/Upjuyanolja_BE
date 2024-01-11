@@ -15,7 +15,7 @@ public record CouponPageResponse(
 
 ) {
 
-    public static CouponPageResponse from(Page<CouponDetailResponse> responsePage) {
+    public static CouponPageResponse of(Page<CouponDetailResponse> responsePage) {
         return CouponPageResponse.builder()
             .pageNum(responsePage.getNumber() + 1)
             .pageSize(responsePage.getSize())

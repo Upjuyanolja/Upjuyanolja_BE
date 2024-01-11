@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.accommodation.repository;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.QAccommodation;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
@@ -20,41 +19,49 @@ public class AccommodationCustomRepositoryImpl implements AccommodationCustomRep
     }
 
     @Override
-    public List<Accommodation> findAllByCategoryAndName(
-        String category, String keyword
+    public List<Accommodation> findByCategoryWithTypeAndName(
+        String category, String type, String keyword
 
     ) {
         List<Accommodation> result = getAccommodations(
-            category, keyword
+            category, category, keyword
         );
 
         return result;
     }
 
     private List<Accommodation> getAccommodations(
-        String category, String keyword
+        String category, String type, String keyword
     ) {
         return query.selectFrom(qAccommodation)
             .leftJoin(qAccommodation)
             .where(
-                eqCategory(category),
+                eqCategory(category, category),
                 eqKeyword(keyword)
             )
             .fetch();
     }
 
-    private BooleanExpression eqCategory(String category) {
-        if (category.equals("ALL")) {
+    private BooleanExpression eqCategory(String category, String type) {
+        if (category.equals("ALL") && category.equals("ALL")) {
             return null;
         }
-        return qAccommodation.category.eq(Category.valueOf(category));
+        BooleanExpression categoryExpression = qAccommodation.category.parent.name.eq(category);
+        BooleanExpression typeExpression = qAccommodation.category.name.eq(type);
+        if (category.equals("ALL")) {
+            return typeExpression;
+        }
+        if (type.equals("ALL")) {
+            return categoryExpression;
+        }
+        return categoryExpression.or(typeExpression);
     }
 
     private BooleanExpression eqKeyword(String keyword) {
         if (StringUtils.isNullOrEmpty(keyword)) {
             return null;
         }
-        return qAccommodation.name.eq(keyword);
+        return qAccommodation.name.like("%" + keyword + "%");
     }
 
 }

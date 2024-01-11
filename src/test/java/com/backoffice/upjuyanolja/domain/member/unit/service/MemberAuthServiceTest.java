@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verify;
 
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
-import com.backoffice.upjuyanolja.domain.member.service.MemberRegisterService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,10 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 @ExtendWith(MockitoExtension.class)
-public class MemberRegisterServiceTest {
+public class MemberAuthServiceTest {
 
     @InjectMocks
-    private MemberRegisterService memberRegisterService;
+    private MemberAuthService memberAuthService;
 
     @Mock
     private MemberRepository memberRepository;
@@ -40,7 +40,7 @@ public class MemberRegisterServiceTest {
             given(memberRepository.existsByEmail(any(String.class))).willReturn(true);
 
             // when
-            CheckEmailDuplicateResponse result = memberRegisterService.checkEmailDuplicate(
+            CheckEmailDuplicateResponse result = memberAuthService.checkEmailDuplicate(
                 "test@mail.com");
 
             // then
@@ -56,7 +56,7 @@ public class MemberRegisterServiceTest {
             given(memberRepository.existsByEmail(any(String.class))).willReturn(false);
 
             // when
-            CheckEmailDuplicateResponse result = memberRegisterService.checkEmailDuplicate(
+            CheckEmailDuplicateResponse result = memberAuthService.checkEmailDuplicate(
                 "test@mail.com");
 
             // then

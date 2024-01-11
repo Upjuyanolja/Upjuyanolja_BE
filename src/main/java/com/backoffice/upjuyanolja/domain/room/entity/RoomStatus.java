@@ -5,14 +5,12 @@ import lombok.Getter;
 @Getter
 public enum RoomStatus {
 
-    ISSUING("발급 중"),
-    SUSPENDED("발급 중지"),
-    EXHAUSTED("소진");
+    SELLING("판매 중"),
+    STOP_SELLING("판매 중지");
 
-    private final String description;
+    private final String name;
 
-    RoomStatus(String description) {
-        this.description = description;
+    RoomStatus(String name) {
+        this.name = name;
     }
-
 }

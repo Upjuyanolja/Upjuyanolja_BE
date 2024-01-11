@@ -27,7 +27,7 @@ public class CouponController {
 
     @GetMapping("/backoffice")
     public ResponseEntity<SuccessResponse<CouponPageResponse>> getCoupon(
-        @PageableDefault(page = 1, size = 12) Pageable pageable
+        @PageableDefault(page = 0, size = 12) Pageable pageable
     ) {
         log.info("GET /api/coupons");
 

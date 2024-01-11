@@ -5,12 +5,12 @@ import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import java.util.ArrayList;
@@ -39,8 +39,8 @@ public class Accommodation extends BaseTime {
     @Comment("숙소 위치")
     private Address address;
 
-    @Column(nullable = false)
-    @Enumerated(value = EnumType.STRING)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="category_id")
     @Comment("숙소 카테고리")
     private Category category;
 
@@ -54,10 +54,10 @@ public class Accommodation extends BaseTime {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("숙소 옵션 식별자")
-    private AccommodationOption accommodationOption;
+    private AccommodationOption option;
 
     @OneToMany(mappedBy = "accommodation", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AccommodationImage> accommodationImages = new ArrayList<>();
+    private List<AccommodationImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "accommodation", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Room> rooms = new ArrayList<>();
@@ -70,8 +70,8 @@ public class Accommodation extends BaseTime {
         Category category,
         String description,
         String thumbnail,
-        AccommodationOption accommodationOption,
-        List<AccommodationImage> accommodationImages,
+        AccommodationOption option,
+        List<AccommodationImage> images,
         List<Room> rooms
     ) {
         this.id = id;
@@ -80,8 +80,8 @@ public class Accommodation extends BaseTime {
         this.category = category;
         this.description = description;
         this.thumbnail = thumbnail;
-        this.accommodationOption = accommodationOption;
-        this.accommodationImages = accommodationImages;
+        this.option = option;
+        this.images = images;
         this.rooms = rooms;
     }
 }
