@@ -8,18 +8,16 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.request.Accommodation
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationOptionRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationNameResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
-import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
-import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
-import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
-import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
-import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationService;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
+import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
+import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase.AccommodationSaveRequest;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
@@ -37,7 +35,6 @@ import com.backoffice.upjuyanolja.domain.room.service.RoomService;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -49,25 +46,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 @ExtendWith(MockitoExtension.class)
-public class AccommodationServiceTest {
+public class AccommodationCommandServiceTest {
 
     @InjectMocks
-    private AccommodationService accommodationService;
+    private AccommodationCommandService accommodationCommandService;
+
+    @Mock
+    private AccommodationQueryUseCase accommodationQueryUseCase;
 
     @Mock
     private MemberGetService memberGetService;
-
-    @Mock
-    private AccommodationRepository accommodationRepository;
-
-    @Mock
-    private AccommodationImageRepository accommodationImageRepository;
-
-    @Mock
-    private AccommodationOwnershipRepository accommodationOwnershipRepository;
-
-    @Mock
-    private CategoryRepository categoryRepository;
 
     @Mock
     private RoomService roomService;
@@ -238,21 +226,23 @@ public class AccommodationServiceTest {
                 .build();
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
-            given(categoryRepository.findCategoryByName(any(String.class))).willReturn(
-                Optional.of(category));
-            given(accommodationRepository.save(any(Accommodation.class))).willReturn(accommodation);
-            given(accommodationImageRepository.saveAll(any(Iterable.class))).willReturn(
-                List.of(accommodationImage));
-            given(accommodationOwnershipRepository.save(
-                any(AccommodationOwnership.class))).willReturn(accommodationOwnership);
-            given(roomService.saveRoom(any(Accommodation.class),
-                any(RoomRegisterRequest.class))).willReturn(roomInfoResponse);
-            given(accommodationRepository.findById(any(Long.TYPE)))
-                .willReturn(Optional.of(savedAccommodation));
+            given(accommodationQueryUseCase.getCategoryByName(any(String.class)))
+                .willReturn(category);
+            given(accommodationQueryUseCase.saveAccommodation(any(AccommodationSaveRequest.class)))
+                .willReturn(accommodation);
+            given(accommodationQueryUseCase.saveAllImages(any(List.class)))
+                .willReturn(List.of(accommodationImage));
+            given(accommodationQueryUseCase
+                .saveOwnership(any(Member.class), any(Accommodation.class)))
+                .willReturn(accommodationOwnership);
+            given(roomService.saveRoom(any(Accommodation.class), any(RoomRegisterRequest.class)))
+                .willReturn(roomInfoResponse);
+            given(accommodationQueryUseCase.getAccommodationById(any(Long.TYPE)))
+                .willReturn(savedAccommodation);
 
             // when
-            AccommodationInfoResponse result = accommodationService.createAccommodation(1L,
-                accommodationRegisterRequest);
+            AccommodationInfoResponse result = accommodationCommandService
+                .createAccommodation(1L, accommodationRegisterRequest);
 
             // then
             assertThat(result.accommodationId()).isEqualTo(1L);
@@ -374,17 +364,19 @@ public class AccommodationServiceTest {
                 .build();
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
-            given(accommodationOwnershipRepository.findAllByMember(any(Member.class))).willReturn(
-                List.of(accommodationOwnership));
+            given(accommodationQueryUseCase.getOwnershipByMember(any(Member.class)))
+                .willReturn(List.of(accommodationOwnership));
 
             // when
-            List<AccommodationNameResponse> result = accommodationService.getAccommodationNames(1L);
+            AccommodationOwnershipResponse result = accommodationCommandService
+                .getAccommodationNames(1L);
 
             // then
-            assertThat(result).isNotEmpty();
-            assertThat(result.size()).isEqualTo(1);
-            assertThat(result.get(0).id()).isEqualTo(1L);
-            assertThat(result.get(0).name()).isEqualTo("그랜드 하얏트 제주");
+            assertThat(result).isNotNull();
+            assertThat(result.accommodations()).isNotEmpty();
+            assertThat(result.accommodations().size()).isEqualTo(1);
+            assertThat(result.accommodations().get(0).id()).isEqualTo(1L);
+            assertThat(result.accommodations().get(0).name()).isEqualTo("그랜드 하얏트 제주");
         }
     }
 }
