@@ -150,8 +150,8 @@ public class AccommodationOwnershipRepositoryTest {
         return roomRepository.save(Room.builder()
             .accommodation(accommodation)
             .name("65m² 킹룸")
-            .standard(2)
-            .capacity(3)
+            .defaultCapacity(2)
+            .maxCapacity(3)
             .checkInTime(LocalTime.of(15, 0, 0))
             .checkOutTime(LocalTime.of(11, 0, 0))
             .price(RoomPrice.builder()
@@ -193,6 +193,28 @@ public class AccommodationOwnershipRepositoryTest {
             assertThat(result.size()).isEqualTo(1);
             assertThat(result.get(0).getAccommodation().getId()).isEqualTo(accommodation.getId());
             assertThat(result.get(0).getMember().getId()).isEqualTo(member.getId());
+        }
+    }
+
+    @Nested
+    @DisplayName("existsAccommodationOwnershipByMemberAndAccommodation()는")
+    class Context_existsAccommodationOwnershipByMemberAndAccommodation {
+
+        @Test
+        @DisplayName("업주의 소유권 여부를 조회할 수 있다.")
+        void _willSuccess() {
+            // given
+            Accommodation accommodation = saveAccommodation();
+            saveRoom(accommodation);
+            Member member = saveMember();
+            saveAccommodationOwnership(accommodation, member);
+
+            // when
+            boolean result = accommodationOwnershipRepository
+                .existsAccommodationOwnershipByMemberAndAccommodation(member, accommodation);
+
+            // then
+            assertThat(result).isTrue();
         }
     }
 }
