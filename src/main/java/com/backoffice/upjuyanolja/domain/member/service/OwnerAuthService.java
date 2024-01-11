@@ -3,17 +3,23 @@ package com.backoffice.upjuyanolja.domain.member.service;
 import static com.backoffice.upjuyanolja.domain.member.entity.Authority.ROLE_ADMIN;
 
 import com.backoffice.upjuyanolja.domain.member.dto.request.OwnerEmailRequest;
+import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.OwnerEmailResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.OwnerSignupResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.entity.Owner;
 import com.backoffice.upjuyanolja.domain.member.exception.CreateVerificationCodeException;
+import com.backoffice.upjuyanolja.domain.member.exception.IncorrectPasswordException;
 import com.backoffice.upjuyanolja.domain.member.exception.IncorrectVerificationCodeException;
+import com.backoffice.upjuyanolja.domain.member.exception.InvalidRoleException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
 import com.backoffice.upjuyanolja.domain.member.exception.NotRegisteredEmailException;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
 import com.backoffice.upjuyanolja.domain.member.repository.OwnerRepository;
 import com.backoffice.upjuyanolja.global.redis.RedisService;
+import com.backoffice.upjuyanolja.global.security.jwt.JwtTokenProvider;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
@@ -21,6 +27,8 @@ import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,11 +37,14 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class OwnerAuthService {
+public class OwnerAuthService implements
+    AuthServiceProvider<OwnerSignupResponse, OwnerEmailRequest> {
 
     private static final String AUTH_CODE_PREFIX = "AuthCode ";
 
     private final OwnerRepository ownerRepository;
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
     private final MailService mailService;
     private final RedisService redisService;
@@ -92,7 +103,8 @@ public class OwnerAuthService {
         return "SUCCESS";
     }
 
-    public OwnerSignupResponse ownerSignup(OwnerEmailRequest request) {
+    @Override
+    public OwnerSignupResponse signup(OwnerEmailRequest request) {
         Owner ownerInfo = ownerRepository.findByEmail(request.getEmail()).orElseThrow(
             MemberNotFoundException::new
         );
@@ -107,5 +119,44 @@ public class OwnerAuthService {
             .build());
 
         return OwnerSignupResponse.fromEntity(member);
+    }
+
+    @Override
+    public SignInResponse signin(SignInRequest request) {
+        //회원가입 여부 체크
+        Member member = memberRepository.findByEmail(request.getEmail())
+            .orElseThrow(MemberNotFoundException::new);
+
+        //비밀번호 체크
+        if (!encoder.matches(request.getPassword(), member.getPassword())) {
+            throw new IncorrectPasswordException();
+        }
+
+        Authentication authentication = authenticationManager.authenticate(
+            request.toUsernamePasswordAuthenticationToken());
+
+        //토큰 발급
+        TokenResponse tokenResponse = jwtTokenProvider.generateToken(authentication);
+
+        //회원정보 취득
+        Member memberInfo = memberRepository.findByEmail(authentication.getName())
+            .orElseThrow(MemberNotFoundException::new);
+        log.info("authentication get name is :{}", authentication.getName());
+
+        if (!memberInfo.getAuthority().name().equals("ROLE_ADMIN")) {
+            throw new InvalidRoleException();
+        }
+
+        //Redis에 RefreshToken 저장
+        redisService.setValues(authentication.getName(), tokenResponse.getRefreshToken());
+
+        return SignInResponse.builder()
+            .accessToken(tokenResponse.getAccessToken())
+            .refreshToken(tokenResponse.getRefreshToken())
+            .id(memberInfo.getId())
+            .email(memberInfo.getEmail())
+            .name(memberInfo.getName())
+            .phone(memberInfo.getPhone())
+            .build();
     }
 }
