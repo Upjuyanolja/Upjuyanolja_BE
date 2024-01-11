@@ -62,6 +62,14 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    public boolean existsOwnershipByMemberAndAccommodation(Member member,
+        Accommodation accommodation) {
+        return accommodationOwnershipRepository
+            .existsAccommodationOwnershipByMemberAndAccommodation(member, accommodation);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Category getCategoryByName(String name) {
         return categoryRepository.findCategoryByName(name)
             .orElseThrow(WrongCategoryException::new);
