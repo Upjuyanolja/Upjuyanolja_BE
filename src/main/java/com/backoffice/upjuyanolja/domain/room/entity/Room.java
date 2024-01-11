@@ -46,11 +46,11 @@ public class Room extends BaseTime {
 
     @Column(columnDefinition = "TINYINT")
     @Comment("객실 기준 인원")
-    private int standard;
+    private int defaultCapacity;
 
     @Column(columnDefinition = "TINYINT")
     @Comment("객실 최대 인원")
-    private int capacity;
+    private int maxCapacity;
 
     @Column(columnDefinition = "TIME")
     @Comment("객실 체크 인 시간")
@@ -95,8 +95,8 @@ public class Room extends BaseTime {
         Long id,
         Accommodation accommodation,
         String name,
-        int standard,
-        int capacity,
+        int defaultCapacity,
+        int maxCapacity,
         int amount,
         LocalTime checkInTime,
         LocalTime checkOutTime,
@@ -110,8 +110,8 @@ public class Room extends BaseTime {
         this.id = id;
         this.accommodation = accommodation;
         this.name = name;
-        this.standard = standard;
-        this.capacity = capacity;
+        this.defaultCapacity = defaultCapacity;
+        this.maxCapacity = maxCapacity;
         this.amount = amount;
         this.checkInTime = checkInTime;
         this.checkOutTime = checkOutTime;
