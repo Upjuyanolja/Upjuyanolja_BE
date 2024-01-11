@@ -1,0 +1,40 @@
+ifndef::snippets[]
+:snippets: build/generated-snippets
+endif::[]
+
+= Reservation REST API Docs
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+
+[[Get-Reserved]]
+== 예약 내역 조회
+
+예약 내역 조회 API 입니다.
+
+=== HttpRequest
+
+include::{snippets}/reservation-controller-docs-test/get-reserved/http-request.adoc[]
+include::{snippets}/reservation-controller-docs-test/get-reserved/query-parameters.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/reservation-controller-docs-test/get-reserved/http-response.adoc[]
+include::{snippets}/reservation-controller-docs-test/get-reserved/response-fields.adoc[]
+
+[[Get-Canceled]]
+== 예약 취소 내역 조회
+
+예약 취소 내역 조회 API 입니다.
+
+=== HttpRequest
+
+include::{snippets}/reservation-controller-docs-test/get-canceled/http-request.adoc[]
+include::{snippets}/reservation-controller-docs-test/get-canceled/query-parameters.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/reservation-controller-docs-test/get-canceled/http-response.adoc[]
+include::{snippets}/reservation-controller-docs-test/get-canceled/response-fields.adoc[]
