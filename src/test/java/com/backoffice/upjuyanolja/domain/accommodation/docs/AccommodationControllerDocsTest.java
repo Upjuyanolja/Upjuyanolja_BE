@@ -4,19 +4,22 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.snippet.Attributes.key;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationImageRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationOptionRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationImageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationNameResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOptionResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationService;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
@@ -36,7 +39,7 @@ import org.springframework.restdocs.payload.JsonFieldType;
 public class AccommodationControllerDocsTest extends RestDocsSupport {
 
     @MockBean
-    private AccommodationService accommodationService;
+    private AccommodationCommandService accommodationCommandService;
 
     @MockBean
     private SecurityUtil securityUtil;
@@ -143,8 +146,9 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
             .build();
 
         given(securityUtil.getCurrentMemberId()).willReturn(1L);
-        given(accommodationService.createAccommodation(any(Long.TYPE),
-            any(AccommodationRegisterRequest.class))).willReturn(accommodationInfoResponse);
+        given(accommodationCommandService
+            .createAccommodation(any(Long.TYPE), any(AccommodationRegisterRequest.class)))
+            .willReturn(accommodationInfoResponse);
 
         // when then
         mockMvc.perform(post("/api/accommodations")
@@ -342,7 +346,46 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
                 )
             ));
 
-        verify(accommodationService, times(1)).createAccommodation(any(Long.TYPE),
-            any(AccommodationRegisterRequest.class));
+        verify(accommodationCommandService, times(1))
+            .createAccommodation(any(Long.TYPE), any(AccommodationRegisterRequest.class));
+    }
+
+    @Test
+    @DisplayName("보유 숙소 목록을 조회할 수 있다.")
+    void getAccommodationNames() throws Exception {
+        // given
+        AccommodationNameResponse accommodationNameResponse1 = AccommodationNameResponse.builder()
+            .id(1L)
+            .name("그랜드 하얏트 제주")
+            .build();
+        AccommodationNameResponse accommodationNameResponse2 = AccommodationNameResponse.builder()
+            .id(2L)
+            .name("신라 호텔")
+            .build();
+        AccommodationOwnershipResponse accommodationOwnershipResponse = AccommodationOwnershipResponse
+            .builder()
+            .accommodations(List.of(accommodationNameResponse1, accommodationNameResponse2))
+            .build();
+
+        given(securityUtil.getCurrentMemberId()).willReturn(1L);
+        given(accommodationCommandService.getAccommodationNames(any(Long.TYPE)))
+            .willReturn(accommodationOwnershipResponse);
+
+        // when then
+        mockMvc.perform(get("/api/accommodations/backoffice"))
+            .andDo(restDoc.document(
+                responseFields(successResponseCommon()).and(
+                    fieldWithPath("data").type(JsonFieldType.OBJECT)
+                        .description("응답 데이터"),
+                    fieldWithPath("data.accommodations").type(JsonFieldType.ARRAY)
+                        .description("보유 숙소 배열"),
+                    fieldWithPath("data.accommodations[].id").type(JsonFieldType.NUMBER)
+                        .description("숙소 식별자"),
+                    fieldWithPath("data.accommodations[].name").type(JsonFieldType.STRING)
+                        .description("숙소 이름")
+                )
+            ));
+
+        verify(accommodationCommandService, times(1)).getAccommodationNames(any(Long.TYPE));
     }
 }
