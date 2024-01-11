@@ -1,16 +1,11 @@
 package com.backoffice.upjuyanolja.domain.room.dto.request;
 
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 
@@ -53,34 +48,4 @@ public record RoomRegisterRequest(
     RoomOptionRequest option
 ) {
 
-    public static Room toEntity(Accommodation accommodation,
-        RoomRegisterRequest request) {
-        String[] checkIn = request.checkInTime.split(":");
-        LocalTime checkInTime = LocalTime.of(
-            Integer.parseInt(checkIn[0]),
-            Integer.parseInt(checkIn[1]),
-            0);
-        String[] checkOut = request.checkOutTime.split(":");
-        LocalTime checkOutTime = LocalTime.of(
-            Integer.parseInt(checkOut[0]),
-            Integer.parseInt(checkOut[1]),
-            0);
-        return Room.builder()
-            .accommodation(accommodation)
-            .name(request.name)
-            .price(RoomPrice.builder()
-                .offWeekDaysMinFee(request.price)
-                .offWeekendMinFee(request.price)
-                .peakWeekDaysMinFee(request.price)
-                .peakWeekendMinFee(request.price)
-                .build())
-            .standard(request.defaultCapacity)
-            .capacity(request.maxCapacity)
-            .checkInTime(checkInTime)
-            .checkOutTime(checkOutTime)
-            .amount(request.amount)
-            .images(new ArrayList<>())
-            .option(RoomOptionRequest.toEntity(request.option))
-            .build();
-    }
 }
