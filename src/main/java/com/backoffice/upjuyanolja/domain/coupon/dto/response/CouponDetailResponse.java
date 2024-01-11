@@ -14,10 +14,7 @@ public record CouponDetailResponse(
     public static CouponDetailResponse of(Coupon coupon, int discount) {
         return CouponDetailResponse.builder()
             .id(coupon.getId())
-            .name(DiscountType.makeName(
-                coupon.getDiscountType(), coupon.getDiscount(),
-                coupon.getDiscountType().getDetailName()
-            ))
+            .name(DiscountType.makeDetailName(coupon.getDiscountType(), coupon.getDiscount()))
             .price(discount)
             .build();
     }

@@ -17,10 +17,7 @@ public record CouponAccommodationResponse(
     public static CouponAccommodationResponse from(Coupon coupon, List<String> roomNames) {
         return CouponAccommodationResponse.builder()
             .id(coupon.getId())
-            .couponName(DiscountType.makeName(
-                coupon.getDiscountType(), coupon.getDiscount(),
-                coupon.getDiscountType().getShortName()
-            ))
+            .couponName(DiscountType.makeShortName(coupon.getDiscountType(), coupon.getDiscount()))
             .endDate(coupon.getEndDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
             .roomNames(roomNames)
             .build();

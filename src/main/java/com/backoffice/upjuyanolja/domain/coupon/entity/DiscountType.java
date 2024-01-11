@@ -26,6 +26,16 @@ public enum DiscountType {
             sb.append(titleName);
             return sb.toString();
         },
+        (listName, discount) -> {
+            StringBuilder sb = new StringBuilder(discount);
+            sb.append(listName);
+            return sb.toString();
+        },
+        (shortName, discount) -> {
+            StringBuilder sb = new StringBuilder(discount);
+            sb.append(shortName);
+            return sb.toString();
+        },
         (detailName, discount) -> {
             StringBuilder sb = new StringBuilder(discount);
             sb.append(detailName);
@@ -53,6 +63,16 @@ public enum DiscountType {
             sb.append(titleName);
             return sb.toString();
         },
+        (listName, discount) -> {
+            StringBuilder sb = new StringBuilder(discount);
+            sb.append(listName);
+            return sb.toString();
+        },
+        (shortName, discount) -> {
+            StringBuilder sb = new StringBuilder(discount);
+            sb.append(shortName);
+            return sb.toString();
+        },
         (detailName, discount) -> {
             StringBuilder sb = new StringBuilder(discount);
             sb.append(detailName);
@@ -77,9 +97,12 @@ public enum DiscountType {
     private final String shortName;
     private final String detailName;
     private final BiFunction<String, Integer, String> makeTitleFormat;
-    private final BiFunction<String, Integer, String> makeNameFormat;
+    private final BiFunction<String, Integer, String> makeListFormat;
+    private final BiFunction<String, Integer, String> makeShortFormat;
+    private final BiFunction<String, Integer, String> makeDetailFormat;
     private final Function<Integer, Boolean> discountValidate;
     private final BiFunction<Integer, Integer, Integer> calcAmount;
+
 
     DiscountType(
         String titleName,
@@ -87,7 +110,9 @@ public enum DiscountType {
         String shortName,
         String detailName,
         BiFunction<String, Integer, String> makeTitleFormat,
-        BiFunction<String, Integer, String> makeNameFormat,
+        BiFunction<String, Integer, String> makeListFormat,
+        BiFunction<String, Integer, String> makeShortFormat,
+        BiFunction<String, Integer, String> makeDetailFormat,
         Function<Integer, Boolean> discountValidate,
         BiFunction<Integer, Integer, Integer> calcAmount
     ) {
@@ -96,7 +121,9 @@ public enum DiscountType {
         this.detailName = detailName;
         this.shortName = shortName;
         this.makeTitleFormat = makeTitleFormat;
-        this.makeNameFormat = makeNameFormat;
+        this.makeListFormat = makeListFormat;
+        this.makeShortFormat = makeShortFormat;
+        this.makeDetailFormat = makeDetailFormat;
         this.discountValidate = discountValidate;
         this.calcAmount = calcAmount;
     }
@@ -105,8 +132,15 @@ public enum DiscountType {
         return discountType.makeTitleFormat.apply(discountType.getTitleName(), discount);
     }
 
-    public static String makeName(DiscountType discountType, int discount, String name) {
-        return discountType.makeNameFormat.apply(name, discount);
+    public static String makeListName(DiscountType discountType, int discount) {
+        return discountType.makeTitleFormat.apply(discountType.getListName(), discount);
+    }
+    public static String makeShortName(DiscountType discountType, int discount) {
+        return discountType.makeTitleFormat.apply(discountType.getTitleName(), discount);
+    }
+
+    public static String makeDetailName(DiscountType discountType, int discount) {
+        return discountType.makeTitleFormat.apply(discountType.getListName(), discount);
     }
 
     public static Boolean isRightDiscount(DiscountType discountType, Integer discount) {
