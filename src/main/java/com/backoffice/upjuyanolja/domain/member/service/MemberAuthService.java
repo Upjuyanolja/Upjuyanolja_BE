@@ -13,6 +13,7 @@ import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.exception.IncorrectPasswordException;
 import com.backoffice.upjuyanolja.domain.member.exception.InvalidRefreshTokenException;
+import com.backoffice.upjuyanolja.domain.member.exception.InvalidRoleException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberEmailDuplicationException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
@@ -29,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MemberAuthService {
+public class MemberAuthService implements AuthServiceProvider<SignUpResponse, SignUpRequest> {
 
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
@@ -38,6 +39,7 @@ public class MemberAuthService {
     private final RedisService redisService;
 
     @Transactional
+    @Override
     public SignUpResponse signup(SignUpRequest request) {
         validateDuplicatedEmail(request.email());
 
@@ -53,7 +55,9 @@ public class MemberAuthService {
         return SignUpResponse.fromEntity(member);
     }
 
+
     @Transactional
+    @Override
     public SignInResponse signin(SignInRequest request) {
         //회원가입 여부 체크
         Member member = memberRepository.findByEmail(request.getEmail())
@@ -74,6 +78,10 @@ public class MemberAuthService {
         Member memberInfo = memberRepository.findByEmail(authentication.getName())
             .orElseThrow(MemberNotFoundException::new);
         log.info("authentication get name is :{}", authentication.getName());
+
+        if (!memberInfo.getAuthority().name().equals("ROLE_USER")){
+            throw new InvalidRoleException();
+        }
 
         //Redis에 RefreshToken 저장
         redisService.setValues(authentication.getName(), tokenResponse.getRefreshToken());
