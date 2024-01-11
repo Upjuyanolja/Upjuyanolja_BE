@@ -5,7 +5,6 @@ import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -20,11 +19,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class) //Test 시 CreateAt NUll 방지
 @Entity
 public class Reservation extends BaseTime {
 
