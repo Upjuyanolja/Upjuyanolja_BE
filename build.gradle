@@ -70,6 +70,12 @@ dependencies {
     // Json
     implementation 'org.json:json:20231013'
 
+    //Jasypt
+    implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
+
+    //Email sender
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '3.0.5'
+
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test"){
         exclude group: "com.vaadin.external.google", module:"android-json"

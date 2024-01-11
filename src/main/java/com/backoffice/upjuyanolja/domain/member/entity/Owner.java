@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.member.entity;
 
-import static com.backoffice.upjuyanolja.domain.member.entity.Authority.ROLE_USER;
-
+import static com.backoffice.upjuyanolja.domain.member.entity.Authority.ROLE_ADMIN;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,7 +18,7 @@ import org.hibernate.annotations.Comment;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class Member extends BaseTime {
+public class Owner extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,11 +47,10 @@ public class Member extends BaseTime {
 
     @Enumerated(EnumType.STRING)
     @Comment("권한")
-    private Authority authority;
+    private Authority authority = ROLE_ADMIN;
 
     @Builder
-    public Member(
-        Long id,
+    public Owner(Long id,
         String email,
         String password,
         String name,

@@ -14,6 +14,11 @@ public enum ErrorCode {
     INCORRECT_PASSWORD(HttpStatus.BAD_REQUEST, 1004, "비밀번호가 일치하지 않습니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, 1005, "회원 정보를 찾을 수 없습니다."),
     AUTHORIZE_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, 1006, "인증 정보를 찾을 수 없습니다"),
+    EMAIL_SEND_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 1007, "이메일 인증코드 발송 중 오류가 발생했습니다"),
+    CREATE_VERIFICATION_CODE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 1008, "이메일 인증코드 생성 중 오류가 발생했습니다"),
+    EMAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, 1009, "존재하지 않는 이메일입니다."),
+    INCORRECT_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, 1010, "이메일 인증코드가 일치하지 않습니다."),
+    NOT_REGISTERED_EMAIL(HttpStatus.BAD_REQUEST, 1010, "입점 DB에 등록된 이메일이 아닙니다."),
 
     // Accommodation
     ACCOMMODATION_NOT_FOUND(HttpStatus.NOT_FOUND, 2000, "숙소 정보를 찾을 수 없습니다."),
