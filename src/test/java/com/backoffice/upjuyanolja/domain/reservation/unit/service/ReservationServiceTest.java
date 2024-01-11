@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.reservation.unit.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -17,6 +18,7 @@ import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedRes
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationRoom;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
+import com.backoffice.upjuyanolja.domain.reservation.exception.NoSuchReservationRoomException;
 import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRepository;
 import com.backoffice.upjuyanolja.domain.reservation.service.ReservationService;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
@@ -37,11 +39,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
@@ -52,7 +54,7 @@ class ReservationServiceTest {
   @InjectMocks
   ReservationService reservationService;
 
-  @Mock(lenient = true)
+  @Mock
   ReservationRepository reservationRepository;
 
   static Member mockMember;
@@ -204,7 +206,7 @@ class ReservationServiceTest {
       // given
       int pageNumber = 0;
       int pageSize = 4;
-      Sort sort = Sort.by(Sort.Direction.ASC, "id");
+      Sort sort = Sort.by(Direction.ASC, "id");
       Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
 
       Collection<ReservationStatus> statuses = Arrays.asList(ReservationStatus.RESERVED,
@@ -213,7 +215,7 @@ class ReservationServiceTest {
           eq(mockMember),
           eq(statuses),
           eq(pageable)
-      )).thenReturn(new PageImpl<>(mockReservations));
+      )).thenReturn(new PageImpl<>(mockReservations, pageable, mockReservations.size()));
 
 //      verify(reservationRepository).findAllByMemberAndStatusIn(eq(mockMember),
 //          eq(statuses),
@@ -231,7 +233,7 @@ class ReservationServiceTest {
       // given
       int pageNumber = 0;
       int pageSize = 4;
-      Sort sort = Sort.by(Sort.Direction.ASC, "id");
+      Sort sort = Sort.by(Direction.ASC, "id");
       Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
 
       Collection<ReservationStatus> statuses = List.of(ReservationStatus.CANCELLED);
@@ -239,11 +241,7 @@ class ReservationServiceTest {
           eq(mockMember),
           eq(statuses),
           eq(pageable)
-      )).thenReturn(new PageImpl<>(mockReservations));
-
-//      verify(reservationRepository).findAllByMemberAndStatusIn(eq(mockMember),
-//          eq(statuses),
-//          eq(pageable));
+      )).thenReturn(new PageImpl<>(mockReservations, pageable, mockReservations.size()));
 
       // when
       // then
@@ -251,45 +249,95 @@ class ReservationServiceTest {
           reservationService.getCanceled(mockMember, pageable).getClass());
     }
 
-//    @Test
-//    @DisplayName("getReserved()를 호출 시 숙소 정보를 찾을 수 없는 경우 NoSuchReservationRoomException")
-//    void NoSuchReservationRoomException_noRoom() {
-//      // given
-//      int pageNumber = 0;
-//      int pageSize = 5;
-//      Sort sort = Sort.by(Direction.ASC, "id");
-//      Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
-//
-//      Reservation wrongReservation = Reservation.builder()
-//          .member(mockMember)
-//          .reservationRoom(null)
-//          .visitorName("홍길동")
-//          .visitorPhone("010-1234-5678")
-//          .payment(null)
-//          .isCouponUsed(false)
-//          .status(ReservationStatus.RESERVED)
-//          .build();
-//
-//      mockReservations.add(wrongReservation);
-//
-//      Collection<ReservationStatus> statuses = Arrays.asList(ReservationStatus.RESERVED,
-//          ReservationStatus.SERVICED);
-//      when(reservationRepository.findAllByMemberAndStatusIn(
-//          eq(mockMember),
-//          eq(statuses),
-//          eq(pageable)
-//      )).thenReturn(new PageImpl<>(mockReservations));
-//
-//      verify(reservationRepository).findAllByMemberAndStatusIn(eq(mockMember),
-//          eq(statuses),
-//          eq(pageable));
-//
-//      // when
-//      // then
-//      Throwable exception = assertThrows(NoSuchReservationRoomException.class, () -> {
-//        reservationService.getReserved(mockMember, pageable);
-//      });
-//      assertEquals("예약 숙소 정보를 찾을 수 없습니다.", exception.getMessage());
-//    }
+    @Test
+    @DisplayName("getReserved()를 호출 시 숙소 정보를 찾을 수 없는 경우 NoSuchReservationRoomException")
+    void NoSuchReservationRoomException_noRoom_getReserved() {
+      // given
+      int pageNumber = 0;
+      int pageSize = 5;
+      Sort sort = Sort.by(Direction.ASC, "id");
+      Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
+
+      Payment payment = Payment.builder()
+          .id(1L)
+          .member(mockMember)
+          .payMethod(PayMethod.KAKAO_PAY)
+          .roomPrice(10000)
+          .discountAmount(1000)
+          .totalAmount(9000)
+          .build();
+
+      Reservation wrongReservation = Reservation.builder()
+          .member(mockMember)
+          .reservationRoom(null)
+          .visitorName("홍길동")
+          .visitorPhone("010-1234-5678")
+          .payment(payment)
+          .isCouponUsed(false)
+          .status(ReservationStatus.RESERVED)
+          .build();
+
+      mockReservations.add(wrongReservation);
+
+      Collection<ReservationStatus> statuses = Arrays.asList(ReservationStatus.RESERVED,
+          ReservationStatus.SERVICED);
+      when(reservationRepository.findAllByMemberAndStatusIn(
+          eq(mockMember),
+          eq(statuses),
+          eq(pageable)
+      )).thenReturn(new PageImpl<>(mockReservations, pageable, mockReservations.size()));
+
+      // when
+      // then
+      Throwable exception = assertThrows(NoSuchReservationRoomException.class, () -> {
+        reservationService.getReserved(mockMember, pageable);
+      });
+      assertEquals("예약 숙소 정보를 찾을 수 없습니다.", exception.getMessage());
+    }
+  }
+
+  @Test
+  @DisplayName("getCanceled()를 호출 시 숙소 정보를 찾을 수 없는 경우 NoSuchReservationRoomException")
+  void NoSuchReservationRoomException_noRoom_getCanceled() {
+    // given
+    int pageNumber = 0;
+    int pageSize = 5;
+    Sort sort = Sort.by(Direction.ASC, "id");
+    Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
+
+    Payment payment = Payment.builder()
+        .id(1L)
+        .member(mockMember)
+        .payMethod(PayMethod.KAKAO_PAY)
+        .roomPrice(10000)
+        .discountAmount(1000)
+        .totalAmount(9000)
+        .build();
+
+    Reservation wrongReservation = Reservation.builder()
+        .member(mockMember)
+        .reservationRoom(null)
+        .visitorName("홍길동")
+        .visitorPhone("010-1234-5678")
+        .payment(payment)
+        .isCouponUsed(false)
+        .status(ReservationStatus.CANCELLED)
+        .build();
+
+    mockReservations.add(wrongReservation);
+
+    Collection<ReservationStatus> statuses = Arrays.asList(ReservationStatus.CANCELLED);
+    when(reservationRepository.findAllByMemberAndStatusIn(
+        eq(mockMember),
+        eq(statuses),
+        eq(pageable)
+    )).thenReturn(new PageImpl<>(mockReservations, pageable, mockReservations.size()));
+
+    // when
+    // then
+    Throwable exception = assertThrows(NoSuchReservationRoomException.class, () -> {
+      reservationService.getCanceled(mockMember, pageable);
+    });
+    assertEquals("예약 숙소 정보를 찾을 수 없습니다.", exception.getMessage());
   }
 }

@@ -201,7 +201,7 @@ class ReservationControllerTest {
           0, false, ReservationStatus.SERVICED
       ));
 
-      Page<Reservation> mockPage = new PageImpl<>(reservations, pageable, 4);
+      Page<Reservation> mockPage = new PageImpl<>(reservations, pageable, reservations.size());
       GetReservedResponse mockResponse = new GetReservedResponse(mockPage);
 
       when(securityUtil.getCurrentMemberId()).thenReturn(1L);
@@ -263,7 +263,7 @@ class ReservationControllerTest {
           0, false, ReservationStatus.CANCELLED
       ));
 
-      Page<Reservation> mockPage = new PageImpl<>(reservations, pageable, 4);
+      Page<Reservation> mockPage = new PageImpl<>(reservations, pageable, reservations.size());
       GetCanceledResponse mockResponse = new GetCanceledResponse(mockPage);
 
       when(securityUtil.getCurrentMemberId()).thenReturn(1L);
