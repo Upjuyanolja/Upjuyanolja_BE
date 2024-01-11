@@ -17,13 +17,10 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationR
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase.AccommodationSaveRequest;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
@@ -144,29 +141,23 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     }
 
     private String getMainCouponName(Long accommodationId) {
-        CouponDetailResponse flatResponse =
+        Optional<CouponDetailResponse> flatResponse =
             couponService.getSortedFlatCouponInAccommodation(accommodationId).stream()
-                .findFirst()
-                .orElse(null);
+                .findFirst();
 
-        CouponDetailResponse rateResponse =
+        Optional<CouponDetailResponse> rateResponse =
             couponService.getSortedRateCouponInAccommodation(accommodationId).stream()
-                .findFirst()
-                .orElse(null);
+                .findFirst();
 
-        if (Objects.isNull(flatResponse) && Objects.isNull(rateResponse)) {
+        if (flatResponse.isEmpty() && rateResponse.isEmpty()) {
             return "";
         }
 
-        if (Objects.isNull(flatResponse)) {
-            return rateResponse.name();
+        if (!flatResponse.isEmpty() && !rateResponse.isEmpty()) {
+            return flatResponse.get().name()+" or "+rateResponse.get().name();
         }
 
-        if (Objects.isNull(rateResponse)) {
-            return rateResponse.name();
-        }
-
-        return flatResponse.name() + " or " + rateResponse.name();
+        return flatResponse.orElse(rateResponse.get()).name();
 
     }
 
