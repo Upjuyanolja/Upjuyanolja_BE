@@ -85,8 +85,8 @@ public class GetCanceledResponse {
         this.accommodationName = accommodation.getName();
         this.roomId = room.getId();
         this.roomName = room.getName();
-        this.checkInTime = room.getCheckIn();
-        this.checkOutTime = room.getCheckOut();
+        this.checkInTime = room.getCheckInTime();
+        this.checkOutTime = room.getCheckOutTime();
         this.defaultCapacity = room.getStandard();
         this.maxCapacity = room.getCapacity();
         this.startDate = reservationRoom.getStartDate();
