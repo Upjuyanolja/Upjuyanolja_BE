@@ -31,9 +31,9 @@ include::{snippets}/accommodation-controller-docs-test/register-accommodation/re
 
 === HttpRequest
 
-include::{snippets}/accommodation-controller-docs-test/get-accommodation-names/http-request.adoc[]
+include::{snippets}/accommodation-controller-docs-test/get-accommodation-ownership/http-request.adoc[]
 
 === HttpResponse
 
-include::{snippets}/accommodation-controller-docs-test/get-accommodation-names/http-response.adoc[]
-include::{snippets}/accommodation-controller-docs-test/get-accommodation-names/response-fields.adoc[]
+include::{snippets}/accommodation-controller-docs-test/get-accommodation-ownership/http-response.adoc[]
+include::{snippets}/accommodation-controller-docs-test/get-accommodation-ownership/response-fields.adoc[]
