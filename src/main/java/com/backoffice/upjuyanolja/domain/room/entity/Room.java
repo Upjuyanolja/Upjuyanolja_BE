@@ -1,6 +1,8 @@
 package com.backoffice.upjuyanolja.domain.room.entity;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
+import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,7 +28,7 @@ import org.hibernate.annotations.Comment;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class Room {
+public class Room extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,20 +45,20 @@ public class Room {
     private String name;
 
     @Column(columnDefinition = "TINYINT")
-    @Comment("객실 기준인원")
+    @Comment("객실 기준 인원")
     private int standard;
 
     @Column(columnDefinition = "TINYINT")
-    @Comment("객실 최대인원")
+    @Comment("객실 최대 인원")
     private int capacity;
 
     @Column(columnDefinition = "TIME")
-    @Comment("객실 체크인 시간")
-    private LocalTime checkIn;
+    @Comment("객실 체크 인 시간")
+    private LocalTime checkInTime;
 
     @Column(columnDefinition = "TIME")
-    @Comment("객실 체크아웃 시간")
-    private LocalTime checkOut;
+    @Comment("객실 체크 아웃 시간")
+    private LocalTime checkOutTime;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 가격")
@@ -83,6 +85,11 @@ public class Room {
     @Comment("객실 재고 식별자")
     private List<RoomStock> stocks = new ArrayList<>();
 
+    @OneToMany(mappedBy = "room",
+        cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @Comment("쿠폰 객실 식별자")
+    private List<CouponIssuance> couponIssuances = new ArrayList<>();
+
     @Builder
     public Room(
         Long id,
@@ -90,25 +97,29 @@ public class Room {
         String name,
         int standard,
         int capacity,
-        LocalTime checkIn,
-        LocalTime checkOut,
-        RoomPrice price,
         int amount,
+        LocalTime checkInTime,
+        LocalTime checkOutTime,
+        RoomPrice price,
         RoomStatus status,
         RoomOption option,
-        List<RoomImage> images
+        List<RoomImage> images,
+        List<RoomStock> stocks,
+        List<CouponIssuance> couponIssuances
     ) {
         this.id = id;
         this.accommodation = accommodation;
         this.name = name;
         this.standard = standard;
         this.capacity = capacity;
-        this.checkIn = checkIn;
-        this.checkOut = checkOut;
-        this.price = price;
         this.amount = amount;
+        this.checkInTime = checkInTime;
+        this.checkOutTime = checkOutTime;
+        this.price = price;
         this.status = status;
         this.option = option;
         this.images = images;
+        this.stocks = stocks;
+        this.couponIssuances = couponIssuances;
     }
 }

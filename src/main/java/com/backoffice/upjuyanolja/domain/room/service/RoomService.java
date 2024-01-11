@@ -9,9 +9,9 @@ import com.backoffice.upjuyanolja.domain.room.exception.DuplicateRoomNameExcepti
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -20,6 +20,11 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final RoomImageRepository roomImageRepository;
+
+    public Room findRoomById(Long roomId) {
+        return roomRepository.findById(roomId)
+            .orElseThrow(() -> new RoomNotFoundException());
+    }
 
     public RoomInfoResponse saveRoom(Accommodation accommodation, RoomRegisterRequest request) {
         roomNameValidate(request.name());

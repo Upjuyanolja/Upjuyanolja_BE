@@ -1,8 +1,8 @@
 package com.backoffice.upjuyanolja.domain.openapi.controller;
 
 import com.backoffice.upjuyanolja.domain.openapi.service.OpenApiService;
-import com.backoffice.upjuyanolja.global.common.ApiResponse;
-import com.backoffice.upjuyanolja.global.common.ApiResponse.SuccessResponse;
+import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
+import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
