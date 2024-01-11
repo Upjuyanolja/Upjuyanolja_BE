@@ -57,20 +57,16 @@ public enum DiscountType {
         },
         (price, discount) -> {
             int p = price.intValue();
-            double d = 1 - (discount.intValue() / 100.0);
+            double d = 1 - (discount.intValue() * 0.01);
             return (int) (p * d);
         }
     );
 
     private final String titleName;
     private final String listName;
-    // "1,000원 할인 쿠폰" 또는 "10% 할인 쿠폰" 문자열을 만들어서 반환
     private final BiFunction<String, Integer, String> makeTitleFormat;
-    // "1000원 쿠폰" 또는 "10% 쿠폰" 문자열을 만들어서 반환
     private final BiFunction<String, Integer, String> makeListFormat;
-    // 할인가격이 비즈니스 로직에서 정한 정상범위내에 있는지 확인
     private final Function<Integer, Boolean> discountValidate;
-    // 고객이 결제한 최종 금액을 계산하여 반환
     private final BiFunction<Integer, Integer, Integer> calcAmount;
 
     DiscountType(

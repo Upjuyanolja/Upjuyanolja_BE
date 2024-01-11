@@ -1,27 +1,47 @@
 package com.backoffice.upjuyanolja.domain.accommodation.entity;
 
-import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
-import java.util.Arrays;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
-public enum Category {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+public class Category {
 
-    HOTEL_RESORT("호텔/리조트"),
-    MOTEL("모텔"),
-    PENSION_POOL_VILLA("펜션/풀빌라"),
-    GUEST_HOUSE("게스트하우스");
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("카테고리 식별자")
+    private Long id;
 
-    private final String name;
+    @Column(nullable = false)
+    @Comment("카테고리 이름")
+    private String name;
 
-    Category(String name) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Category parent;
+
+    @Builder
+    public Category(
+        Long id, String name, Category parent
+    ) {
+        this.id = id;
         this.name = name;
+        this.parent = parent;
     }
 
-    public static Category getByName(String name) {
-        return Arrays.stream(Category.values())
-            .filter(val -> val.getName().equals(name))
-            .findFirst()
-            .orElseThrow(WrongCategoryException::new);
-    }
 }

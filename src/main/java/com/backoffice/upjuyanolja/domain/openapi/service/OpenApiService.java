@@ -3,9 +3,8 @@ package com.backoffice.upjuyanolja.domain.openapi.service;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationType;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
-import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongAccommodationTypeException;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.openapi.exception.InvalidDataException;
@@ -28,6 +27,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -101,7 +101,7 @@ public class OpenApiService {
                     Accommodation accommodation = saveAccommodation(stay, commonItem, introItem);
                     saveAccommodationImages(accommodation, images);
                     saveRooms(accommodation, introItem, rooms);
-                } catch (InvalidDataException | WrongAccommodationTypeException e) {
+                } catch (InvalidDataException | WrongCategoryException e) {
                     log.info("[OpenAPI] {}", e.getMessage());
                 }
             }
@@ -243,7 +243,6 @@ public class OpenApiService {
                     .detailAddress(base.getString("addr2"))
                     .build()
             )
-            .type(AccommodationType.getByCode(base.getString("cat3")))
             .description(common.getString("overview"))
             .thumbnail(base.getString("firstimage"))
             .images(new ArrayList<>())
@@ -297,7 +296,7 @@ public class OpenApiService {
                     : Integer.parseInt(
                         roomJson.getString("roompeakseasonminfee2")), peakWeekDaysMinFee);
 
-                RoomPrice roomPrice = RoomPrice.builder()
+                RoomPrice price = RoomPrice.builder()
                     .offWeekDaysMinFee(offWeekDaysMinFee)
                     .offWeekendMinFee(offWeekendMinFee)
                     .peakWeekDaysMinFee(peakWeekDaysMinFee)
@@ -316,13 +315,13 @@ public class OpenApiService {
                         roomJson.getInt("roombasecount"))
                     .capacity(Math.max(roomJson.getInt("roombasecount"),
                         roomJson.getInt("roommaxcount")))
-                    .checkIn(checkIn)
-                    .checkOut(checkOut)
-                    .price(roomPrice)
-                    .amount(Integer.parseInt(roomJson.getString("roomcount")))
-                    .status(RoomStatus.SELLING)
+                    .checkInTime(checkIn)
+                    .checkOutTime(checkOut)
+                    .price(price)
                     .option(option)
                     .images(new ArrayList<>())
+                    .amount(Integer.parseInt(roomJson.getString("roomcount")))
+                    .status(RoomStatus.SELLING)
                     .build());
 
                 for (int k = 0; k < 30; k++) {
