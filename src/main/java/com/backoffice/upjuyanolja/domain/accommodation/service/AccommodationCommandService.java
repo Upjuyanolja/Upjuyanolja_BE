@@ -22,7 +22,9 @@ import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.service.RoomService;
+import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
+import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
+import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,7 +45,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     private final AccommodationQueryUseCase accommodationQueryUseCase;
     private final AccommodationRepository accommodationRepository;
     private final CouponService couponService;
-    private final RoomService roomService;
+    private final RoomCommandUseCase roomCommandUseCase;
     private final MemberGetService memberGetService;
 
     @Override
@@ -55,7 +57,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         Accommodation accommodation = saveAccommodation(request);
         accommodationQueryUseCase.saveOwnership(member, accommodation);
         request.rooms().forEach(
-            roomRegisterRequest -> roomService.saveRoom(accommodation, roomRegisterRequest));
+            roomRegisterRequest -> roomCommandUseCase.saveRoom(accommodation, roomRegisterRequest));
         return AccommodationInfoResponse.of(
             accommodationQueryUseCase.getAccommodationById(accommodation.getId()));
     }
