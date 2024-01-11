@@ -4,6 +4,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.request.Accommodation
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationNameResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationSummaryResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
@@ -24,6 +25,7 @@ import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.service.RoomService;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AccommodationService {
 
@@ -45,6 +48,19 @@ public class AccommodationService {
     private final CouponService couponService;
     private final RoomService roomService;
     private final MemberGetService memberGetService;
+
+    public AccommodationInfoResponse createAccommodation(
+        long memberId,
+        AccommodationRegisterRequest request
+    ) {
+        Member member = memberGetService.getMemberById(memberId);
+        Accommodation accommodation = saveAccommodation(request);
+        saveOwnership(member, accommodation);
+        saveRooms(accommodation, request.rooms());
+        accommodation = getAccommodationById(accommodation.getId());
+
+        return AccommodationInfoResponse.of(accommodation);
+    }
 
     @Transactional(readOnly = true)
     public AccommodationPageResponse findAccommodations(
@@ -71,6 +87,17 @@ public class AccommodationService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public List<AccommodationNameResponse> getAccommodationNames(long memberId) {
+        Member member = memberGetService.getMemberById(memberId);
+        List<AccommodationOwnership> ownerships = accommodationOwnershipRepository
+            .findAllByMember(member);
+        List<AccommodationNameResponse> accommodations = new ArrayList<>();
+        ownerships.forEach(ownership -> accommodations.add(
+            AccommodationNameResponse.of(ownership.getAccommodation())));
+        return accommodations;
+    }
+
     private boolean checkCouponAvailability(Accommodation accommodation) {
         return accommodation.getRooms().stream()
             .anyMatch(room -> !room.getCouponIssuances().isEmpty());
@@ -78,7 +105,7 @@ public class AccommodationService {
 
     private int getLowestPrice(Long accommodationId) {
         Accommodation accommodation = accommodationRepository.findById(accommodationId).orElseThrow(
-            () -> new AccommodationNotFoundException()
+            AccommodationNotFoundException::new
         );
         PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
 
@@ -128,22 +155,9 @@ public class AccommodationService {
     ) {
         Accommodation accommodation =
             accommodationRepository.findById(accommodationId)
-                .orElseThrow(() -> new AccommodationNotFoundException());
+                .orElseThrow(AccommodationNotFoundException::new);
 
         return null;
-    }
-
-    public AccommodationInfoResponse createAccommodation(
-        long memberId,
-        AccommodationRegisterRequest request
-    ) {
-        Member member = memberGetService.getMemberById(memberId);
-        Accommodation accommodation = saveAccommodation(request);
-        saveOwnership(member, accommodation);
-        saveRooms(accommodation, request.rooms());
-        accommodation = getAccommodationById(accommodation.getId());
-
-        return AccommodationInfoResponse.of(accommodation);
     }
 
     private Accommodation saveAccommodation(AccommodationRegisterRequest request) {
@@ -157,9 +171,9 @@ public class AccommodationService {
         return accommodation;
     }
 
-    private Category getCategoryByName(String name){
+    private Category getCategoryByName(String name) {
         return categoryRepository.findCategoryByName(name)
-            .orElseThrow(()-> new WrongCategoryException());
+            .orElseThrow(WrongCategoryException::new);
     }
 
     private void saveOwnership(Member member, Accommodation accommodation) {
@@ -173,7 +187,7 @@ public class AccommodationService {
         requests.forEach(request -> roomService.saveRoom(accommodation, request));
     }
 
-    private Accommodation getAccommodationById(long accommodationId) {
+    public Accommodation getAccommodationById(long accommodationId) {
         return accommodationRepository.findById(accommodationId)
             .orElseThrow(AccommodationNotFoundException::new);
     }

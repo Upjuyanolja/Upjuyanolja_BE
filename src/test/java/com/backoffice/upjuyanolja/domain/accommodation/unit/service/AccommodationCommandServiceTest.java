@@ -8,6 +8,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.request.Accommodation
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationOptionRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationNameResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
@@ -237,7 +238,8 @@ public class AccommodationServiceTest {
                 .build();
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
-            given(categoryRepository.findCategoryByName(any(String.class))).willReturn(Optional.of(category));
+            given(categoryRepository.findCategoryByName(any(String.class))).willReturn(
+                Optional.of(category));
             given(accommodationRepository.save(any(Accommodation.class))).willReturn(accommodation);
             given(accommodationImageRepository.saveAll(any(Iterable.class))).willReturn(
                 List.of(accommodationImage));
@@ -262,6 +264,127 @@ public class AccommodationServiceTest {
             assertThat(result.images()).isNotEmpty();
             assertThat(result.option()).isNotNull();
             assertThat(result.rooms()).isNotEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("getAccommodationNames()은")
+    class Context_getAccommodationNames {
+
+        @Test
+        @DisplayName("보유 숙소 목록을 조회할 수 있다.")
+        void _willSuccess() {
+            // given
+            Member member = Member.builder()
+                .id(1L)
+                .email("test@mail.com")
+                .password("$10$ygrAExVYmFTkZn2d0.Pk3Ot5CNZwIBjZH5f.WW0AnUq4w4PtBi9Nm")
+                .name("test")
+                .phone("010-1234-1234")
+                .imageUrl(
+                    "https://fastly.picsum.photos/id/866/200/300.jpg?hmac=rcadCENKh4rD6MAp6V_ma-AyWv641M4iiOpe1RyFHeI")
+                .authority(Authority.ROLE_ADMIN)
+                .build();
+            Category category = Category.builder()
+                .id(5L)
+                .name("TOURIST_HOTEL")
+                .build();
+            Accommodation accommodation = Accommodation.builder()
+                .id(1L)
+                .name("그랜드 하얏트 제주")
+                .address(Address.builder()
+                    .address("제주특별자치도 제주시 노형동 925")
+                    .detailAddress("")
+                    .build())
+                .category(category)
+                .description(
+                    "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
+                .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
+                .option(AccommodationOption.builder()
+                    .cooking(false)
+                    .parking(true)
+                    .pickup(false)
+                    .barbecue(false)
+                    .fitness(true)
+                    .karaoke(false)
+                    .sauna(false)
+                    .sports(true)
+                    .seminar(true)
+                    .build())
+                .images(new ArrayList<>())
+                .rooms(new ArrayList<>())
+                .build();
+            AccommodationImage accommodationImage = AccommodationImage.builder()
+                .id(1L)
+                .accommodation(accommodation)
+                .url("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
+                .build();
+            Room room = Room.builder()
+                .id(1L)
+                .accommodation(accommodation)
+                .name("65m² 킹룸")
+                .standard(2)
+                .capacity(3)
+                .checkInTime(LocalTime.of(15, 0, 0))
+                .checkOutTime(LocalTime.of(11, 0, 0))
+                .price(RoomPrice.builder()
+                    .offWeekDaysMinFee(100000)
+                    .offWeekendMinFee(100000)
+                    .peakWeekDaysMinFee(100000)
+                    .peakWeekendMinFee(100000)
+                    .build())
+                .amount(858)
+                .status(RoomStatus.SELLING)
+                .option(RoomOption.builder()
+                    .airCondition(true)
+                    .tv(true)
+                    .internet(true)
+                    .build())
+                .images(new ArrayList<>())
+                .build();
+            Accommodation savedAccommodation = Accommodation.builder()
+                .id(1L)
+                .name("그랜드 하얏트 제주")
+                .address(Address.builder()
+                    .address("제주특별자치도 제주시 노형동 925")
+                    .detailAddress("")
+                    .build())
+                .category(category)
+                .description(
+                    "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
+                .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
+                .option(AccommodationOption.builder()
+                    .cooking(false)
+                    .parking(true)
+                    .pickup(false)
+                    .barbecue(false)
+                    .fitness(true)
+                    .karaoke(false)
+                    .sauna(false)
+                    .sports(true)
+                    .seminar(true)
+                    .build())
+                .images(List.of(accommodationImage))
+                .rooms(List.of(room))
+                .build();
+            AccommodationOwnership accommodationOwnership = AccommodationOwnership.builder()
+                .id(1L)
+                .accommodation(savedAccommodation)
+                .member(member)
+                .build();
+
+            given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
+            given(accommodationOwnershipRepository.findAllByMember(any(Member.class))).willReturn(
+                List.of(accommodationOwnership));
+
+            // when
+            List<AccommodationNameResponse> result = accommodationService.getAccommodationNames(1L);
+
+            // then
+            assertThat(result).isNotEmpty();
+            assertThat(result.size()).isEqualTo(1);
+            assertThat(result.get(0).id()).isEqualTo(1L);
+            assertThat(result.get(0).name()).isEqualTo("그랜드 하얏트 제주");
         }
     }
 }
