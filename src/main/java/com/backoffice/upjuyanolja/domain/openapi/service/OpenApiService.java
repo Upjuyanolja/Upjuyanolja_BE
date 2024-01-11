@@ -224,7 +224,7 @@ public class OpenApiService {
         JSONObject common,
         JSONObject intro
     ) throws JSONException {
-        AccommodationOption accommodationOption = AccommodationOption.builder()
+        AccommodationOption option = AccommodationOption.builder()
             .cooking(intro.get("chkcooking").equals("가능"))
             .parking(intro.get("parkinglodging").equals("가능"))
             .pickup(intro.get("pickup").equals("가능"))
@@ -245,8 +245,8 @@ public class OpenApiService {
             )
             .description(common.getString("overview"))
             .thumbnail(base.getString("firstimage"))
-            .accommodationImages(new ArrayList<>())
-            .accommodationOption(accommodationOption)
+            .images(new ArrayList<>())
+            .option(option)
             .build();
 
         return accommodationRepository.save(accommodation);
@@ -296,13 +296,13 @@ public class OpenApiService {
                     : Integer.parseInt(
                         roomJson.getString("roompeakseasonminfee2")), peakWeekDaysMinFee);
 
-                RoomPrice roomPrice = RoomPrice.builder()
+                RoomPrice price = RoomPrice.builder()
                     .offWeekDaysMinFee(offWeekDaysMinFee)
                     .offWeekendMinFee(offWeekendMinFee)
                     .peakWeekDaysMinFee(peakWeekDaysMinFee)
                     .peakWeekendMinFee(peakWeekendMinFee)
                     .build();
-                RoomOption roomOption = RoomOption.builder()
+                RoomOption option = RoomOption.builder()
                     .airCondition(roomJson.get("roomaircondition").equals("Y"))
                     .tv(roomJson.get("roomtv").equals("Y"))
                     .internet(roomJson.get("roominternet").equals("Y"))
@@ -317,13 +317,11 @@ public class OpenApiService {
                         roomJson.getInt("roommaxcount")))
                     .checkInTime(checkIn)
                     .checkOutTime(checkOut)
-                    .roomPrice(roomPrice)
-                    .roomOption(roomOption)
-                    .roomImages(new ArrayList<>())
+                    .price(price)
+                    .option(option)
+                    .images(new ArrayList<>())
                     .amount(Integer.parseInt(roomJson.getString("roomcount")))
-                    .roomStatus(RoomStatus.SELLING)
-                    .roomOption(roomOption)
-                    .roomImages(new ArrayList<>())
+                    .status(RoomStatus.SELLING)
                     .build());
 
                 for (int k = 0; k < 30; k++) {

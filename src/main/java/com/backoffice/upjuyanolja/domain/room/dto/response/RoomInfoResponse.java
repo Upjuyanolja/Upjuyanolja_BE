@@ -28,11 +28,11 @@ public record RoomInfoResponse(
             .maxCapacity(room.getCapacity())
             .checkInTime(room.getCheckInTime().format(DateTimeFormatter.ofPattern("HH:mm")))
             .checkOutTime(room.getCheckOutTime().format(DateTimeFormatter.ofPattern("HH:mm")))
-            .price(room.getRoomPrice().getOffWeekDaysMinFee())
+            .price(room.getPrice().getOffWeekDaysMinFee())
             .amount(room.getAmount())
-            .status(room.getRoomStatus().name())
-            .images(RoomImageResponse.of(room.getRoomImages()))
-            .option(RoomOptionResponse.of(room.getRoomOption()))
+            .status(room.getStatus().name())
+            .images(RoomImageResponse.of(room.getImages()))
+            .option(RoomOptionResponse.of(room.getOption()))
             .build();
     }
 }

@@ -62,7 +62,7 @@ public class Room extends BaseTime {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 가격")
-    private RoomPrice roomPrice;
+    private RoomPrice price;
 
     @Column(nullable = false)
     @Comment("객실 개수")
@@ -71,19 +71,19 @@ public class Room extends BaseTime {
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     @Comment("객실 상태")
-    private RoomStatus roomStatus;
+    private RoomStatus status;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 옵션 식별자")
-    private RoomOption roomOption;
+    private RoomOption option;
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 이미지 식별자")
-    private List<RoomImage> roomImages = new ArrayList<>();
+    private List<RoomImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 재고 식별자")
-    private List<RoomStock> roomStocks = new ArrayList<>();
+    private List<RoomStock> stocks = new ArrayList<>();
 
     @OneToMany(mappedBy = "room",
         cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
@@ -100,11 +100,11 @@ public class Room extends BaseTime {
         int amount,
         LocalTime checkInTime,
         LocalTime checkOutTime,
-        RoomPrice roomPrice,
-        RoomStatus roomStatus,
-        RoomOption roomOption,
-        List<RoomImage> roomImages,
-        List<RoomStock> roomStocks,
+        RoomPrice price,
+        RoomStatus status,
+        RoomOption option,
+        List<RoomImage> images,
+        List<RoomStock> stocks,
         List<CouponIssuance> couponIssuances
     ) {
         this.id = id;
@@ -115,11 +115,11 @@ public class Room extends BaseTime {
         this.amount = amount;
         this.checkInTime = checkInTime;
         this.checkOutTime = checkOutTime;
-        this.roomPrice = roomPrice;
-        this.roomStatus = roomStatus;
-        this.roomOption = roomOption;
-        this.roomImages = roomImages;
-        this.roomStocks = roomStocks;
+        this.price = price;
+        this.status = status;
+        this.option = option;
+        this.images = images;
+        this.stocks = stocks;
         this.couponIssuances = couponIssuances;
     }
 }

@@ -83,7 +83,7 @@ public class AccommodationService {
         PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
 
         for (Room room : accommodation.getRooms()) {
-            pq.offer(room.getRoomPrice().getOffWeekDaysMinFee());
+            pq.offer(room.getPrice().getOffWeekDaysMinFee());
         }
 
         return pq.poll();

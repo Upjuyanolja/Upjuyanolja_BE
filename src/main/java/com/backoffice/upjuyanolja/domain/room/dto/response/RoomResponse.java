@@ -35,10 +35,10 @@ public record RoomResponse(
             .name(room.getName())
             .basePrice(
                 Stream.of(
-                        room.getRoomPrice().getOffWeekDaysMinFee(),
-                        room.getRoomPrice().getOffWeekendMinFee(),
-                        room.getRoomPrice().getPeakWeekDaysMinFee(),
-                        room.getRoomPrice().getPeakWeekendMinFee())
+                        room.getPrice().getOffWeekDaysMinFee(),
+                        room.getPrice().getOffWeekendMinFee(),
+                        room.getPrice().getPeakWeekDaysMinFee(),
+                        room.getPrice().getPeakWeekendMinFee())
                     .reduce(Math::min).orElse(0)
             )
             .discountPrice(discountPrice)
@@ -47,7 +47,7 @@ public record RoomResponse(
             .checkInTime(room.getCheckInTime().format(DateTimeFormatter.ofPattern("HH:mm")))
             .checkOutTime(room.getCheckOutTime().format(DateTimeFormatter.ofPattern("HH:mm")))
             .soldOut(soldOut)
-            .count(room.getRoomStocks().size())
+            .count(room.getStocks().size())
             .coupons(
                 Stream.of(couponRoomDetailResponse)
                     .filter(response -> response.roomName().equals(room.getName()))
@@ -56,11 +56,11 @@ public record RoomResponse(
                     .toList()
             )
             .images(
-                room.getRoomImages().stream()
+                room.getImages().stream()
                     .map(image -> image.getUrl())
                     .toList()
             )
-            .roomOption(RoomOptionResponse.of(room.getRoomOption()))
+            .roomOption(RoomOptionResponse.of(room.getOption()))
             .build();
     }
 

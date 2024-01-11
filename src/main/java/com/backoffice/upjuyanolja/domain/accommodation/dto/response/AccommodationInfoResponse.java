@@ -29,8 +29,8 @@ public record AccommodationInfoResponse(
             .address(accommodation.getAddress().getAddress()
                 + " "
                 + accommodation.getAddress().getDetailAddress())
-            .images(AccommodationImageResponse.of(accommodation.getAccommodationImages()))
-            .option(AccommodationOptionResponse.of(accommodation.getAccommodationOption()))
+            .images(AccommodationImageResponse.of(accommodation.getImages()))
+            .option(AccommodationOptionResponse.of(accommodation.getOption()))
             .rooms(rooms)
             .build();
     }

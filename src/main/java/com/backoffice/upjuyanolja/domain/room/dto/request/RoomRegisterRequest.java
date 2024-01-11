@@ -68,7 +68,7 @@ public record RoomRegisterRequest(
         return Room.builder()
             .accommodation(accommodation)
             .name(request.name)
-            .roomPrice(RoomPrice.builder()
+            .price(RoomPrice.builder()
                 .offWeekDaysMinFee(request.price)
                 .offWeekendMinFee(request.price)
                 .peakWeekDaysMinFee(request.price)
@@ -79,8 +79,8 @@ public record RoomRegisterRequest(
             .checkInTime(checkInTime)
             .checkOutTime(checkOutTime)
             .amount(request.amount)
-            .roomImages(new ArrayList<>())
-            .roomOption(RoomOptionRequest.toEntity(request.option))
+            .images(new ArrayList<>())
+            .option(RoomOptionRequest.toEntity(request.option))
             .build();
     }
 }

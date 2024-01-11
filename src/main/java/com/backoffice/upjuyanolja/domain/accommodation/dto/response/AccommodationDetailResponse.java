@@ -14,7 +14,7 @@ public record AccommodationDetailResponse(
     String category,
     String mainCoupon,
     List<String> images,
-    AccommodationOptionResponse accommodationOption,
+    AccommodationOptionResponse option,
     List<RoomResponse> rooms
 ) {
 
@@ -32,12 +32,12 @@ public record AccommodationDetailResponse(
             .category(accommodation.getCategory().getName())
             .mainCoupon(mainCoupon)
             .images(
-                accommodation.getAccommodationImages().stream()
+                accommodation.getImages().stream()
                     .map(image -> image.getUrl())
                     .toList()
             )
-            .accommodationOption(
-                AccommodationOptionResponse.of(accommodation.getAccommodationOption())
+            .option(
+                AccommodationOptionResponse.of(accommodation.getOption())
             )
             .rooms(rooms)
             .build();

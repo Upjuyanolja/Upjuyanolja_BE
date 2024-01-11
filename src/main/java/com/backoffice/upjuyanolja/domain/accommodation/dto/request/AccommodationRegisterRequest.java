@@ -54,8 +54,8 @@ public record AccommodationRegisterRequest(
             .category(category)
             .description(request.description())
             .thumbnail(request.thumbnail())
-            .accommodationImages(new ArrayList<>())
-            .accommodationOption(AccommodationOptionRequest.toEntity(request.option()))
+            .images(new ArrayList<>())
+            .option(AccommodationOptionRequest.toEntity(request.option()))
             .rooms(new ArrayList<>())
             .build();
     }

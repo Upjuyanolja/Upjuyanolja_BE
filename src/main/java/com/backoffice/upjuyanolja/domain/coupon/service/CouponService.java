@@ -89,10 +89,10 @@ public class CouponService {
         for (Entry<Long, TreeSet<Coupon>> roomCouponEntry : couponRoomMap.entrySet()) {
             Room room = roomService.findRoomById(roomCouponEntry.getKey());
             List<CouponRoomResponse> responses = new ArrayList<>();
-            int roomPrice = room.getRoomPrice().getOffWeekDaysMinFee();
+            int price = room.getPrice().getOffWeekDaysMinFee();
 
             for (Coupon coupon : roomCouponEntry.getValue()) {
-                responses.add(CouponRoomResponse.from(coupon, roomPrice - coupon.getDiscount()));
+                responses.add(CouponRoomResponse.from(coupon, price - coupon.getDiscount()));
             }
 
             result.add(CouponRoomDetailResponse.from(room.getName(), "FLAT", responses));
@@ -116,7 +116,7 @@ public class CouponService {
         for (Entry<Long, TreeSet<Coupon>> roomCouponEntry : couponRoomMap.entrySet()) {
             Room room = roomService.findRoomById(roomCouponEntry.getKey());
             List<CouponRoomResponse> responses = new ArrayList<>();
-            int roomPrice = room.getRoomPrice().getOffWeekDaysMinFee();
+            int roomPrice = room.getPrice().getOffWeekDaysMinFee();
 
             for (Coupon coupon : roomCouponEntry.getValue()) {
                 responses.add(CouponRoomResponse.from(
