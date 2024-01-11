@@ -40,6 +40,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Accommodation getAccommodationById(long accommodationId) {
         return accommodationRepository.findById(accommodationId)
             .orElseThrow(AccommodationNotFoundException::new);
@@ -54,11 +55,13 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AccommodationOwnership> getOwnershipByMember(Member member) {
         return accommodationOwnershipRepository.findAllByMember(member);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Category getCategoryByName(String name) {
         return categoryRepository.findCategoryByName(name)
             .orElseThrow(WrongCategoryException::new);
