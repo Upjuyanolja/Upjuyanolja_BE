@@ -158,7 +158,7 @@ public class AccommodationService {
             accommodation.getRooms().stream()
                 .map(room -> RoomResponse.of(
                         room, getDiscountPrice(room),
-                        checkSoldOut(filterRooms, room),
+                        !checkSoldOut(filterRooms, room),
                         getMinFilteredRoomStock(room, startDate, endDate),
                         couponService.getSortedTotalCouponInRoom(room)
                     )
