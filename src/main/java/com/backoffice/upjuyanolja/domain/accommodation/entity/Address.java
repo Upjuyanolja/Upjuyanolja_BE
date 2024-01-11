@@ -20,12 +20,15 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("주소 식별자")
     private Long id;
+
     @Column(nullable = false)
     @Comment("주소")
     private String address;
+
     @Column(nullable = false)
     @Comment("상세 주소")
     private String detailAddress;
+
 
     @Builder
     public Address(

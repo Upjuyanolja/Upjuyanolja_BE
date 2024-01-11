@@ -1,7 +1,7 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.global.common.BaseTime;
+import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -37,11 +37,11 @@ public class CouponIssuance extends BaseTime {
   private Room room;
 
   @Column(nullable = false, name = "coupon_amount")
-  @Comment("쿠폰 발급수량")
+  @Comment("쿠폰 발급 수량")
   private Integer couponAmount;
 
   @Column(nullable = false, name = "coupon_balance")
-  @Comment("쿠폰 잔여수량")
+  @Comment("쿠폰 잔여 수량")
   private Integer couponBalance;
 
   @Builder
