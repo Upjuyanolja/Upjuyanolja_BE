@@ -3,8 +3,9 @@ package com.backoffice.upjuyanolja.domain.accommodation.controller;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationService;
+import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
@@ -33,8 +34,24 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 public class AccommodationController {
 
-    private final AccommodationService accommodationService;
+    private final AccommodationCommandUseCase accommodationCommandUseCase;
     private final SecurityUtil securityUtil;
+
+    @PostMapping
+    public ResponseEntity<SuccessResponse<AccommodationInfoResponse>> registerAccommodation(
+        @Valid @RequestBody AccommodationRegisterRequest accommodationRegisterRequest
+    ) {
+        log.info("POST /api/accommodations");
+
+        return ApiResponse.success(HttpStatus.CREATED,
+            SuccessResponse.<AccommodationInfoResponse>builder()
+                .message("성공적으로 숙소를 등록했습니다.")
+                .data(accommodationCommandUseCase.createAccommodation
+                    (securityUtil.getCurrentMemberId(), accommodationRegisterRequest)
+                )
+                .build()
+        );
+    }
 
     @GetMapping
     public ResponseEntity<SuccessResponse<AccommodationPageResponse>> getAccommodations(
@@ -48,7 +65,7 @@ public class AccommodationController {
     ) {
         log.info("GET /api/accommodations");
 
-        AccommodationPageResponse response = accommodationService.findAccommodations(
+        AccommodationPageResponse response = accommodationCommandUseCase.findAccommodations(
             category, type, onlyHasCoupon, keyword, pageable
         );
         return ApiResponse.success(
@@ -68,7 +85,7 @@ public class AccommodationController {
     ) {
         log.info("GET /api/accommodations/{accommodationId}");
 
-        AccommodationDetailResponse response = accommodationService.findAccommodationWithRooms(
+        AccommodationDetailResponse response = accommodationCommandUseCase.findAccommodationWithRooms(
             accommodationId, startDate, endDate
         );
         return ApiResponse.success(
@@ -80,16 +97,15 @@ public class AccommodationController {
         );
     }
 
-    @PostMapping
-    public ResponseEntity<SuccessResponse<AccommodationInfoResponse>> registerAccommodation(
-        @Valid @RequestBody AccommodationRegisterRequest accommodationRegisterRequest
-    ) {
-        return ApiResponse.success(HttpStatus.CREATED,
-            SuccessResponse.<AccommodationInfoResponse>builder()
-                .message("성공적으로 숙소를 등록했습니다.")
-                .data(accommodationService.createAccommodation
-                    (securityUtil.getCurrentMemberId(), accommodationRegisterRequest)
-                )
+    @GetMapping("/backoffice")
+    public ResponseEntity<SuccessResponse<AccommodationOwnershipResponse>> getAccommodationOwnership() {
+        log.info("GET /api/accommodations/backoffice");
+
+        return ApiResponse.success(HttpStatus.OK,
+            SuccessResponse.<AccommodationOwnershipResponse>builder()
+                .message("성공적으로 보유 숙소 목록을 조회했습니다.")
+                .data(accommodationCommandUseCase
+                    .getAccommodationOwnership(securityUtil.getCurrentMemberId()))
                 .build()
         );
     }
