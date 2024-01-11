@@ -18,7 +18,7 @@ import org.hibernate.annotations.Comment;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class AccommodationOwnership extends BaseTime {
+public class AccommodationOwnership {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
