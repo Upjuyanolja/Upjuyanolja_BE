@@ -1,15 +1,12 @@
 package com.backoffice.upjuyanolja.domain.coupon.controller;
 
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponAccommodationResponse;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponPageResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,22 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class CouponController {
 
     private final CouponService couponService;
-
-    @GetMapping("/backoffice")
-    public ResponseEntity<SuccessResponse<CouponPageResponse>> getCoupon(
-        @PageableDefault(page = 0, size = 12) Pageable pageable
-    ) {
-        log.info("GET /api/coupons");
-
-        CouponPageResponse response = couponService.findCoupon(pageable);
-        return ApiResponse.success(
-            HttpStatus.OK,
-            SuccessResponse.<CouponPageResponse>builder()
-                .message("성공적으로 쿠폰 목록을 조회 했습니다.")
-                .data(response)
-                .build()
-        );
-    }
 
     @GetMapping("/{accommodationId}")
     public ResponseEntity<SuccessResponse<List<CouponAccommodationResponse>>> getCouponInAccommodation(
