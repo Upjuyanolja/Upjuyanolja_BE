@@ -10,7 +10,7 @@ import lombok.Builder;
 public record AccommodationInfoResponse(
     long accommodationId,
     String name,
-    String type,
+    String category,
     String address,
     String description,
     List<AccommodationImageResponse> images,
@@ -24,7 +24,7 @@ public record AccommodationInfoResponse(
         return AccommodationInfoResponse.builder()
             .accommodationId(accommodation.getId())
             .name(accommodation.getName())
-            .type(accommodation.getType().name())
+            .category(accommodation.getCategory().getName())
             .description(accommodation.getDescription())
             .address(accommodation.getAddress().getAddress()
                 + " "

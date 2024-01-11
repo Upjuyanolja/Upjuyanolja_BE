@@ -1,7 +1,7 @@
 package com.backoffice.upjuyanolja.domain.payment.entity;
 
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.global.common.BaseTime;
+import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -40,15 +40,15 @@ public class Payment extends BaseTime {
 
   @Column(nullable = false, name = "room_price")
   @Comment("객실 가격")
-  private Integer roomPrice; // 결제 당시의 객실 가격
+  private Integer roomPrice;
 
   @Column(nullable = false, name = "discount_amount")
   @Comment("할인 금액")
-  private Integer discountAmount; // 결제 당시의 할인 금액
+  private Integer discountAmount;
 
   @Column(nullable = false, name = "total_amount")
   @Comment("결제 금액")
-  private Integer totalAmount;    // 총 결제 금액
+  private Integer totalAmount;
 
   @Builder
   public Payment(

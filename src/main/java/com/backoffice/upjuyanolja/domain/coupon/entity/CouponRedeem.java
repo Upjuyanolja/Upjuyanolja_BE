@@ -1,7 +1,7 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
-import com.backoffice.upjuyanolja.global.common.BaseTime;
+import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
