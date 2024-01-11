@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -15,8 +16,10 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.request.Accommodation
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationImageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationNameResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOptionResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationService;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
@@ -54,7 +57,7 @@ public class AccommodationControllerTest {
     protected ObjectMapper objectMapper;
 
     @MockBean
-    private AccommodationService accommodationService;
+    private AccommodationCommandService accommodationCommandService;
 
     @MockBean
     private SecurityUtil securityUtil;
@@ -152,8 +155,9 @@ public class AccommodationControllerTest {
                 .build();
 
             given(securityUtil.getCurrentMemberId()).willReturn(1L);
-            given(accommodationService.createAccommodation(any(Long.TYPE),
-                any(AccommodationRegisterRequest.class))).willReturn(accommodationInfoResponse);
+            given(accommodationCommandService
+                .createAccommodation(any(Long.TYPE), any(AccommodationRegisterRequest.class)))
+                .willReturn(accommodationInfoResponse);
 
             // when then
             mockMvc.perform(post("/api/accommodations")
@@ -199,8 +203,43 @@ public class AccommodationControllerTest {
                 .andExpect(jsonPath("$.data.rooms[0].option.internet").isBoolean())
                 .andDo(print());
 
-            verify(accommodationService, times(1)).createAccommodation(any(Long.TYPE),
-                any(AccommodationRegisterRequest.class));
+            verify(accommodationCommandService, times(1))
+                .createAccommodation(any(Long.TYPE), any(AccommodationRegisterRequest.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("getAccommodationOwnership()은")
+    class Context_getAccommodationOwnership {
+
+        @Test
+        @DisplayName("보유 숙소 목록을 조회할 수 있다.")
+        void _willSuccess() throws Exception {
+            // given
+            AccommodationNameResponse accommodationNameResponse = AccommodationNameResponse.builder()
+                .id(1L)
+                .name("그랜드 하얏트 제주")
+                .build();
+            AccommodationOwnershipResponse accommodationOwnershipResponse = AccommodationOwnershipResponse
+                .builder()
+                .accommodations(List.of(accommodationNameResponse))
+                .build();
+
+            given(securityUtil.getCurrentMemberId()).willReturn(1L);
+            given(accommodationCommandService.getAccommodationOwnership(any(Long.TYPE)))
+                .willReturn(accommodationOwnershipResponse);
+
+            // when then
+            mockMvc.perform(get("/api/accommodations/backoffice"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.accommodations").isArray())
+                .andExpect(jsonPath("$.data.accommodations[0].id").isNumber())
+                .andExpect(jsonPath("$.data.accommodations[0].name").isString())
+                .andDo(print());
+
+            verify(accommodationCommandService, times(1)).getAccommodationOwnership(any(Long.TYPE));
         }
     }
 }

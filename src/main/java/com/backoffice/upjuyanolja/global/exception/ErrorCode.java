@@ -19,6 +19,7 @@ public enum ErrorCode {
     EMAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, 1009, "존재하지 않는 이메일입니다."),
     INCORRECT_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, 1010, "이메일 인증코드가 일치하지 않습니다."),
     NOT_REGISTERED_EMAIL(HttpStatus.BAD_REQUEST, 1010, "입점 DB에 등록된 이메일이 아닙니다."),
+    INVALID_ROLE(HttpStatus.BAD_REQUEST, 1011, "유효한 권한이 아닙니다. 올바른 경로로 회원가입을 시도해주세요."),
 
     // Accommodation
     ACCOMMODATION_NOT_FOUND(HttpStatus.NOT_FOUND, 2000, "숙소 정보를 찾을 수 없습니다."),

@@ -1,8 +1,10 @@
 package com.backoffice.upjuyanolja.domain.member.controller;
 
 import com.backoffice.upjuyanolja.domain.member.dto.request.OwnerEmailRequest;
+import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.OwnerEmailResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.OwnerSignupResponse;
+import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.service.OwnerAuthService;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
@@ -53,7 +55,18 @@ public class OwnerAuthController {
         return ApiResponse.success(HttpStatus.OK,
             SuccessResponse.<OwnerSignupResponse>builder()
                 .message("업주 회원가입이 성공적으로 완료되었습니다.")
-                .data(ownerAuthService.ownerSignup(request))
+                .data(ownerAuthService.signup(request))
+                .build());
+    }
+
+    @PostMapping("owners/signin")
+    public ResponseEntity<SuccessResponse<SignInResponse>> ownerSingup(
+        @Valid @RequestBody SignInRequest request
+    ) {
+        return ApiResponse.success(HttpStatus.OK,
+            SuccessResponse.<SignInResponse>builder()
+                .message("업주 회원가입이 성공적으로 완료되었습니다.")
+                .data(ownerAuthService.signin(request))
                 .build());
     }
 }

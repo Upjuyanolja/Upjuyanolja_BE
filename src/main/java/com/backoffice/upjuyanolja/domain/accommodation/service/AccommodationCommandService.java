@@ -4,17 +4,20 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.request.Accommodation
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationNameResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationSummaryResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
-import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
-import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
-import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
+import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
+import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase.AccommodationSaveRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
@@ -39,18 +42,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
-public class AccommodationService {
+public class AccommodationCommandService implements AccommodationCommandUseCase {
 
+    private final AccommodationQueryUseCase accommodationQueryUseCase;
     private final AccommodationRepository accommodationRepository;
-    private final AccommodationImageRepository accommodationImageRepository;
-    private final AccommodationOwnershipRepository accommodationOwnershipRepository;
-    private final CategoryRepository categoryRepository;
     private final CouponService couponService;
     private final RoomService roomService;
     private final MemberGetService memberGetService;
 
-    @Transactional(readOnly = true)
+    @Override
+    public AccommodationInfoResponse createAccommodation(
+        long memberId,
+        AccommodationRegisterRequest request
+    ) {
+        Member member = memberGetService.getMemberById(memberId);
+        Accommodation accommodation = saveAccommodation(request);
+        accommodationQueryUseCase.saveOwnership(member, accommodation);
+        request.rooms().forEach(
+            roomRegisterRequest -> roomService.saveRoom(accommodation, roomRegisterRequest));
+        return AccommodationInfoResponse.of(
+            accommodationQueryUseCase.getAccommodationById(accommodation.getId()));
+    }
+
+    @Override
     public AccommodationPageResponse findAccommodations(
         String category, String type, boolean onlyHasCoupon, String keyword, Pageable pageable
     ) {
@@ -75,6 +91,19 @@ public class AccommodationService {
         );
     }
 
+    @Override
+    public AccommodationOwnershipResponse getAccommodationOwnership(long memberId) {
+        Member member = memberGetService.getMemberById(memberId);
+        List<AccommodationOwnership> ownerships = accommodationQueryUseCase
+            .getOwnershipByMember(member);
+        List<AccommodationNameResponse> accommodations = new ArrayList<>();
+        ownerships.forEach(ownership -> accommodations.add(
+            AccommodationNameResponse.of(ownership.getAccommodation())));
+        return AccommodationOwnershipResponse.builder()
+            .accommodations(accommodations)
+            .build();
+    }
+
     private boolean checkCouponAvailability(Accommodation accommodation) {
         return accommodation.getRooms().stream()
             .anyMatch(room -> !room.getCouponIssuances().isEmpty());
@@ -82,7 +111,7 @@ public class AccommodationService {
 
     private int getLowestPrice(Long accommodationId) {
         Accommodation accommodation = accommodationRepository.findById(accommodationId).orElseThrow(
-            () -> new AccommodationNotFoundException()
+            AccommodationNotFoundException::new
         );
         PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
 
@@ -141,13 +170,13 @@ public class AccommodationService {
 
     }
 
-    @Transactional(readOnly = true)
+    @Override
     public AccommodationDetailResponse findAccommodationWithRooms(
         Long accommodationId, LocalDate startDate, LocalDate endDate
     ) {
         Accommodation accommodation =
             accommodationRepository.findById(accommodationId)
-                .orElseThrow(() -> new AccommodationNotFoundException());
+                .orElseThrow(AccommodationNotFoundException::new);
 
         List<Room> filterRooms = getFilteredRoomsByDate(
             accommodation.getRooms(), startDate, endDate
@@ -215,48 +244,22 @@ public class AccommodationService {
         return rooms.contains(room);
     }
 
-    public AccommodationInfoResponse createAccommodation(
-        long memberId,
-        AccommodationRegisterRequest request
-    ) {
-        Member member = memberGetService.getMemberById(memberId);
-        Accommodation accommodation = saveAccommodation(request);
-        saveOwnership(member, accommodation);
-        saveRooms(accommodation, request.rooms());
-        accommodation = getAccommodationById(accommodation.getId());
-
-        return AccommodationInfoResponse.of(accommodation);
-    }
-
-    private Accommodation getAccommodationById(long accommodationId) {
-        return accommodationRepository.findById(accommodationId)
-            .orElseThrow(AccommodationNotFoundException::new);
-    }
-
     private Accommodation saveAccommodation(AccommodationRegisterRequest request) {
-        Category category = getCategoryByName(request.category());
-        Accommodation accommodation = accommodationRepository
-            .save(AccommodationRegisterRequest.toEntity(request, category));
-        List<AccommodationImage> images = AccommodationImageRequest
-            .toEntity(accommodation, request.images());
-        accommodationImageRepository.saveAll(images);
+        Category category = accommodationQueryUseCase.getCategoryByName(request.category());
+        Accommodation accommodation = accommodationQueryUseCase.saveAccommodation(
+            AccommodationSaveRequest.builder()
+                .name(request.name())
+                .address(Address.builder()
+                    .address(request.address())
+                    .detailAddress(request.detailAddress())
+                    .build())
+                .description(request.description())
+                .category(category)
+                .thumbnail(request.thumbnail())
+                .build());
+        accommodationQueryUseCase.saveAllImages(AccommodationImageRequest
+            .toEntity(accommodation, request.images()));
 
         return accommodation;
-    }
-
-    private Category getCategoryByName(String name) {
-        return categoryRepository.findCategoryByName(name)
-            .orElseThrow(() -> new WrongCategoryException());
-    }
-
-    private void saveOwnership(Member member, Accommodation accommodation) {
-        accommodationOwnershipRepository.save(AccommodationOwnership.builder()
-            .accommodation(accommodation)
-            .member(member)
-            .build());
-    }
-
-    private void saveRooms(Accommodation accommodation, List<RoomRegisterRequest> requests) {
-        requests.forEach(request -> roomService.saveRoom(accommodation, request));
     }
 }
