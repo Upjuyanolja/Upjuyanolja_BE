@@ -352,7 +352,7 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
 
     @Test
     @DisplayName("보유 숙소 목록을 조회할 수 있다.")
-    void getAccommodationNames() throws Exception {
+    void getAccommodationOwnership() throws Exception {
         // given
         AccommodationNameResponse accommodationNameResponse1 = AccommodationNameResponse.builder()
             .id(1L)

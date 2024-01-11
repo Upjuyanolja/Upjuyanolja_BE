@@ -258,8 +258,8 @@ public class AccommodationCommandServiceTest {
     }
 
     @Nested
-    @DisplayName("getAccommodationNames()은")
-    class Context_getAccommodationNames {
+    @DisplayName("getAccommodationOwnership()은")
+    class Context_getAccommodationOwnership {
 
         @Test
         @DisplayName("보유 숙소 목록을 조회할 수 있다.")
