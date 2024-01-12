@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -81,8 +83,12 @@ public class AccommodationController {
     @GetMapping("/{accommodationId}")
     public ResponseEntity<SuccessResponse<AccommodationDetailResponse>> getAccommodationWithRooms(
         @PathVariable Long accommodationId,
-        @RequestParam(defaultValue = "2023-12-20", required = false) LocalDate startDate,
-        @RequestParam(defaultValue = "2023-12-21", required = false) LocalDate endDate
+        @RequestParam(defaultValue = "#{T(java.time.LocalDateTime).now()}", required = false)
+        @DateTimeFormat(iso = ISO.DATE)
+        LocalDate startDate,
+        @RequestParam(defaultValue = "#{T(java.time.LocalDateTime).now()}", required = false)
+        @DateTimeFormat(iso = ISO.DATE)
+        LocalDate endDate
     ) {
         log.info("GET /api/accommodations/{accommodationId}");
 
