@@ -77,8 +77,8 @@ dependencies {
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '3.0.5'
 
     // Test
-    testImplementation("org.springframework.boot:spring-boot-starter-test"){
-        exclude group: "com.vaadin.external.google", module:"android-json"
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude group: "com.vaadin.external.google", module: "android-json"
     }
 }
 
@@ -93,13 +93,18 @@ tasks.named('asciidoctor') {
 }
 
 task copyPrivate(type: Copy) {
-    copy {
-        from './submodule-data'
-        include "*.yaml"
-        into 'src/main/resources'
-    }
-}
+    from './submodule-data'
+    include "application.yaml", "application-local.yaml", "application-prod.yaml"
+    into 'src/main/resources'
 
+    from './submodule-data'
+    include "application-test.yaml"
+    into 'src/test/resources'
+
+    from './submodule-data'
+    include "keystore.p12"
+    into 'src/main/resources/ssl'
+}
 
 bootJar {
     dependsOn asciidoctor
