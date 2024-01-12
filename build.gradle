@@ -43,6 +43,9 @@ dependencies {
 
     //Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    
+    // Redisson
+    implementation 'org.redisson:redisson-spring-boot-starter:3.17.4'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
