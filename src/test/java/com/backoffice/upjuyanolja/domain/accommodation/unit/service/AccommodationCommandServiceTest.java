@@ -31,7 +31,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
-import com.backoffice.upjuyanolja.domain.room.service.RoomService;
+import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +58,7 @@ public class AccommodationCommandServiceTest {
     private MemberGetService memberGetService;
 
     @Mock
-    private RoomService roomService;
+    private RoomCommandService roomCommandService;
 
     @Nested
     @DisplayName("createAccommodation()은")
@@ -180,8 +180,8 @@ public class AccommodationCommandServiceTest {
                 .id(1L)
                 .accommodation(accommodation)
                 .name("65m² 킹룸")
-                .standard(2)
-                .capacity(3)
+                .defaultCapacity(2)
+                .maxCapacity(3)
                 .checkInTime(LocalTime.of(15, 0, 0))
                 .checkOutTime(LocalTime.of(11, 0, 0))
                 .price(RoomPrice.builder()
@@ -235,7 +235,7 @@ public class AccommodationCommandServiceTest {
             given(accommodationQueryUseCase
                 .saveOwnership(any(Member.class), any(Accommodation.class)))
                 .willReturn(accommodationOwnership);
-            given(roomService.saveRoom(any(Accommodation.class), any(RoomRegisterRequest.class)))
+            given(roomCommandService.saveRoom(any(Accommodation.class), any(RoomRegisterRequest.class)))
                 .willReturn(roomInfoResponse);
             given(accommodationQueryUseCase.getAccommodationById(any(Long.TYPE)))
                 .willReturn(savedAccommodation);
@@ -313,8 +313,8 @@ public class AccommodationCommandServiceTest {
                 .id(1L)
                 .accommodation(accommodation)
                 .name("65m² 킹룸")
-                .standard(2)
-                .capacity(3)
+                .defaultCapacity(2)
+                .maxCapacity(3)
                 .checkInTime(LocalTime.of(15, 0, 0))
                 .checkOutTime(LocalTime.of(11, 0, 0))
                 .price(RoomPrice.builder()

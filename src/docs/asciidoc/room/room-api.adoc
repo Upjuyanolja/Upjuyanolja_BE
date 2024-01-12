@@ -1,0 +1,25 @@
+ifndef::snippets[]
+:snippets: build/generated-snippets
+endif::[]
+
+= Room REST API Docs
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+
+[[Register-Room]]
+== 객실 추가 등록
+
+객실 추가 등록 API 입니다.
+
+=== HttpRequest
+
+include::{snippets}/room-controller-docs-test/register-room/http-request.adoc[]
+include::{snippets}/room-controller-docs-test/register-room/request-fields.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/room-controller-docs-test/register-room/http-response.adoc[]
+include::{snippets}/room-controller-docs-test/register-room/response-fields.adoc[]

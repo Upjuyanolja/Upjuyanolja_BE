@@ -87,8 +87,8 @@ public class GetReservedResponse {
         this.roomName = room.getName();
         this.checkInTime = room.getCheckInTime();
         this.checkOutTime = room.getCheckOutTime();
-        this.defaultCapacity = room.getStandard();
-        this.maxCapacity = room.getCapacity();
+        this.defaultCapacity = room.getDefaultCapacity();
+        this.maxCapacity = room.getMaxCapacity();
         this.startDate = reservationRoom.getStartDate();
         this.endDate = reservationRoom.getEndDate();
 
