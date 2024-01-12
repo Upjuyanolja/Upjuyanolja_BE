@@ -93,15 +93,15 @@ tasks.named('asciidoctor') {
 }
 
 task copyPrivate(type: Copy) {
-    from './submodule-data'
+    from './submodule-data/main'
     include "application.yaml", "application-local.yaml", "application-prod.yaml"
     into 'src/main/resources'
 
-    from './submodule-data'
+    from './submodule-data/test'
     include "application-test.yaml"
     into 'src/test/resources'
 
-    from './submodule-data'
+    from './submodule-data/ssl'
     include "keystore.p12"
     into 'src/main/resources/ssl'
 }
