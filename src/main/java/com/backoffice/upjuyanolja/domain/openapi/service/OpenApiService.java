@@ -311,9 +311,9 @@ public class OpenApiService {
                 Room room = roomRepository.save(Room.builder()
                     .accommodation(accommodation)
                     .name(roomJson.getString("roomtitle"))
-                    .standard(
+                    .defaultCapacity(
                         roomJson.getInt("roombasecount"))
-                    .capacity(Math.max(roomJson.getInt("roombasecount"),
+                    .maxCapacity(Math.max(roomJson.getInt("roombasecount"),
                         roomJson.getInt("roommaxcount")))
                     .checkInTime(checkIn)
                     .checkOutTime(checkOut)

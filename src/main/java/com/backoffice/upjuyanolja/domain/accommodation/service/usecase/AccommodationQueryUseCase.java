@@ -20,6 +20,8 @@ public interface AccommodationQueryUseCase {
 
     List<AccommodationOwnership> getOwnershipByMember(Member member);
 
+    boolean existsOwnershipByMemberAndAccommodation(Member member, Accommodation accommodation);
+
     Category getCategoryByName(String name);
 
     List<AccommodationImage> saveAllImages(List<AccommodationImage> images);

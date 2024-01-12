@@ -7,7 +7,8 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponIssuanceRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.service.RoomService;
+import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
+import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -27,9 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CouponService {
 
+    private final CouponRepository couponRepository;
     private final CouponIssuanceRepository couponIssuanceRepository;
 
-    private final RoomService roomService;
+    private final RoomQueryUseCase roomQueryUseCase;
 
     @Transactional(readOnly = true)
     public List<CouponAccommodationResponse> findCouponInAccommodation(Long accommodationId) {
@@ -74,7 +76,7 @@ public class CouponService {
         }
 
         for (Entry<Long, TreeSet<Coupon>> roomCouponEntry : couponIssuanceMap.entrySet()) {
-            Room room = roomService.findRoomById(roomCouponEntry.getKey());
+            Room room = roomQueryUseCase.findRoomById(roomCouponEntry.getKey());
             int price = room.getPrice().getOffWeekDaysMinFee();
 
             for (Coupon coupon : roomCouponEntry.getValue()) {
@@ -101,7 +103,7 @@ public class CouponService {
         }
 
         for (Entry<Long, TreeSet<Coupon>> roomCouponEntry : couponIssuanceMap.entrySet()) {
-            Room room = roomService.findRoomById(roomCouponEntry.getKey());
+            Room room = roomQueryUseCase.findRoomById(roomCouponEntry.getKey());
             int price = room.getPrice().getOffWeekDaysMinFee();
 
             for (Coupon coupon : roomCouponEntry.getValue()) {

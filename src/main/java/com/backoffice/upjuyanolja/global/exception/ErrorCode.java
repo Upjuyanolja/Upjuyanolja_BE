@@ -15,7 +15,8 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, 1005, "회원 정보를 찾을 수 없습니다."),
     AUTHORIZE_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, 1006, "인증 정보를 찾을 수 없습니다"),
     EMAIL_SEND_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 1007, "이메일 인증코드 발송 중 오류가 발생했습니다"),
-    CREATE_VERIFICATION_CODE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 1008, "이메일 인증코드 생성 중 오류가 발생했습니다"),
+    CREATE_VERIFICATION_CODE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 1008,
+        "이메일 인증코드 생성 중 오류가 발생했습니다"),
     EMAIL_NOT_FOUND(HttpStatus.BAD_REQUEST, 1009, "존재하지 않는 이메일입니다."),
     INCORRECT_VERIFICATION_CODE(HttpStatus.BAD_REQUEST, 1010, "이메일 인증코드가 일치하지 않습니다."),
     NOT_REGISTERED_EMAIL(HttpStatus.BAD_REQUEST, 1010, "입점 DB에 등록된 이메일이 아닙니다."),
@@ -30,6 +31,7 @@ public enum ErrorCode {
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 3000, "객실 정보를 찾을 수 없습니다."),
     ROOM_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, 3001, "객실 재고 정보를 찾을 수 없습니다."),
     DUPLICATED_ROOM_NAME(HttpStatus.BAD_REQUEST, 3002, "중복된 객실 이름입니다."),
+    INVALID_TIME_FORMAT(HttpStatus.BAD_REQUEST, 3003, "올바르지 않은 형식의 시간입니다.(HH:mm)"),
 
     // Reservation
     RESERVATION_FAILED(HttpStatus.BAD_REQUEST, 4000, "예약할 수 없습니다."),
@@ -57,7 +59,8 @@ public enum ErrorCode {
     DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 9000, "데이터베이스 오류가 발생했습니다."),
     INVALID_REQUEST_BODY(HttpStatus.BAD_REQUEST, 9001, "유효하지 않은 요청 바디입니다."),
     SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 9002, "서버에 알 수 없는 에러가 발생했습니다."),
-    INVALID_DATE(HttpStatus.BAD_REQUEST, 9003, "유효하지 않는 날짜입니다.");
+    INVALID_DATE(HttpStatus.BAD_REQUEST, 9003, "유효하지 않는 날짜입니다."),
+    NOT_OWNER(HttpStatus.UNAUTHORIZED, 9004, "숙소의 업주가 아닙니다.");
 
     private final HttpStatus httpStatus;
     private final int code;
