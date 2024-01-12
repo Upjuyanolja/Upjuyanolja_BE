@@ -190,7 +190,7 @@ public class RoomCommandServiceTest {
             given(roomQueryUseCase.saveRoom(any(Accommodation.class), any(Room.class)))
                 .willReturn(room);
             given(roomQueryUseCase.saveRoomImages(any(List.class))).willReturn(List.of(roomImage));
-            given(roomQueryUseCase.getRoomById(any(Long.TYPE))).willReturn(savedRoom);
+            given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(savedRoom);
 
             // when
             RoomInfoResponse result = roomCommandService.registerRoom(1L, 1L, roomRegisterRequest);
@@ -221,7 +221,7 @@ public class RoomCommandServiceTest {
             verify(roomQueryUseCase, times(1)).existsRoomByName(any(String.class));
             verify(roomQueryUseCase, times(1)).saveRoom(any(Accommodation.class), any(Room.class));
             verify(roomQueryUseCase, times(1)).saveRoomImages(any(List.class));
-            verify(roomQueryUseCase, times(1)).getRoomById(any(Long.TYPE));
+            verify(roomQueryUseCase, times(1)).findRoomById(any(Long.TYPE));
         }
 
         @Test
@@ -311,7 +311,7 @@ public class RoomCommandServiceTest {
             verify(roomQueryUseCase, never()).existsRoomByName(any(String.class));
             verify(roomQueryUseCase, never()).saveRoom(any(Accommodation.class), any(Room.class));
             verify(roomQueryUseCase, never()).saveRoomImages(any(List.class));
-            verify(roomQueryUseCase, never()).getRoomById(any(Long.TYPE));
+            verify(roomQueryUseCase, never()).findRoomById(any(Long.TYPE));
         }
     }
 
@@ -426,7 +426,7 @@ public class RoomCommandServiceTest {
             given(roomQueryUseCase.saveRoom(any(Accommodation.class), any(Room.class))).willReturn(
                 room);
             given(roomQueryUseCase.saveRoomImages(any(List.class))).willReturn(List.of(roomImage));
-            given(roomQueryUseCase.getRoomById(any(Long.TYPE))).willReturn(savedRoom);
+            given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(savedRoom);
 
             // when
             RoomInfoResponse result = roomCommandService.saveRoom(accommodation,
@@ -453,7 +453,7 @@ public class RoomCommandServiceTest {
             verify(roomQueryUseCase, times(1)).existsRoomByName(any(String.class));
             verify(roomQueryUseCase, times(1)).saveRoom(any(Accommodation.class), any(Room.class));
             verify(roomQueryUseCase, times(1)).saveRoomImages(any(List.class));
-            verify(roomQueryUseCase, times(1)).getRoomById(any(Long.TYPE));
+            verify(roomQueryUseCase, times(1)).findRoomById(any(Long.TYPE));
         }
 
         @Test

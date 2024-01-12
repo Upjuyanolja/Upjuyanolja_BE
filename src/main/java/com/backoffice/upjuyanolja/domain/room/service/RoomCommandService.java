@@ -10,12 +10,14 @@ import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.exception.DuplicateRoomNameException;
 import com.backoffice.upjuyanolja.domain.room.exception.InvalidTimeFormatException;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -70,8 +72,23 @@ public class RoomCommandService implements RoomCommandUseCase {
         );
         roomQueryUseCase.saveRoomImages(RoomImageRequest.toEntity(room, request.images()));
 
-        return RoomInfoResponse.of(roomQueryUseCase.getRoomById(room.getId()));
+        return RoomInfoResponse.of(roomQueryUseCase.findRoomById(room.getId()));
     }
+
+    @Override
+    public List<RoomStock> getFilteredRoomStocksByDate(
+        Room room, LocalDate startDate, LocalDate endDate
+    ) {
+        return roomQueryUseCase.findStockByRoom(room).stream()
+            .filter(
+                stock ->
+                    !(stock.getDate().isBefore(startDate)) &&
+                        !(stock.getDate().isBefore(endDate)) &&
+                        stock.getCount() != 0
+            )
+            .toList();
+    }
+
 
     private void roomNameValidate(String name) {
         if (roomQueryUseCase.existsRoomByName(name)) {

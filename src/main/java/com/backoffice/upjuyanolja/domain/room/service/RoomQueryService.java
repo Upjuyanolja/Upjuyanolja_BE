@@ -3,9 +3,12 @@ package com.backoffice.upjuyanolja.domain.room.service;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
+import com.backoffice.upjuyanolja.domain.room.exception.RoomStockNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ public class RoomQueryService implements RoomQueryUseCase {
 
     private final RoomRepository roomRepository;
     private final RoomImageRepository roomImageRepository;
+    private final RoomStockRepository roomStockRepository;
 
     @Override
     public Room saveRoom(Accommodation accommodation, Room room) {
@@ -32,7 +36,7 @@ public class RoomQueryService implements RoomQueryUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public Room getRoomById(long roomId) {
+    public Room findRoomById(long roomId) {
         return roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
     }
 
@@ -41,4 +45,10 @@ public class RoomQueryService implements RoomQueryUseCase {
     public boolean existsRoomByName(String name) {
         return roomRepository.existsRoomByName(name);
     }
+    @Override
+    public List<RoomStock> findStockByRoom(Room room) {
+        return roomStockRepository.findByRoom(room)
+            .orElseThrow(() -> new RoomStockNotFoundException());
+    }
+
 }

@@ -24,15 +24,11 @@ import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
-import com.backoffice.upjuyanolja.domain.room.service.RoomService;
-import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
-import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import lombok.RequiredArgsConstructor;
@@ -157,7 +153,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         }
 
         if (!flatResponse.isEmpty() && !rateResponse.isEmpty()) {
-            return flatResponse.get().name()+" or "+rateResponse.get().name();
+            return flatResponse.get().name() + " or " + rateResponse.get().name();
         }
 
         return flatResponse.orElse(rateResponse.get()).name();
@@ -204,7 +200,8 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         List<Room> filterRoom = new ArrayList<>();
 
         for (Room room : rooms) {
-            List<RoomStock> filteredStocks = getFilteredRoomStocksByDate(room, startDate, endDate);
+            List<RoomStock> filteredStocks = roomCommandUseCase.getFilteredRoomStocksByDate(room,
+                startDate, endDate);
             if (!filteredStocks.isEmpty()) {
                 filterRoom.add(room);
             }
@@ -212,23 +209,10 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         return filterRoom;
     }
 
-    private List<RoomStock> getFilteredRoomStocksByDate(
-        Room room, LocalDate startDate, LocalDate endDate
-    ) {
-        return roomService.findStockByRoom(room).stream()
-            .filter(
-                stock ->
-                    !(stock.getDate().isBefore(startDate)) &&
-                        !(stock.getDate().isBefore(endDate)) &&
-                        stock.getCount() != 0
-            )
-            .toList();
-    }
-
     private int getMinFilteredRoomStock(
         Room room, LocalDate startDate, LocalDate endDate
     ) {
-        return getFilteredRoomStocksByDate(room, startDate, endDate).stream()
+        return roomCommandUseCase.getFilteredRoomStocksByDate(room, startDate, endDate).stream()
             .mapToInt(RoomStock::getCount)
             .min()
             .orElse(0);

@@ -7,7 +7,6 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponIssuanceRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -28,9 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CouponService {
 
-    private final CouponRepository couponRepository;
     private final CouponIssuanceRepository couponIssuanceRepository;
-
     private final RoomQueryUseCase roomQueryUseCase;
 
     @Transactional(readOnly = true)
