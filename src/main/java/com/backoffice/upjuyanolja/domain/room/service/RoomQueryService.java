@@ -3,6 +3,7 @@ package com.backoffice.upjuyanolja.domain.room.service;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
+import com.backoffice.upjuyanolja.domain.room.exception.RoomImageNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
@@ -32,7 +33,7 @@ public class RoomQueryService implements RoomQueryUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public Room getRoomById(long roomId) {
+    public Room findRoomById(long roomId) {
         return roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
     }
 
@@ -40,5 +41,17 @@ public class RoomQueryService implements RoomQueryUseCase {
     @Transactional(readOnly = true)
     public boolean existsRoomByName(String name) {
         return roomRepository.existsRoomByName(name);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RoomImage findRoomImage(long roomImageId) {
+        return roomImageRepository.findById(roomImageId)
+            .orElseThrow(RoomImageNotFoundException::new);
+    }
+
+    @Override
+    public void deleteRoomImages(List<RoomImage> requests) {
+        roomImageRepository.deleteAll(requests);
     }
 }
