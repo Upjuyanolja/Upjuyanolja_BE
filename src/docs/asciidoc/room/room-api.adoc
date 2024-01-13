@@ -25,7 +25,7 @@ include::{snippets}/room-controller-docs-test/register-room/request-fields.adoc[
 include::{snippets}/room-controller-docs-test/register-room/http-response.adoc[]
 include::{snippets}/room-controller-docs-test/register-room/response-fields.adoc[]
 
-[[Update-Room]]
+[[Modify-Room]]
 == 객실 수정
 
 객실 수정 API 입니다.
