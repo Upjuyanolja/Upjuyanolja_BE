@@ -102,7 +102,7 @@ public class RoomCommandService implements RoomCommandUseCase {
     }
 
     private void updateRoom(Room room, RoomUpdateRequest request) {
-        room.updateRoom(request);
+        room.updateRoom(RoomUpdate.of(request));
         addRoomImages(room, request.addImages());
         roomQueryUseCase.deleteRoomImages(getRoomImages(request.deleteImages()));
     }
