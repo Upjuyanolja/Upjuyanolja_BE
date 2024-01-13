@@ -2,7 +2,10 @@ package com.backoffice.upjuyanolja.domain.room.entity;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
+import com.backoffice.upjuyanolja.domain.room.dto.request.RoomUpdateRequest;
+import com.backoffice.upjuyanolja.domain.room.exception.InvalidRoomStatusException;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
+import com.backoffice.upjuyanolja.global.util.DateTimeParser;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -121,5 +124,17 @@ public class Room extends BaseTime {
         this.images = images;
         this.stocks = stocks;
         this.couponIssuances = couponIssuances;
+    }
+
+    public void updateRoom(RoomUpdateRequest request) {
+        this.name = request.name();
+        this.status = RoomStatus.valueOf(request.status());
+        this.price.updateRoomPrice(request.price());
+        this.defaultCapacity = request.defaultCapacity();
+        this.maxCapacity = request.maxCapacity();
+        this.checkInTime = DateTimeParser.timeParser(request.checkInTime());
+        this.checkOutTime = DateTimeParser.timeParser(request.checkOutTime());
+        this.amount = request.amount();
+        this.option.updateRoomOption(request.option());
     }
 }
