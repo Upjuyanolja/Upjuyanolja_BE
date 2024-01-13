@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,9 +18,12 @@ import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.Accommoda
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageAddRequest;
+import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageDeleteRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
+import com.backoffice.upjuyanolja.domain.room.dto.request.RoomUpdateRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
@@ -190,7 +194,7 @@ public class RoomCommandServiceTest {
             given(roomQueryUseCase.saveRoom(any(Accommodation.class), any(Room.class)))
                 .willReturn(room);
             given(roomQueryUseCase.saveRoomImages(any(List.class))).willReturn(List.of(roomImage));
-            given(roomQueryUseCase.getRoomById(any(Long.TYPE))).willReturn(savedRoom);
+            given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(savedRoom);
 
             // when
             RoomInfoResponse result = roomCommandService.registerRoom(1L, 1L, roomRegisterRequest);
@@ -221,7 +225,7 @@ public class RoomCommandServiceTest {
             verify(roomQueryUseCase, times(1)).existsRoomByName(any(String.class));
             verify(roomQueryUseCase, times(1)).saveRoom(any(Accommodation.class), any(Room.class));
             verify(roomQueryUseCase, times(1)).saveRoomImages(any(List.class));
-            verify(roomQueryUseCase, times(1)).getRoomById(any(Long.TYPE));
+            verify(roomQueryUseCase, times(1)).findRoomById(any(Long.TYPE));
         }
 
         @Test
@@ -311,7 +315,7 @@ public class RoomCommandServiceTest {
             verify(roomQueryUseCase, never()).existsRoomByName(any(String.class));
             verify(roomQueryUseCase, never()).saveRoom(any(Accommodation.class), any(Room.class));
             verify(roomQueryUseCase, never()).saveRoomImages(any(List.class));
-            verify(roomQueryUseCase, never()).getRoomById(any(Long.TYPE));
+            verify(roomQueryUseCase, never()).findRoomById(any(Long.TYPE));
         }
     }
 
@@ -370,6 +374,7 @@ public class RoomCommandServiceTest {
                 .images(new ArrayList<>())
                 .rooms(new ArrayList<>())
                 .build();
+
             Room room = Room.builder()
                 .id(1L)
                 .accommodation(accommodation)
@@ -393,11 +398,13 @@ public class RoomCommandServiceTest {
                     .build())
                 .images(new ArrayList<>())
                 .build();
+
             RoomImage roomImage = RoomImage.builder()
                 .id(1L)
                 .room(room)
                 .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
                 .build();
+
             Room savedRoom = Room.builder()
                 .id(1L)
                 .accommodation(accommodation)
@@ -426,7 +433,7 @@ public class RoomCommandServiceTest {
             given(roomQueryUseCase.saveRoom(any(Accommodation.class), any(Room.class))).willReturn(
                 room);
             given(roomQueryUseCase.saveRoomImages(any(List.class))).willReturn(List.of(roomImage));
-            given(roomQueryUseCase.getRoomById(any(Long.TYPE))).willReturn(savedRoom);
+            given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(savedRoom);
 
             // when
             RoomInfoResponse result = roomCommandService.saveRoom(accommodation,
@@ -453,7 +460,7 @@ public class RoomCommandServiceTest {
             verify(roomQueryUseCase, times(1)).existsRoomByName(any(String.class));
             verify(roomQueryUseCase, times(1)).saveRoom(any(Accommodation.class), any(Room.class));
             verify(roomQueryUseCase, times(1)).saveRoomImages(any(List.class));
-            verify(roomQueryUseCase, times(1)).getRoomById(any(Long.TYPE));
+            verify(roomQueryUseCase, times(1)).findRoomById(any(Long.TYPE));
         }
 
         @Test
@@ -519,6 +526,186 @@ public class RoomCommandServiceTest {
             assertEquals(exception.getMessage(), "중복된 객실 이름입니다.");
 
             verify(roomQueryUseCase, times(1)).existsRoomByName(any(String.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("modifyRoom()은")
+    class Context_modifyRoom {
+
+        @Test
+        @DisplayName("객실을 수정할 수 있다.")
+        void _willSuccess() {
+            // given
+            RoomUpdateRequest roomUpdateRequest = RoomUpdateRequest.builder()
+                .name("65m² 킹룸")
+                .price(200000)
+                .status("STOP_SELLING")
+                .defaultCapacity(2)
+                .maxCapacity(3)
+                .checkInTime("15:00")
+                .checkOutTime("11:00")
+                .amount(858)
+                .addImages(List.of(RoomImageAddRequest.builder()
+                    .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
+                    .build()))
+                .deleteImages(List.of(RoomImageDeleteRequest.builder()
+                    .id(1L)
+                    .build()))
+                .option(RoomOptionRequest.builder()
+                    .airCondition(true)
+                    .tv(true)
+                    .internet(true)
+                    .build())
+                .build();
+
+            Member member = Member.builder()
+                .id(1L)
+                .email("test@mail.com")
+                .password("$10$ygrAExVYmFTkZn2d0.Pk3Ot5CNZwIBjZH5f.WW0AnUq4w4PtBi9Nm")
+                .name("test")
+                .phone("010-1234-1234")
+                .imageUrl(
+                    "https://fastly.picsum.photos/id/866/200/300.jpg?hmac=rcadCENKh4rD6MAp6V_ma-AyWv641M4iiOpe1RyFHeI")
+                .authority(Authority.ROLE_USER)
+                .build();
+
+            Category category = Category.builder()
+                .id(5L)
+                .name("TOURIST_HOTEL")
+                .build();
+
+            Accommodation accommodation = Accommodation.builder()
+                .name("그랜드 하얏트 제주")
+                .address(Address.builder()
+                    .address("제주특별자치도 제주시 노형동 925")
+                    .detailAddress("")
+                    .build())
+                .category(category)
+                .description(
+                    "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
+                .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
+                .option(AccommodationOption.builder()
+                    .cooking(false)
+                    .parking(true)
+                    .pickup(false)
+                    .barbecue(false)
+                    .fitness(true)
+                    .karaoke(false)
+                    .sauna(false)
+                    .sports(true)
+                    .seminar(true)
+                    .build())
+                .images(new ArrayList<>())
+                .rooms(new ArrayList<>())
+                .build();
+
+            RoomImage roomImage1 = RoomImage.builder()
+                .id(1L)
+                .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
+                .build();
+
+            Room room = Room.builder()
+                .id(1L)
+                .accommodation(accommodation)
+                .name("65m² 킹룸")
+                .defaultCapacity(2)
+                .maxCapacity(3)
+                .checkInTime(LocalTime.of(15, 0, 0))
+                .checkOutTime(LocalTime.of(11, 0, 0))
+                .price(RoomPrice.builder()
+                    .offWeekDaysMinFee(100000)
+                    .offWeekendMinFee(100000)
+                    .peakWeekDaysMinFee(100000)
+                    .peakWeekendMinFee(100000)
+                    .build())
+                .amount(858)
+                .status(RoomStatus.SELLING)
+                .option(RoomOption.builder()
+                    .airCondition(true)
+                    .tv(true)
+                    .internet(true)
+                    .build())
+                .images(List.of(roomImage1))
+                .build();
+
+            RoomImage roomImage2 = RoomImage.builder()
+                .id(2L)
+                .room(room)
+                .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_2.jpg")
+                .build();
+            RoomImage roomImage3 = RoomImage.builder()
+                .id(3L)
+                .room(room)
+                .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_3.jpg")
+                .build();
+
+            Room savedRoom = Room.builder()
+                .id(1L)
+                .accommodation(accommodation)
+                .name("65m² 킹룸")
+                .defaultCapacity(2)
+                .maxCapacity(3)
+                .checkInTime(LocalTime.of(15, 0, 0))
+                .checkOutTime(LocalTime.of(11, 0, 0))
+                .price(RoomPrice.builder()
+                    .offWeekDaysMinFee(200000)
+                    .offWeekendMinFee(200000)
+                    .peakWeekDaysMinFee(200000)
+                    .peakWeekendMinFee(200000)
+                    .build())
+                .amount(858)
+                .status(RoomStatus.STOP_SELLING)
+                .option(RoomOption.builder()
+                    .airCondition(true)
+                    .tv(true)
+                    .internet(true)
+                    .build())
+                .images(List.of(roomImage2, roomImage3))
+                .build();
+
+            given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
+            given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(room);
+            given(accommodationQueryUseCase.existsOwnershipByMemberAndAccommodation(
+                any(Member.class),
+                any(Accommodation.class)))
+                .willReturn(true);
+            given(roomQueryUseCase.saveRoomImages(any(List.class)))
+                .willReturn(List.of(roomImage2, roomImage3));
+            given(roomQueryUseCase.findRoomImage(any(Long.TYPE)))
+                .willReturn(roomImage1);
+            doNothing().when(roomQueryUseCase).deleteRoomImages(any(List.class));
+            given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(savedRoom);
+
+            // when
+            RoomInfoResponse result = roomCommandService.modifyRoom(1L, 1L, roomUpdateRequest);
+
+            // then
+            assertThat(result.id()).isEqualTo(1L);
+            assertThat(result.name()).isEqualTo("65m² 킹룸");
+            assertThat(result.status()).isEqualTo("STOP_SELLING");
+            assertThat(result.defaultCapacity()).isEqualTo(2);
+            assertThat(result.maxCapacity()).isEqualTo(3);
+            assertThat(result.checkInTime()).isEqualTo("15:00");
+            assertThat(result.checkOutTime()).isEqualTo("11:00");
+            assertThat(result.price()).isEqualTo(200000);
+            assertThat(result.images()).isNotEmpty();
+            assertThat(result.images().get(0).id()).isEqualTo(2L);
+            assertThat(result.images().get(0).url()).isEqualTo(
+                "http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_2.jpg");
+            assertThat(result.option()).isNotNull();
+            assertThat(result.option().airCondition()).isEqualTo(true);
+            assertThat(result.option().tv()).isEqualTo(true);
+            assertThat(result.option().internet()).isEqualTo(true);
+
+            verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
+            verify(roomQueryUseCase, times(2)).findRoomById(any(Long.TYPE));
+            verify(accommodationQueryUseCase, times(1))
+                .existsOwnershipByMemberAndAccommodation(any(Member.class),
+                    any(Accommodation.class));
+            verify(roomQueryUseCase, times(1)).saveRoomImages(any(List.class));
+            verify(roomQueryUseCase, times(1)).findRoomImage(any(Long.TYPE));
+            verify(roomQueryUseCase, times(1)).deleteRoomImages(any(List.class));
         }
     }
 }
