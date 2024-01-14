@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.room.service.usecase;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomUpdateRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
@@ -28,19 +27,6 @@ public interface RoomCommandUseCase {
         RoomOptionUpdate option
     ) {
 
-        public static RoomUpdate of(RoomUpdateRequest request) {
-            return RoomUpdate.builder()
-                .name(request.name())
-                .status(request.status())
-                .price(request.price())
-                .defaultCapacity(request.defaultCapacity())
-                .maxCapacity(request.maxCapacity())
-                .checkInTime(request.checkInTime())
-                .checkOutTime(request.checkOutTime())
-                .amount(request.amount())
-                .option(RoomOptionUpdate.of(request.option()))
-                .build();
-        }
     }
 
     @Builder
@@ -50,12 +36,5 @@ public interface RoomCommandUseCase {
         boolean internet
     ) {
 
-        public static RoomOptionUpdate of(RoomOptionRequest request) {
-            return RoomOptionUpdate.builder()
-                .airCondition(request.airCondition())
-                .tv(request.tv())
-                .internet(request.internet())
-                .build();
-        }
     }
 }
