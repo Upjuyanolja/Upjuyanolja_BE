@@ -113,6 +113,7 @@ public class AccommodationOwnershipRepositoryTest {
             .address(Address.builder()
                 .address("제주특별자치도 제주시 노형동 925")
                 .detailAddress("")
+                .zipCode("63082")
                 .build())
             .category(saveCategory())
             .description(
