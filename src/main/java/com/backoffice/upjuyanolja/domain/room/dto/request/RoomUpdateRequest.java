@@ -1,6 +1,5 @@
 package com.backoffice.upjuyanolja.domain.room.dto.request;
 
-import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase.RoomOptionUpdate;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase.RoomUpdate;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -54,11 +53,12 @@ public record RoomUpdateRequest(
     RoomOptionRequest option
 ) {
 
-    public RoomUpdate toRoomUpdateDto(){
+    public RoomUpdate toRoomUpdateDto() {
         return RoomUpdate.builder()
             .name(this.name)
             .status(this.status)
             .price(this.price)
+            .defaultCapacity(this.defaultCapacity)
             .maxCapacity(this.maxCapacity)
             .checkInTime(this.checkInTime)
             .checkOutTime(this.checkOutTime)
