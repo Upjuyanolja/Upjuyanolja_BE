@@ -2,8 +2,6 @@ package com.backoffice.upjuyanolja.domain.room.entity;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
-import com.backoffice.upjuyanolja.domain.room.dto.request.RoomUpdateRequest;
-import com.backoffice.upjuyanolja.domain.room.exception.InvalidRoomStatusException;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase.RoomUpdate;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import com.backoffice.upjuyanolja.global.util.DateTimeParser;
