@@ -2,18 +2,22 @@ package com.backoffice.upjuyanolja.domain.reservation.controller;
 
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.reservation.dto.request.CreateReservationRequest;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetCanceledResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
 import com.backoffice.upjuyanolja.domain.reservation.service.ReservationService;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,6 +29,20 @@ public class ReservationController {
   private final SecurityUtil securityUtil;
   private final MemberGetService memberGetService;
   private final ReservationService reservationService;
+
+  @PostMapping()
+  public ResponseEntity<SuccessResponse<Object>> create(
+      @Valid @RequestBody CreateReservationRequest request
+  ) {
+    Member currentMember = getCurrentMember();
+    reservationService.create(currentMember, request);
+
+    return ApiResponse.success(HttpStatus.CREATED,
+        SuccessResponse.builder()
+            .message("예약이 완료되었습니다.")
+            .data(null)
+            .build());
+  }
 
   @GetMapping()
   public ResponseEntity<SuccessResponse<GetReservedResponse>> getReserved(

@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.reservation.service;
 
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import com.backoffice.upjuyanolja.domain.reservation.dto.request.CreateReservationRequest;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetCanceledResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
@@ -20,6 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReservationService {
 
   private final ReservationRepository reservationRepository;
+
+  public void create(Member currentMember, CreateReservationRequest request) {
+
+  }
 
   @Transactional(readOnly = true)
   public GetReservedResponse getReserved(Member currentMember, Pageable pageable) {
