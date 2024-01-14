@@ -35,13 +35,13 @@ public enum ErrorCode {
     ROOM_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, 3004, "객실 재고 정보를 찾을 수 없습니다."),
     ROOM_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, 3005, "객실 이미지 정보를 찾을 수 없습니다."),
 
-    // Reservation
-    RESERVATION_FAILED(HttpStatus.BAD_REQUEST, 4000, "예약할 수 없습니다."),
-    INVALID_COUPON(HttpStatus.BAD_REQUEST, 4001, "쿠폰이 유효하지 않습니다."),
-    PREEMPTION_EXPIRED(HttpStatus.BAD_REQUEST, 4002, "선점 기한이 만료되어 예약할 수 없습니다."),
-    RESERVATION_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 4003, "예약 숙소 정보를 찾을 수 없습니다."),
-    INVALID_VISITOR_NAME(HttpStatus.BAD_REQUEST, 4004, "유효하지 않는 방문자 전화번호 입니다."),
-    INVALID_VISITOR_PHONE_NUMBER(HttpStatus.BAD_REQUEST, 4005, "유효하지 않는 방문자 전화번호입니다."),
+  // Reservation
+  RESERVATION_PAYMENT_FAILED(HttpStatus.BAD_REQUEST, 4000, "결제에 실패 했습니다."),
+  INVALID_COUPON(HttpStatus.BAD_REQUEST, 4001, "쿠폰이 유효하지 않습니다."),
+  INVALID_RESERVATION_INFO(HttpStatus.BAD_REQUEST, 4002, "예약 정보가 유효하지 않습니다."),
+  RESERVATION_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 4003, "예약 숙소 정보를 찾을 수 없습니다."),
+  INVALID_VISITOR_NAME(HttpStatus.BAD_REQUEST, 4004, "유효하지 않는 방문자 전화번호 입니다."),
+  INVALID_VISITOR_PHONE_NUMBER(HttpStatus.BAD_REQUEST, 4005, "유효하지 않는 방문자 전화번호입니다."),
 
     // Coupon
     INVALID_COUPON_INFO(HttpStatus.BAD_REQUEST, 5000, "쿠폰 정보가 올바르지 않습니다."),
