@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
@@ -545,5 +546,82 @@ public class RoomControllerDocsTest extends RestDocsSupport {
 
         verify(roomCommandUseCase, times(1))
             .modifyRoom(any(Long.TYPE), any(Long.TYPE), any(RoomUpdateRequest.class));
+    }
+
+    @Test
+    @DisplayName("객실을 삭제할 수 있다.")
+    void deleteRoom() throws Exception {
+        // given
+        RoomInfoResponse roomInfoResponse = RoomInfoResponse.builder()
+            .id(1L)
+            .name("65m² 킹룸")
+            .defaultCapacity(2)
+            .maxCapacity(3)
+            .checkInTime("15:00")
+            .checkOutTime("11:00")
+            .price(100000)
+            .amount(858)
+            .status("SELLING")
+            .option(RoomOptionResponse.builder()
+                .airCondition(true)
+                .tv(true)
+                .internet(true)
+                .build())
+            .images(List.of(RoomImageResponse.builder()
+                .id(1L)
+                .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
+                .build()))
+            .build();
+
+        given(securityUtil.getCurrentMemberId()).willReturn(1L);
+        given(roomCommandUseCase.deleteRoom(any(Long.TYPE), any(Long.TYPE)))
+            .willReturn(roomInfoResponse);
+
+        // when then
+        mockMvc.perform(delete("/api/rooms/{roomId}", 1L))
+            .andDo(restDoc.document(
+                pathParameters(
+                    parameterWithName("roomId").description("삭제할 객실 식별자")
+                ),
+                responseFields(successResponseCommon()).and(
+                    fieldWithPath("data").type(JsonFieldType.OBJECT)
+                        .description("응답 데이터"),
+                    fieldWithPath("data.id").type(JsonFieldType.NUMBER)
+                        .description("객실 식별자"),
+                    fieldWithPath("data.name").type(JsonFieldType.STRING)
+                        .description("객실 이름"),
+                    fieldWithPath("data.defaultCapacity").type(JsonFieldType.NUMBER)
+                        .description("객실 기본 인원"),
+                    fieldWithPath("data.maxCapacity").type(JsonFieldType.NUMBER)
+                        .description("객실 최대 인원"),
+                    fieldWithPath("data.checkInTime").type(JsonFieldType.STRING)
+                        .description("객실 체크인 시간"),
+                    fieldWithPath("data.checkOutTime").type(JsonFieldType.STRING)
+                        .description("객실 체크아웃 시간"),
+                    fieldWithPath("data.price").type(JsonFieldType.NUMBER)
+                        .description("객실 가격"),
+                    fieldWithPath("data.amount").type(JsonFieldType.NUMBER)
+                        .description("객실 개수"),
+                    fieldWithPath("data.status").type(JsonFieldType.STRING)
+                        .description("객실 상태"),
+                    fieldWithPath("data.images").type(JsonFieldType.ARRAY)
+                        .description("객실 이미지 배열"),
+                    fieldWithPath("data.images[].id").type(JsonFieldType.NUMBER)
+                        .description("객실 이미지 식별자"),
+                    fieldWithPath("data.images[].url").type(JsonFieldType.STRING)
+                        .description("객실 이미지 URL"),
+                    fieldWithPath("data.option").type(JsonFieldType.OBJECT)
+                        .description("객실 옵션"),
+                    fieldWithPath("data.option.airCondition").type(
+                            JsonFieldType.BOOLEAN)
+                        .description("에어컨 여부"),
+                    fieldWithPath("data.option.tv").type(JsonFieldType.BOOLEAN)
+                        .description("TV 여부"),
+                    fieldWithPath("data.option.internet").type(JsonFieldType.BOOLEAN)
+                        .description("인터넷 여부")
+                )
+            ));
+
+        verify(roomCommandUseCase, times(1)).deleteRoom(any(Long.TYPE), any(Long.TYPE));
     }
 }

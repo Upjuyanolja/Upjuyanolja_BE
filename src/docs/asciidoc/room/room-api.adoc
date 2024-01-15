@@ -72,3 +72,17 @@ include::{snippets}/room-controller-docs-test/modify-room/request-fields.adoc[]
 include::{snippets}/room-controller-docs-test/modify-room/http-response.adoc[]
 include::{snippets}/room-controller-docs-test/modify-room/response-fields.adoc[]
 
+[[Delete-Room]]
+== 객실 삭제
+
+객실 삭제 API 입니다.
+
+=== HttpRequest
+
+include::{snippets}/room-controller-docs-test/delete-room/http-request.adoc[]
+include::{snippets}/room-controller-docs-test/delete-room/path-parameters.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/room-controller-docs-test/delete-room/http-response.adoc[]
+include::{snippets}/room-controller-docs-test/delete-room/response-fields.adoc[]

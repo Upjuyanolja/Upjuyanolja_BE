@@ -7,6 +7,7 @@ import static com.backoffice.upjuyanolja.domain.room.entity.QRoomOption.roomOpti
 
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.global.util.QueryDslUtil;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -35,7 +36,7 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
             .leftJoin(room.accommodation, accommodation).fetchJoin()
             .leftJoin(room.option, roomOption).fetchJoin()
             .leftJoin(room.images, roomImage).fetchJoin()
-            .where(room.accommodation.id.eq(accommodationId))
+            .where(createSearchConditionsBuilder(accommodationId))
             .offset(pageable.getOffset())
             .orderBy(getAllOrderSpecifiers(pageable).toArray(OrderSpecifier[]::new))
             .limit(pageable.getPageSize());
@@ -47,6 +48,13 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
             .where(room.accommodation.id.eq(accommodationId));
         List<Room> content = query.fetch();
         return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetch().size());
+    }
+
+    private BooleanBuilder createSearchConditionsBuilder(long accommodationId) {
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        booleanBuilder.and(room.accommodation.id.eq(accommodationId));
+        booleanBuilder.and(room.deletedAt.isNull());
+        return booleanBuilder;
     }
 
     private List<OrderSpecifier<?>> getAllOrderSpecifiers(Pageable pageable) {
