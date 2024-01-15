@@ -1,6 +1,8 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
 
+import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientCouponStockException;
+import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -11,7 +13,11 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,68 +30,92 @@ import org.hibernate.annotations.Comment;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
+@Table(uniqueConstraints = {
+    @UniqueConstraint(
+        name = "UniqueRoomIdAndDiscount",
+        columnNames = {"roomId", "discount"})
+})
 public class Coupon extends BaseTime {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Comment("쿠폰 식별자")
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("쿠폰 식별자")
+    private Long id;
 
-  @Column(nullable = false, name = "coupon_type")
-  @Enumerated(EnumType.STRING)
-  @Comment("쿠폰 유형")
-  private CouponType couponType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "room_id")
+    @Comment("객실 식별자")
+    private Room room;
 
-  @Column(nullable = false)
-  @Enumerated(EnumType.STRING)
-  @Comment("할인 유형")
-  private DiscountType discountType;
+    @Column(nullable = false, name = "coupon_type")
+    @Enumerated(EnumType.STRING)
+    @Comment("쿠폰 유형") // 주중, 주말, 상시
+    private CouponType couponType;
 
-  @Column(nullable = false)
-  @Enumerated(EnumType.STRING)
-  @Comment("쿠폰 상태")
-  private CouponStatus couponStatus;
+    @Column(nullable = false, name = "discount_type")
+    @Enumerated(EnumType.STRING)
+    @Comment("할인 유형") // 정액, 정률
+    private DiscountType discountType;
 
-  @Column(nullable = false)
-  @Comment("할인 가격(할인 율)")
-  private int discount;
+    @Column(nullable = false, name = "coupon_status")
+    @Enumerated(EnumType.STRING) //발급중, 발급중지, 소진, 삭제
+    @Comment("쿠폰 상태")
+    private CouponStatus couponStatus;
 
-  @Column(nullable = false)
-  @Comment("쿠폰 노출 만료일")
-  private LocalDate endDate;
+    @Column(nullable = false)
+    @Comment("할인 가격(할인 율)")
+    private int discount;
 
-  @Column(nullable = false)
-  @Comment("일일 사용 한도")
-  private int dayLimit;
+    @Column(nullable = false, name = "end_date")
+    @Comment("쿠폰 노출 만료일")
+    private LocalDate endDate;
 
-  @Column(nullable = false)
-  @Comment("쿠폰 개수(재고)")
-  private int count;
+    @Column(nullable = false, name = "day_limit")
+    @Comment("일일 사용 한도")
+    private int dayLimit;
 
-  @OneToMany(mappedBy = "coupon",
+    @Column(nullable = false)
+    @Comment("쿠폰 개수(재고)")
+    private int inventory;
+
+    //todo: 팀원과 협의 후 양방향 매핑 삭제
+    @OneToMany(mappedBy = "coupon",
         cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
-  private List<CouponIssuance> couponIssuances = new ArrayList<>();
+    private List<CouponIssuance> couponIssuances = new ArrayList<>();
 
-  @Builder
-  public Coupon(
-      Long id,
-      CouponType couponType,
-      DiscountType discountType,
-      CouponStatus couponStatus,
-      int discount,
-      LocalDate endDate,
-      int dayLimit,
-      int count,
-      List<CouponIssuance> couponIssuances
-  ) {
-    this.id = id;
-    this.couponType = couponType;
-    this.discountType = discountType;
-    this.couponStatus = couponStatus;
-    this.discount = discount;
-    this.endDate = endDate;
-    this.dayLimit = dayLimit;
-    this.count = count;
-    this.couponIssuances = couponIssuances;
-  }
+    @Builder
+    public Coupon(
+        Long id,
+        Room room,
+        CouponType couponType,
+        DiscountType discountType,
+        CouponStatus couponStatus,
+        int discount,
+        LocalDate endDate,
+        int dayLimit,
+        int stock,
+        List<CouponIssuance> couponIssuances
+    ) {
+        this.id = id;
+        this.room = room;
+        this.couponType = couponType;
+        this.discountType = discountType;
+        this.couponStatus = couponStatus;
+        this.discount = discount;
+        this.endDate = endDate;
+        this.dayLimit = dayLimit;
+        this.inventory = stock;
+        this.couponIssuances = couponIssuances;
+    }
+
+    public void increaseCouponInventory(int quantity) {
+        this.inventory += quantity;
+    }
+
+    public void decreaseCouponInventory(int quantity) {
+        if (this.inventory - quantity < 0) {
+            throw new InsufficientCouponStockException();
+        }
+        this.inventory -= quantity;
+    }
 }

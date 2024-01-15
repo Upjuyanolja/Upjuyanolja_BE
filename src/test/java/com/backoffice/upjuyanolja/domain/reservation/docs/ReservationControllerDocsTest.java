@@ -91,7 +91,6 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         .address(Address.builder()
             .address("제주특별자치도 제주시 노형동 925")
             .detailAddress("")
-            .zipCode("63082")
             .build())
         .category(category)
         .description(

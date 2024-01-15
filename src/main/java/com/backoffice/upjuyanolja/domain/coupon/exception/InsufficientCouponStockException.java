@@ -3,9 +3,9 @@ package com.backoffice.upjuyanolja.domain.coupon.exception;
 import com.backoffice.upjuyanolja.global.exception.ApplicationException;
 import com.backoffice.upjuyanolja.global.exception.ErrorCode;
 
-public class WrongCouponInfoException extends ApplicationException {
+public class InsufficientCouponStockException extends ApplicationException {
 
-    public WrongCouponInfoException() {
-        super(ErrorCode.INVALID_COUPON_INFO);
+    public InsufficientCouponStockException() {
+        super(ErrorCode.INSUFFICIENT_COUPON_STOCK);
     }
 }
