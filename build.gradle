@@ -93,17 +93,23 @@ tasks.named('asciidoctor') {
 }
 
 task copyPrivate(type: Copy) {
-    from './submodule-data/main'
-    include "application.yaml", "application-local.yaml", "application-prod.yaml"
-    into 'src/main/resources'
+    copy {
+        from './submodule-data/main'
+        include "application.yaml", "application-local.yaml", "application-prod.yaml"
+        into 'src/main/resources'
+    }
 
-    from './submodule-data/test'
-    include "application-test.yaml"
-    into 'src/test/resources'
+    copy {
+        from './submodule-data/test'
+        include "application.yaml"
+        into 'src/test/resources'
+    }
 
-    from './submodule-data/ssl'
-    include "keystore.p12"
-    into 'src/main/resources/ssl'
+    copy {
+        from './submodule-data/ssl'
+        include "keystore.p12"
+        into 'src/main/resources/ssl'
+    }
 }
 
 bootJar {
