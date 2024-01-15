@@ -51,4 +51,11 @@ public class RoomPrice {
         this.peakWeekDaysMinFee = peakWeekDaysMinFee;
         this.peakWeekendMinFee = peakWeekendMinFee;
     }
+
+    public void updateRoomPrice(int price) {
+        this.offWeekDaysMinFee = price;
+        this.offWeekendMinFee = price;
+        this.peakWeekDaysMinFee = price;
+        this.peakWeekendMinFee = price;
+    }
 }

@@ -31,6 +31,8 @@ public enum ErrorCode {
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 3000, "객실 정보를 찾을 수 없습니다."),
     DUPLICATED_ROOM_NAME(HttpStatus.BAD_REQUEST, 3001, "중복된 객실 이름입니다."),
     INVALID_TIME_FORMAT(HttpStatus.BAD_REQUEST, 3002, "올바르지 않은 형식의 시간입니다.(HH:mm)"),
+    INVALID_ROOM_STATUS(HttpStatus.BAD_REQUEST, 3003, "올바르지 않은 형식의 객실 상태입니다."),
+    ROOM_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, 3004, "객실 이미지 정보를 찾을 수 없습니다."),
 
     // Reservation
     RESERVATION_FAILED(HttpStatus.BAD_REQUEST, 4000, "예약할 수 없습니다."),

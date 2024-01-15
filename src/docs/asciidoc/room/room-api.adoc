@@ -17,9 +17,27 @@ endif::[]
 === HttpRequest
 
 include::{snippets}/room-controller-docs-test/register-room/http-request.adoc[]
+include::{snippets}/room-controller-docs-test/register-room/path-parameters.adoc[]
 include::{snippets}/room-controller-docs-test/register-room/request-fields.adoc[]
 
 === HttpResponse
 
 include::{snippets}/room-controller-docs-test/register-room/http-response.adoc[]
 include::{snippets}/room-controller-docs-test/register-room/response-fields.adoc[]
+
+[[Modify-Room]]
+== 객실 수정
+
+객실 수정 API 입니다.
+
+=== HttpRequest
+
+include::{snippets}/room-controller-docs-test/modify-room/http-request.adoc[]
+include::{snippets}/room-controller-docs-test/modify-room/path-parameters.adoc[]
+include::{snippets}/room-controller-docs-test/modify-room/request-fields.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/room-controller-docs-test/modify-room/http-response.adoc[]
+include::{snippets}/room-controller-docs-test/modify-room/response-fields.adoc[]
+

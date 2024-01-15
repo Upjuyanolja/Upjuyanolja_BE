@@ -1,5 +1,7 @@
 package com.backoffice.upjuyanolja.domain.room.entity;
 
+import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
+import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase.RoomOptionUpdate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -44,5 +46,11 @@ public class RoomOption {
         this.airCondition = airCondition;
         this.tv = tv;
         this.internet = internet;
+    }
+
+    public void updateRoomOption(RoomOptionUpdate request) {
+        this.airCondition = request.airCondition();
+        this.tv = request.tv();
+        this.internet = request.internet();
     }
 }
