@@ -24,6 +24,8 @@ public interface RoomCommandUseCase {
 
     RoomInfoResponse modifyRoom(long memberId, long roomId, RoomUpdateRequest request);
 
+    RoomInfoResponse deleteRoom(long memberId, long roomId);
+
     List<RoomStock> getFilteredRoomStocksByDate(Room room, LocalDate startDate, LocalDate endDate);
 
 
