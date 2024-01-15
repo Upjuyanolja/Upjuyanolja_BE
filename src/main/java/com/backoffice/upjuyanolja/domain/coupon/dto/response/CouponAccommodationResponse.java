@@ -1,10 +1,8 @@
 package com.backoffice.upjuyanolja.domain.coupon.dto.response;
 
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.*;
+import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.makeTitleName;
 
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
-import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.Builder;
@@ -17,7 +15,7 @@ public record CouponAccommodationResponse(
     List<String> rooms
 ) {
 
-    public static CouponAccommodationResponse from(
+    public static CouponAccommodationResponse of(
         final Coupon coupon,
         final List<String> rooms
     ) {
