@@ -4,13 +4,19 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomUpdateRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
+import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
 import lombok.Builder;
+import org.springframework.data.domain.Pageable;
 
 public interface RoomCommandUseCase {
 
     RoomInfoResponse registerRoom(long memberId, long accommodationId, RoomRegisterRequest request);
 
     RoomInfoResponse saveRoom(Accommodation accommodation, RoomRegisterRequest request);
+
+    RoomPageResponse getRooms(long memberId, long accommodationId, Pageable pageable);
+
+    RoomInfoResponse getRoom(long memberId, long roomId);
 
     RoomInfoResponse modifyRoom(long memberId, long roomId, RoomUpdateRequest request);
 

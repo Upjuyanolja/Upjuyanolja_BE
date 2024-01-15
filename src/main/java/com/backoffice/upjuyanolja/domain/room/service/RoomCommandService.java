@@ -11,6 +11,7 @@ import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomUpdateRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
+import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
@@ -25,6 +26,8 @@ import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -74,6 +77,33 @@ public class RoomCommandService implements RoomCommandUseCase {
         roomQueryUseCase.saveRoomImages(RoomImageRequest.toEntity(room, request.images()));
 
         return RoomInfoResponse.of(roomQueryUseCase.findRoomById(room.getId()));
+    }
+
+    @Override
+    public RoomPageResponse getRooms(long memberId, long accommodationId, Pageable pageable) {
+        Member member = memberGetService.getMemberById(memberId);
+        Accommodation accommodation = accommodationQueryUseCase
+            .getAccommodationById(accommodationId);
+        checkOwnership(member, accommodation);
+        List<RoomInfoResponse> rooms = new ArrayList<>();
+        Page<Room> roomPage = roomQueryUseCase.findAllByAccommodationId(accommodationId, pageable);
+        roomPage.get().forEach(room -> rooms.add(RoomInfoResponse.of(room)));
+        return RoomPageResponse.builder()
+            .pageNum(roomPage.getNumber())
+            .pageSize(roomPage.getSize())
+            .totalPages(roomPage.getTotalPages())
+            .totalElements(roomPage.getTotalElements())
+            .isLast(roomPage.isLast())
+            .rooms(rooms)
+            .build();
+    }
+
+    @Override
+    public RoomInfoResponse getRoom(long memberId, long roomId) {
+        Member member = memberGetService.getMemberById(memberId);
+        Room room = roomQueryUseCase.findRoomById(roomId);
+        checkOwnership(member, room.getAccommodation());
+        return RoomInfoResponse.of(room);
     }
 
     @Override

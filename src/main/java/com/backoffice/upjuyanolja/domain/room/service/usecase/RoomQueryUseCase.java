@@ -8,12 +8,16 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import java.time.LocalTime;
 import java.util.List;
 import lombok.Builder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface RoomQueryUseCase {
 
     Room saveRoom(Accommodation accommodation, Room request);
 
     List<RoomImage> saveRoomImages(List<RoomImage> request);
+
+    Page<Room> findAllByAccommodationId(long accommodationId, Pageable pageable);
 
     Room findRoomById(long id);
 
