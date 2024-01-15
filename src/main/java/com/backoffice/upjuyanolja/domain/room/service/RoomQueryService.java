@@ -10,6 +10,8 @@ import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,11 @@ public class RoomQueryService implements RoomQueryUseCase {
     @Override
     public List<RoomImage> saveRoomImages(List<RoomImage> requests) {
         return roomImageRepository.saveAll(requests);
+    }
+
+    @Override
+    public Page<Room> findAllByAccommodationId(long accommodationId, Pageable pageable) {
+        return roomRepository.findAllByAccommodation(accommodationId, pageable);
     }
 
     @Override
