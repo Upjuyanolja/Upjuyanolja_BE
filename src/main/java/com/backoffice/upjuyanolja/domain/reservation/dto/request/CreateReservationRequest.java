@@ -7,8 +7,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import lombok.Builder;
 import lombok.Getter;
 
+@Builder
 @Getter
 public class CreateReservationRequest {
 
@@ -23,11 +25,11 @@ public class CreateReservationRequest {
   @Pattern(regexp = "^\\d{2,3}-\\d{3,4}-\\d{4}$", message = "휴대폰 번호 양식에 맞지 않습니다.")
   String visitorPhone;
 
-  @NotBlank(message = "입실 일자를 입력하세요")
+  @NotNull(message = "입실 일자를 입력하세요")
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
   LocalDate startDate;
 
-  @NotBlank(message = "퇴실 일자를 입력하세요")
+  @NotNull(message = "퇴실 일자를 입력하세요")
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
   LocalDate endDate;
 
