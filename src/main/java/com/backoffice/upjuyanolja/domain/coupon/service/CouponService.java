@@ -142,7 +142,6 @@ public class CouponService {
 
         return couponIssuanceMap;
     }
-
     @Transactional(readOnly = true)
     public List<CouponDetailResponse> getSortedTotalCouponInRoom(
         Room room

@@ -46,6 +46,12 @@ public class RoomQueryService implements RoomQueryUseCase {
     public boolean existsRoomByName(String name) {
         return roomRepository.existsRoomByName(name);
     }
+    @Override
+    public List<RoomStock> findStockByRoom(Room room) {
+        return roomStockRepository.findByRoom(room)
+            .orElseThrow(() -> new RoomStockNotFoundException());
+    }
+
 
     @Override
     @Transactional(readOnly = true)
