@@ -63,6 +63,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AccommodationPageResponse findAccommodations(
         String category, String type, boolean onlyHasCoupon, String keyword, Pageable pageable
     ) {
@@ -88,6 +89,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AccommodationOwnershipResponse getAccommodationOwnership(long memberId) {
         Member member = memberGetService.getMemberById(memberId);
         List<AccommodationOwnership> ownerships = accommodationQueryUseCase
