@@ -108,15 +108,14 @@ public class Coupon extends BaseTime {
         this.couponIssuances = couponIssuances;
     }
 
-    public void increaseCouponInventory(int quantity) {
+    public void increaseCouponStock(int quantity) {
         this.stock += quantity;
     }
 
-    public void decreaseCouponInventory(int quantity) {
+    public void decreaseCouponStock(int quantity) {
         if (this.stock - quantity < 0) {
             throw new InsufficientCouponStockException();
         }
         this.stock -= quantity;
     }
 }
-
