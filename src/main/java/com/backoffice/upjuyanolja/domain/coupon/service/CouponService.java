@@ -2,9 +2,6 @@ package com.backoffice.upjuyanolja.domain.coupon.service;
 
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponAccommodationResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponPageResponse;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
@@ -72,7 +69,7 @@ public class CouponService {
             );
 
         return couponRoomMap.entrySet().stream()
-            .map(coupon -> CouponAccommodationResponse.from(coupon.getKey(), coupon.getValue()))
+            .map(coupon -> CouponAccommodationResponse.of(coupon.getKey(), coupon.getValue()))
             .sorted(Comparator.comparing(CouponAccommodationResponse::id))
             .toList();
     }

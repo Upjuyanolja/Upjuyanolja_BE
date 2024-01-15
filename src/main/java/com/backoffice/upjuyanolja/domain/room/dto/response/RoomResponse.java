@@ -1,7 +1,5 @@
 package com.backoffice.upjuyanolja.domain.room.dto.response;
 
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
