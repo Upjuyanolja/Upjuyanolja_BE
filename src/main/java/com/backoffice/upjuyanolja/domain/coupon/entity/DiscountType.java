@@ -6,9 +6,15 @@ import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictio
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.getMinRate;
 
 import com.backoffice.upjuyanolja.domain.coupon.exception.WrongCouponInfoException;
+import static com.backoffice.upjuyanolja.domain.coupon.config.CouponProperties.getMaxPrice;
+import static com.backoffice.upjuyanolja.domain.coupon.config.CouponProperties.getMaxRate;
+import static com.backoffice.upjuyanolja.domain.coupon.config.CouponProperties.getMinPrice;
+import static com.backoffice.upjuyanolja.domain.coupon.config.CouponProperties.getMinRate;
+
+import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidCouponInfoException;
 import java.text.DecimalFormat;
 import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.function.Predicate;
 import lombok.Getter;
 
 @Getter
@@ -46,7 +52,7 @@ public enum DiscountType {
                 && discount.intValue() % 1000 == 0) {
                 return true;
             }
-            throw new WrongCouponInfoException();
+            throw new InvalidCouponInfoException();
         },
         (price, discount) -> price.intValue() - discount.intValue()
     ),
@@ -83,7 +89,7 @@ public enum DiscountType {
                 && discount % 1 == 0) {
                 return true;
             }
-            throw new WrongCouponInfoException();
+            throw new InvalidCouponInfoException();
         },
         (price, discount) -> {
             int p = price.intValue();
@@ -100,11 +106,17 @@ public enum DiscountType {
     private final BiFunction<String, Integer, String> makeListFormat;
     private final BiFunction<String, Integer, String> makeShortFormat;
     private final BiFunction<String, Integer, String> makeDetailFormat;
-    private final Function<Integer, Boolean> discountValidate;
+    private final Predicate<Integer> discountValidate;
     private final BiFunction<Integer, Integer, Integer> calcAmount;
 
 
     DiscountType(
+        final String titleName,
+        final String listName,
+        final BiFunction<String, Integer, String> makeTitleFormat,
+        final BiFunction<String, Integer, String> makeListFormat,
+        final Predicate<Integer> discountValidate,
+        final BiFunction<Integer, Integer, Integer> calcAmount
         String titleName,
         String listName,
         String shortName,
@@ -113,7 +125,6 @@ public enum DiscountType {
         BiFunction<String, Integer, String> makeListFormat,
         BiFunction<String, Integer, String> makeShortFormat,
         BiFunction<String, Integer, String> makeDetailFormat,
-        Function<Integer, Boolean> discountValidate,
         BiFunction<Integer, Integer, Integer> calcAmount
     ) {
         this.titleName = titleName;
@@ -128,29 +139,29 @@ public enum DiscountType {
         this.calcAmount = calcAmount;
     }
 
-    public static String makeTitleName(DiscountType discountType, int discount) {
+    public static String makeTitleName(final DiscountType discountType, final int discount) {
         return discountType.makeTitleFormat.apply(discountType.getTitleName(), discount);
     }
 
-    public static String makeListName(DiscountType discountType, int discount) {
+    public static String makeListName(final DiscountType discountType, final int discount) {
         return discountType.makeTitleFormat.apply(discountType.getListName(), discount);
     }
-    public static String makeShortName(DiscountType discountType, int discount) {
+    public static String makeShortName(final DiscountType discountType, int discount) {
         return discountType.makeTitleFormat.apply(discountType.getTitleName(), discount);
     }
 
-    public static String makeDetailName(DiscountType discountType, int discount) {
+    public static String makeDetailName(final DiscountType discountType, int discount) {
         return discountType.makeTitleFormat.apply(discountType.getListName(), discount);
     }
 
-    public static Boolean isRightDiscount(DiscountType discountType, Integer discount) {
-        return discountType.discountValidate.apply(discount);
+    public static Boolean isRightDiscount(final DiscountType discountType, final Integer discount) {
+        return discountType.discountValidate.test(discount);
     }
 
     public static int getPaymentPrice(
-        DiscountType discountType,
-        Integer price,
-        Integer discount
+        final DiscountType discountType,
+        final Integer price,
+        final Integer discount
     ) {
         return discountType.calcAmount.apply(price, discount);
     }

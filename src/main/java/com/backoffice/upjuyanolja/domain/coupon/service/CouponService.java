@@ -6,6 +6,7 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponIssuanceRepository;
+import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CouponService {
 
+    private final CouponRepository couponRepository;
     private final CouponIssuanceRepository couponIssuanceRepository;
     private final RoomQueryUseCase roomQueryUseCase;
 
@@ -48,7 +50,7 @@ public class CouponService {
             );
 
         return couponIssuanceMap.entrySet().stream()
-            .map(coupon -> CouponAccommodationResponse.from(coupon.getKey(), coupon.getValue()))
+            .map(coupon -> CouponAccommodationResponse.of(coupon.getKey(), coupon.getValue()))
             .sorted(Comparator.comparing(CouponAccommodationResponse::id))
             .toList();
     }

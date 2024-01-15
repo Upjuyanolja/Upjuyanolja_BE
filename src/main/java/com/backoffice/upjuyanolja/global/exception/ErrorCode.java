@@ -29,9 +29,10 @@ public enum ErrorCode {
 
     // Room
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 3000, "객실 정보를 찾을 수 없습니다."),
-    ROOM_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, 3001, "객실 재고 정보를 찾을 수 없습니다."),
-    DUPLICATED_ROOM_NAME(HttpStatus.BAD_REQUEST, 3002, "중복된 객실 이름입니다."),
-    INVALID_TIME_FORMAT(HttpStatus.BAD_REQUEST, 3003, "올바르지 않은 형식의 시간입니다.(HH:mm)"),
+    DUPLICATED_ROOM_NAME(HttpStatus.BAD_REQUEST, 3001, "중복된 객실 이름입니다."),
+    INVALID_TIME_FORMAT(HttpStatus.BAD_REQUEST, 3002, "올바르지 않은 형식의 시간입니다.(HH:mm)"),
+    INVALID_ROOM_STATUS(HttpStatus.BAD_REQUEST, 3003, "올바르지 않은 형식의 객실 상태입니다."),
+    ROOM_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, 3004, "객실 이미지 정보를 찾을 수 없습니다."),
 
     // Reservation
     RESERVATION_FAILED(HttpStatus.BAD_REQUEST, 4000, "예약할 수 없습니다."),
@@ -42,14 +43,16 @@ public enum ErrorCode {
     INVALID_VISITOR_PHONE_NUMBER(HttpStatus.BAD_REQUEST, 4005, "유효하지 않는 방문자 전화번호입니다."),
 
     // Coupon
-    WRONG_COUPON_INFO(HttpStatus.BAD_REQUEST, 5000, "쿠폰 정보가 올바르지 않습니다."),
+    INVALID_COUPON_INFO(HttpStatus.BAD_REQUEST, 5000, "쿠폰 정보가 올바르지 않습니다."),
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, 5001, "쿠폰 정보를 찾을 수 없습니다."),
+    INSUFFICIENT_COUPON_STOCK(HttpStatus.BAD_REQUEST, 5002, "쿠폰의 재고가 부족합니다."),
 
     // Point
     TOSS_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6000, "토스 API 요청에 실패 했습니다."),
     PAYMENT_AUTHORIZATION_FAILED(HttpStatus.BAD_REQUEST, 6001, "결제 승인에 실패 했습니다."),
     WRONG_REFUND_INFO(HttpStatus.BAD_REQUEST, 6002, "포인트 환불 요청 정보가 잘못 됐습니다."),
     POINT_NOT_FOUND(HttpStatus.NOT_FOUND, 6003, "포인트 정보를 찾을 수 없습니다."),
+    POINT_INSUFFICIENT(HttpStatus.NOT_FOUND, 6004, "포인트 잔액이 부족합니다."),
 
     // OpenAPI
     OPEN_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 8000, "오픈 API를 이용하는 중 에러가 발생했습니다."),

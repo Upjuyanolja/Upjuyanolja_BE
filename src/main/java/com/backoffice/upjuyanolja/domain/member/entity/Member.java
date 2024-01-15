@@ -54,8 +54,6 @@ public class Member extends BaseTime {
     @Comment("권한")
     private Authority authority;
 
-    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Point> points = new ArrayList<>();
 
     @Builder
     public Member(
@@ -65,8 +63,7 @@ public class Member extends BaseTime {
         String name,
         String phone,
         String imageUrl,
-        Authority authority,
-        List<Point> points
+        Authority authority
     ) {
         this.id = id;
         this.email = email;
@@ -75,6 +72,5 @@ public class Member extends BaseTime {
         this.phone = phone;
         this.imageUrl = imageUrl;
         this.authority = authority;
-        this.points = points;
     }
 }

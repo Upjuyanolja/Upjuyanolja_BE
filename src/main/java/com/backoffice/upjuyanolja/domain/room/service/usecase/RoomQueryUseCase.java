@@ -20,6 +20,10 @@ public interface RoomQueryUseCase {
 
     boolean existsRoomByName(String name);
 
+    RoomImage findRoomImage(long roomImageId);
+
+    void deleteRoomImages(List<RoomImage> requests);
+
     List<RoomStock> findStockByRoom(Room room);
 
     @Builder

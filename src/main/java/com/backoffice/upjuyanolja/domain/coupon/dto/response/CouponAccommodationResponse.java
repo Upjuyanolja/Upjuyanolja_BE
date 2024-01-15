@@ -1,5 +1,8 @@
 package com.backoffice.upjuyanolja.domain.coupon.dto.response;
 
+import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.*;
+
+import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import java.time.format.DateTimeFormatter;
@@ -14,7 +17,10 @@ public record CouponAccommodationResponse(
     List<String> roomNames
 ) {
 
-    public static CouponAccommodationResponse from(Coupon coupon, List<String> roomNames) {
+    public static CouponAccommodationResponse of(
+        final Coupon coupon,
+        final List<String> roomNames
+    ) {
         return CouponAccommodationResponse.builder()
             .id(coupon.getId())
             .couponName(DiscountType.makeShortName(coupon.getDiscountType(), coupon.getDiscount()))
