@@ -5,14 +5,18 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.backoffice.upjuyanolja.domain.room.controller.RoomController;
+import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageAddRequest;
+import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageDeleteRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
+import com.backoffice.upjuyanolja.domain.room.dto.request.RoomUpdateRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomImageResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomOptionResponse;
@@ -54,8 +58,8 @@ public class RoomControllerTest {
     private SecurityUtil securityUtil;
 
     @Nested
-    @DisplayName("registerAccommodation()은")
-    class Context_registerAccommodation {
+    @DisplayName("registerRoom()은")
+    class Context_registerRoom {
 
         @Test
         @DisplayName("객실을 등록할 수 있다.")
@@ -132,6 +136,92 @@ public class RoomControllerTest {
 
             verify(roomCommandUseCase, times(1))
                 .registerRoom(any(Long.TYPE), any(Long.TYPE), any(RoomRegisterRequest.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("modifyRoom()은")
+    class Context_modifyRoom {
+
+        @Test
+        @DisplayName("객실을 수정할 수 있다.")
+        void _willSuccess() throws Exception {
+            // given
+            RoomUpdateRequest request = RoomUpdateRequest.builder()
+                .name("65m² 킹룸")
+                .price(200000)
+                .status("STOP_SELLING")
+                .defaultCapacity(2)
+                .maxCapacity(3)
+                .checkInTime("15:00")
+                .checkOutTime("11:00")
+                .amount(858)
+                .addImages(List.of(RoomImageAddRequest.builder()
+                    .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
+                    .build()))
+                .deleteImages(List.of(RoomImageDeleteRequest.builder()
+                    .id(1L)
+                    .build()))
+                .option(RoomOptionRequest.builder()
+                    .airCondition(true)
+                    .tv(true)
+                    .internet(true)
+                    .build())
+                .build();
+
+            RoomInfoResponse roomInfoResponse = RoomInfoResponse.builder()
+                .id(1L)
+                .name("65m² 킹룸")
+                .defaultCapacity(2)
+                .maxCapacity(3)
+                .checkInTime("15:00")
+                .checkOutTime("11:00")
+                .price(200000)
+                .amount(858)
+                .status("STOP_SELLING")
+                .option(RoomOptionResponse.builder()
+                    .airCondition(true)
+                    .tv(true)
+                    .internet(true)
+                    .build())
+                .images(List.of(RoomImageResponse.builder()
+                    .id(1L)
+                    .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
+                    .build()))
+                .build();
+
+            given(securityUtil.getCurrentMemberId()).willReturn(1L);
+            given(roomCommandUseCase
+                .modifyRoom(any(Long.TYPE), any(Long.TYPE), any(RoomUpdateRequest.class)))
+                .willReturn(roomInfoResponse);
+
+            // when then
+            mockMvc.perform(put("/api/rooms/{roomId}", 1L)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.id").isNumber())
+                .andExpect(jsonPath("$.data.name").isString())
+                .andExpect(jsonPath("$.data.defaultCapacity").isNumber())
+                .andExpect(jsonPath("$.data.maxCapacity").isNumber())
+                .andExpect(jsonPath("$.data.checkInTime").isString())
+                .andExpect(jsonPath("$.data.checkOutTime").isString())
+                .andExpect(jsonPath("$.data.price").isNumber())
+                .andExpect(jsonPath("$.data.amount").isNumber())
+                .andExpect(jsonPath("$.data.status").isString())
+                .andExpect(jsonPath("$.data.images").isArray())
+                .andExpect(jsonPath("$.data.images[0].id").isNumber())
+                .andExpect(jsonPath("$.data.images[0].url").isString())
+                .andExpect(jsonPath("$.data.option").isMap())
+                .andExpect(jsonPath("$.data.option.airCondition").isBoolean())
+                .andExpect(jsonPath("$.data.option.tv").isBoolean())
+                .andExpect(jsonPath("$.data.option.internet").isBoolean())
+                .andDo(print());
+
+            verify(roomCommandUseCase, times(1))
+                .modifyRoom(any(Long.TYPE), any(Long.TYPE), any(RoomUpdateRequest.class));
         }
     }
 }

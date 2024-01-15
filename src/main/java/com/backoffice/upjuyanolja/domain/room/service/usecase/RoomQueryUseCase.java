@@ -15,9 +15,13 @@ public interface RoomQueryUseCase {
 
     List<RoomImage> saveRoomImages(List<RoomImage> request);
 
-    Room getRoomById(long id);
+    Room findRoomById(long id);
 
     boolean existsRoomByName(String name);
+
+    RoomImage findRoomImage(long roomImageId);
+
+    void deleteRoomImages(List<RoomImage> requests);
 
     @Builder
     record RoomSaveRequest(
