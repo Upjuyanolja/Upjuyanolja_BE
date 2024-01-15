@@ -20,6 +20,8 @@ public interface RoomCommandUseCase {
 
     RoomInfoResponse modifyRoom(long memberId, long roomId, RoomUpdateRequest request);
 
+    RoomInfoResponse deleteRoom(long memberId, long roomId);
+
     @Builder
     record RoomUpdate(
         String name,

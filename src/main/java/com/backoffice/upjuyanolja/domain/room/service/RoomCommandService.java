@@ -23,6 +23,7 @@ import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import com.backoffice.upjuyanolja.global.util.DateTimeParser;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -116,6 +117,15 @@ public class RoomCommandService implements RoomCommandUseCase {
         updateRoom(room, request);
 
         return RoomInfoResponse.of(roomQueryUseCase.findRoomById(roomId));
+    }
+
+    @Override
+    public RoomInfoResponse deleteRoom(long memberId, long roomId) {
+        Member member = memberGetService.getMemberById(memberId);
+        Room room = roomQueryUseCase.findRoomById(roomId);
+        checkOwnership(member, room.getAccommodation());
+        room.delete(LocalDateTime.now());
+        return RoomInfoResponse.of(room);
     }
 
     private void validateRoomName(String name) {
