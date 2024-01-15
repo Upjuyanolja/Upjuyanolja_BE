@@ -4,7 +4,7 @@ import com.backoffice.upjuyanolja.domain.coupon.config.CouponProperties;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.CouponMakeRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidRequestBodyException;
-import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackoffPrincipalService;
+import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficePrincipalService;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponValidationService;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
@@ -31,7 +31,7 @@ public class CouponBackofficeController {
 
     private final CouponBackofficeService couponService;
     private final CouponValidationService couponValidationService;
-    private final CouponBackoffPrincipalService couponPrincipalService;
+    private final CouponBackofficePrincipalService couponPrincipalService;
     private final SecurityUtil securityUtil;
 
     private final CouponProperties couponProperties;
@@ -72,13 +72,4 @@ public class CouponBackofficeController {
                 .build()
         );
     }
-
-    @GetMapping("/test")
-    public void configurationTest() {
-        couponProperties.init(1, 2, 3, 4, 5);
-        log.info("minFlatAmount = " + CouponProperties.getMinPrice());
-        log.info("maxFlatAmount = " + CouponProperties.getMaxPrice());
-        log.info("testMin = " + CouponProperties.getDayLimit());
-    }
-
 }
