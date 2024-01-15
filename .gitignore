@@ -41,3 +41,6 @@ out/
 
 ### SSL ###
 **/ssl/
+
+### QueryDSL ###
+/src/main/generated/
