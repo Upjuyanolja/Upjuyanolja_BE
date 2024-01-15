@@ -87,8 +87,7 @@ public class RoomCommandService implements RoomCommandUseCase {
             .filter(
                 stock ->
                     !(stock.getDate().isBefore(startDate)) &&
-                        !(stock.getDate().isBefore(endDate)) &&
-                        stock.getCount() != 0
+                        !(stock.getDate().isAfter(endDate))
             )
             .toList();
     }
