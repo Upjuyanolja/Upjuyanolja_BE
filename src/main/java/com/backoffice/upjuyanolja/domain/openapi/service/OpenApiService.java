@@ -241,6 +241,7 @@ public class OpenApiService {
                 Address.builder()
                     .address(base.getString("addr1"))
                     .detailAddress(base.getString("addr2"))
+                    .zipCode(common.getString("zipcode"))
                     .build()
             )
             .description(common.getString("overview"))

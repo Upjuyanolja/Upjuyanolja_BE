@@ -6,6 +6,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,9 @@ public record AccommodationRegisterRequest(
     String address,
 
     String detailAddress,
+
+    @Pattern(regexp = "^\\d{5}$", message = "우편번호로 국가기초구역번호(5자리)를 입력하세요.")
+    String zipCode,
 
     @NotBlank(message = "숙소 설명을 입력하세요.")
     String description,
@@ -50,6 +54,7 @@ public record AccommodationRegisterRequest(
             .address(Address.builder()
                 .address(request.address())
                 .detailAddress(request.detailAddress())
+                .zipCode(request.zipCode())
                 .build())
             .category(category)
             .description(request.description())
