@@ -103,18 +103,17 @@ public enum DiscountType {
     private final Predicate<Integer> discountValidate;
     private final BiFunction<Integer, Integer, Integer> calcAmount;
 
-
     DiscountType(
-        String titleName,
-        String listName,
-        String shortName,
-        String detailName,
-        BiFunction<String, Integer, String> makeTitleFormat,
-        BiFunction<String, Integer, String> makeListFormat,
-        BiFunction<String, Integer, String> makeShortFormat,
-        BiFunction<String, Integer, String> makeDetailFormat,
-        Predicate<Integer> discountValidate,
-        BiFunction<Integer, Integer, Integer> calcAmount
+        final String titleName,
+        final String listName,
+        final String shortName,
+        final String detailName,
+        final BiFunction<String, Integer, String> makeTitleFormat,
+        final BiFunction<String, Integer, String> makeListFormat,
+        final BiFunction<String, Integer, String> makeShortFormat,
+        final BiFunction<String, Integer, String> makeDetailFormat,
+        final Predicate<Integer> discountValidate,
+        final BiFunction<Integer, Integer, Integer> calcAmount
     ) {
         this.titleName = titleName;
         this.listName = listName;
@@ -128,11 +127,11 @@ public enum DiscountType {
         this.calcAmount = calcAmount;
     }
 
-    public static String makeTitleName(final DiscountType discountType, int discount) {
+    public static String makeTitleName(final DiscountType discountType, final int discount) {
         return discountType.makeTitleFormat.apply(discountType.getTitleName(), discount);
     }
 
-    public static String makeListName(final DiscountType discountType, int discount) {
+    public static String makeListName(final DiscountType discountType, final int discount) {
         return discountType.makeTitleFormat.apply(discountType.getListName(), discount);
     }
 
@@ -149,9 +148,9 @@ public enum DiscountType {
     }
 
     public static int getPaymentPrice(
-        DiscountType discountType,
-        Integer price,
-        Integer discount
+        final DiscountType discountType,
+        final Integer price,
+        final Integer discount
     ) {
         return discountType.calcAmount.apply(price, discount);
     }
