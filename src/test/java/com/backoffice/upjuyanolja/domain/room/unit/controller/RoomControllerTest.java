@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -364,6 +365,66 @@ public class RoomControllerTest {
 
             verify(roomCommandUseCase, times(1))
                 .modifyRoom(any(Long.TYPE), any(Long.TYPE), any(RoomUpdateRequest.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("deleteRoom()은")
+    class Context_deleteRoom {
+
+        @Test
+        @DisplayName("객실을 조회할 수 있다.")
+        void _willSuccess() throws Exception {
+            // given
+            RoomInfoResponse roomInfoResponse = RoomInfoResponse.builder()
+                .id(1L)
+                .name("65m² 킹룸")
+                .defaultCapacity(2)
+                .maxCapacity(3)
+                .checkInTime("15:00")
+                .checkOutTime("11:00")
+                .price(100000)
+                .amount(858)
+                .status("SELLING")
+                .option(RoomOptionResponse.builder()
+                    .airCondition(true)
+                    .tv(true)
+                    .internet(true)
+                    .build())
+                .images(List.of(RoomImageResponse.builder()
+                    .id(1L)
+                    .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
+                    .build()))
+                .build();
+
+            given(securityUtil.getCurrentMemberId()).willReturn(1L);
+            given(roomCommandUseCase.deleteRoom(any(Long.TYPE), any(Long.TYPE)))
+                .willReturn(roomInfoResponse);
+
+            // when then
+            mockMvc.perform(delete("/api/rooms/{accommodationId}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.id").isNumber())
+                .andExpect(jsonPath("$.data.name").isString())
+                .andExpect(jsonPath("$.data.defaultCapacity").isNumber())
+                .andExpect(jsonPath("$.data.maxCapacity").isNumber())
+                .andExpect(jsonPath("$.data.checkInTime").isString())
+                .andExpect(jsonPath("$.data.checkOutTime").isString())
+                .andExpect(jsonPath("$.data.price").isNumber())
+                .andExpect(jsonPath("$.data.amount").isNumber())
+                .andExpect(jsonPath("$.data.status").isString())
+                .andExpect(jsonPath("$.data.images").isArray())
+                .andExpect(jsonPath("$.data.images[0].id").isNumber())
+                .andExpect(jsonPath("$.data.images[0].url").isString())
+                .andExpect(jsonPath("$.data.option").isMap())
+                .andExpect(jsonPath("$.data.option.airCondition").isBoolean())
+                .andExpect(jsonPath("$.data.option.tv").isBoolean())
+                .andExpect(jsonPath("$.data.option.internet").isBoolean())
+                .andDo(print());
+
+            verify(roomCommandUseCase, times(1)).deleteRoom(any(Long.TYPE), any(Long.TYPE));
         }
     }
 }
