@@ -10,7 +10,7 @@ public enum CouponType {
 
     private final String indicates;
 
-    CouponType(String indicates) {
+    CouponType(final String indicates) {
         this.indicates = indicates;
     }
 }
