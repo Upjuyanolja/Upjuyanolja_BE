@@ -34,8 +34,6 @@ public class CouponBackofficeController {
     private final CouponBackofficePrincipalService couponPrincipalService;
     private final SecurityUtil securityUtil;
 
-    private final CouponProperties couponProperties;
-
     @GetMapping("/buy/{accommodationId}")
     public ResponseEntity<SuccessResponse<CouponMakeViewResponse>> responseRoomsByAccommodationId(
         @PathVariable(name = "accommodationId") @ValidId Long accommodationId

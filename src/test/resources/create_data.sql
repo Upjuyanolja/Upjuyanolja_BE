@@ -134,5 +134,3 @@ values (1, 1, 30, curdate()),
        (9, 9, 2, curdate()),
        (10, 10, 10, curdate()),
        (11, 11, 10, curdate());
-
-# insert into `coupon` (`id`, `room_id`, `coupon_type`, `discount_type`, `discount`, `coupon_status`, `end_date`, `day_limit`, `inventory`)

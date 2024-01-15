@@ -15,9 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class CouponValidationService {
 
-    /**
-     * 요청된 쿠폰의 검증 및 사용 가능 여부를 응답하는 Service
-     */
     private final CouponRepository couponRepository;
 
     /**

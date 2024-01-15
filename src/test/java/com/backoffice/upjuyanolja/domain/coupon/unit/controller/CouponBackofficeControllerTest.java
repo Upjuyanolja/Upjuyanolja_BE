@@ -10,8 +10,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.backoffice.upjuyanolja.domain.coupon.controller.CouponBackofficeController;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomsResponse;
+import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficePrincipalService;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
+import com.backoffice.upjuyanolja.domain.coupon.service.CouponValidationService;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
+import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.catalina.security.SecurityConfig;
@@ -41,6 +44,15 @@ class CouponBackofficeControllerTest {
 
     @MockBean
     private CouponBackofficeService couponBackofficeService;
+
+    @MockBean
+    private CouponValidationService couponValidationService;
+
+    @MockBean
+    private CouponBackofficePrincipalService couponPrincipalService;
+
+    @MockBean
+    private SecurityUtil securityUtil;
 
     @Nested
     @DisplayName("makeCouponViewResponse 는")
