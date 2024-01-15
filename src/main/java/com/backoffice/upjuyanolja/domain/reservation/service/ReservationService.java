@@ -127,7 +127,7 @@ public class ReservationService {
   }
 
   private void decreaseCouponStock(Coupon coupon) {
-    if (coupon.getCouponStatus() != CouponStatus.ACTIVE && coupon.getCount() < 1) {
+    if (coupon.getCouponStatus() != CouponStatus.ENABLE && coupon.getInventory() < 1) {
       throw new InvalidCouponException();
     }
 

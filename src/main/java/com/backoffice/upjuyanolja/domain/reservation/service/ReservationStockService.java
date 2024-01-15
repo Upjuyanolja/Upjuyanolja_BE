@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.reservation.service;
 
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
+import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientCouponStockException;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidCouponException;
 import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidReservationInfoException;
@@ -32,8 +33,8 @@ public class ReservationStockService {
   @ConcurrencyControl(targetName = "couponStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
   public void decreaseCouponStock(Long id, Coupon coupon) {
     try {
-      coupon.decrease(1);
-    } catch (IllegalArgumentException e) {
+      coupon.decreaseCouponInventory(1);
+    } catch (InsufficientCouponStockException e) {
       throw new InvalidCouponException();
     }
 
