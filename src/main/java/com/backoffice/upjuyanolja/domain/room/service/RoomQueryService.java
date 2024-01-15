@@ -46,12 +46,12 @@ public class RoomQueryService implements RoomQueryUseCase {
     public boolean existsRoomByName(String name) {
         return roomRepository.existsRoomByName(name);
     }
+
     @Override
     public List<RoomStock> findStockByRoom(Room room) {
         return roomStockRepository.findByRoom(room)
             .orElseThrow(() -> new RoomStockNotFoundException());
     }
-
 
     @Override
     @Transactional(readOnly = true)
@@ -63,12 +63,6 @@ public class RoomQueryService implements RoomQueryUseCase {
     @Override
     public void deleteRoomImages(List<RoomImage> requests) {
         roomImageRepository.deleteAll(requests);
-    }
-
-    @Override
-    public List<RoomStock> findStockByRoom(Room room) {
-        return roomStockRepository.findByRoom(room)
-            .orElseThrow(() -> new RoomStockNotFoundException());
     }
 
 }

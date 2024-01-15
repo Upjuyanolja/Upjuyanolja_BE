@@ -5,10 +5,9 @@ import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictio
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.getMinPrice;
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.getMinRate;
 
-import com.backoffice.upjuyanolja.domain.coupon.exception.WrongCouponInfoException;
+import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidCouponInfoException;
 import java.text.DecimalFormat;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import lombok.Getter;
 
@@ -47,7 +46,7 @@ public enum DiscountType {
                 && discount.intValue() % 1000 == 0) {
                 return true;
             }
-            throw new WrongCouponInfoException();
+            throw new InvalidCouponInfoException();
         },
         (price, discount) -> price.intValue() - discount.intValue()
     ),
@@ -84,7 +83,7 @@ public enum DiscountType {
                 && discount % 1 == 0) {
                 return true;
             }
-            throw new WrongCouponInfoException();
+            throw new InvalidCouponInfoException();
         },
         (price, discount) -> {
             int p = price.intValue();
@@ -136,6 +135,7 @@ public enum DiscountType {
     public static String makeListName(final DiscountType discountType, int discount) {
         return discountType.makeTitleFormat.apply(discountType.getListName(), discount);
     }
+
     public static String makeShortName(final DiscountType discountType, int discount) {
         return discountType.makeTitleFormat.apply(discountType.getTitleName(), discount);
     }
