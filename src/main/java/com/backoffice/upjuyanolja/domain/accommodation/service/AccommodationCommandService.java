@@ -22,9 +22,7 @@ import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
-import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -173,6 +171,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                 .address(Address.builder()
                     .address(request.address())
                     .detailAddress(request.detailAddress())
+                    .zipCode(request.zipCode())
                     .build())
                 .description(request.description())
                 .category(category)

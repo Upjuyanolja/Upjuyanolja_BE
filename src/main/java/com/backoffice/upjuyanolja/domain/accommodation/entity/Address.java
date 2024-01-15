@@ -29,15 +29,20 @@ public class Address {
     @Comment("상세 주소")
     private String detailAddress;
 
+    @Column(nullable = false)
+    @Comment("우편번호")
+    private String zipCode;
 
     @Builder
     public Address(
         Long id,
         String address,
-        String detailAddress
+        String detailAddress,
+        String zipCode
     ) {
         this.id = id;
         this.address = address;
         this.detailAddress = detailAddress;
+        this.zipCode = zipCode;
     }
 }
