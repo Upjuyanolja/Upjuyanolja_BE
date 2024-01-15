@@ -26,66 +26,66 @@ import org.hibernate.annotations.Comment;
 @Entity
 public class Coupon extends BaseTime {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Comment("쿠폰 식별자")
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("쿠폰 식별자")
+    private Long id;
 
-  @Column(nullable = false, name = "coupon_type")
-  @Enumerated(EnumType.STRING)
-  @Comment("쿠폰 유형")
-  private CouponType couponType;
+    @Column(nullable = false, name = "coupon_type")
+    @Enumerated(EnumType.STRING)
+    @Comment("쿠폰 유형")
+    private CouponType couponType;
 
-  @Column(nullable = false)
-  @Enumerated(EnumType.STRING)
-  @Comment("할인 유형")
-  private DiscountType discountType;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Comment("할인 유형")
+    private DiscountType discountType;
 
-  @Column(nullable = false)
-  @Enumerated(EnumType.STRING)
-  @Comment("쿠폰 상태")
-  private CouponStatus couponStatus;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Comment("쿠폰 상태")
+    private CouponStatus couponStatus;
 
-  @Column(nullable = false)
-  @Comment("할인 가격(할인 율)")
-  private int discount;
+    @Column(nullable = false)
+    @Comment("할인 가격(할인 율)")
+    private int discount;
 
-  @Column(nullable = false)
-  @Comment("쿠폰 노출 만료일")
-  private LocalDate endDate;
+    @Column(nullable = false)
+    @Comment("쿠폰 노출 만료일")
+    private LocalDate endDate;
 
-  @Column(nullable = false)
-  @Comment("일일 사용 한도")
-  private int dayLimit;
+    @Column(nullable = false)
+    @Comment("일일 사용 한도")
+    private int dayLimit;
 
-  @Column(nullable = false)
-  @Comment("쿠폰 개수(재고)")
-  private int count;
+    @Column(nullable = false)
+    @Comment("쿠폰 개수(재고)")
+    private int count;
 
-  @OneToMany(mappedBy = "coupon",
+    @OneToMany(mappedBy = "coupon",
         cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
-  private List<CouponIssuance> couponIssuances = new ArrayList<>();
+    private List<CouponIssuance> couponIssuances = new ArrayList<>();
 
-  @Builder
-  public Coupon(
-      Long id,
-      CouponType couponType,
-      DiscountType discountType,
-      CouponStatus couponStatus,
-      int discount,
-      LocalDate endDate,
-      int dayLimit,
-      int count,
-      List<CouponIssuance> couponIssuances
-  ) {
-    this.id = id;
-    this.couponType = couponType;
-    this.discountType = discountType;
-    this.couponStatus = couponStatus;
-    this.discount = discount;
-    this.endDate = endDate;
-    this.dayLimit = dayLimit;
-    this.count = count;
-    this.couponIssuances = couponIssuances;
-  }
+    @Builder
+    public Coupon(
+        Long id,
+        CouponType couponType,
+        DiscountType discountType,
+        CouponStatus couponStatus,
+        int discount,
+        LocalDate endDate,
+        int dayLimit,
+        int count,
+        List<CouponIssuance> couponIssuances
+    ) {
+        this.id = id;
+        this.couponType = couponType;
+        this.discountType = discountType;
+        this.couponStatus = couponStatus;
+        this.discount = discount;
+        this.endDate = endDate;
+        this.dayLimit = dayLimit;
+        this.count = count;
+        this.couponIssuances = couponIssuances;
+    }
 }

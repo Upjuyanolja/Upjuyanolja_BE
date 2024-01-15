@@ -17,11 +17,13 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationR
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase.AccommodationSaveRequest;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponRoomDetailResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -61,7 +63,6 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     }
 
     @Override
-    @Transactional(readOnly = true)
     public AccommodationPageResponse findAccommodations(
         String category, String type, boolean onlyHasCoupon, String keyword, Pageable pageable
     ) {
@@ -87,7 +88,6 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     }
 
     @Override
-    @Transactional(readOnly = true)
     public AccommodationOwnershipResponse getAccommodationOwnership(long memberId) {
         Member member = memberGetService.getMemberById(memberId);
         List<AccommodationOwnership> ownerships = accommodationQueryUseCase
@@ -120,39 +120,47 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
     private int getDiscountPrice(Long accommodationId) {
         return getDiscountInfo(accommodationId)
-            .map(couponRoom -> couponRoom.couponRooms().get(0).price())
+            .map(couponIssuance -> couponIssuance.price())
             .orElse(getLowestPrice(accommodationId));
     }
 
     private String getCouponName(Long accommodationId) {
         return getDiscountInfo(accommodationId)
-            .map(couponRoom -> couponRoom.couponRooms().get(0).name())
-            .orElse("쿠폰이 없습니다.");
+            .map(couponIssuance -> couponIssuance.name())
+            .orElse("");
     }
 
-    private Optional<CouponRoomDetailResponse> getDiscountInfo(Long accommodationId) {
-        List<CouponRoomDetailResponse> flatResponse =
-            couponService.getSortedFlatCouponInAccommodation(accommodationId);
-        List<CouponRoomDetailResponse> rateResponse =
-            couponService.getSortedRateCouponInAccommodation(accommodationId);
+    private Optional<CouponDetailResponse> getDiscountInfo(Long accommodationId) {
+        List<CouponDetailResponse> responses = new ArrayList<>();
+        responses.addAll(couponService.getSortedFlatCouponInAccommodation(accommodationId));
+        responses.addAll(couponService.getSortedRateCouponInAccommodation(accommodationId));
+
+        return responses.stream()
+            .min(Comparator.comparingInt(CouponDetailResponse::price));
+    }
+
+    private String getMainCouponName(Long accommodationId) {
+        Optional<CouponDetailResponse> flatResponse =
+            couponService.getSortedFlatCouponInAccommodation(accommodationId).stream()
+                .findFirst();
+
+        Optional<CouponDetailResponse> rateResponse =
+            couponService.getSortedRateCouponInAccommodation(accommodationId).stream()
+                .findFirst();
+
+        if (flatResponse.isEmpty() && rateResponse.isEmpty()) {
+            return "";
+        }
 
         if (!flatResponse.isEmpty() && !rateResponse.isEmpty()) {
-            int flatPrice = flatResponse.get(0).couponRooms().get(0).price();
-            int percentPrice = rateResponse.get(0).couponRooms().get(0).price();
-
-            CouponRoomDetailResponse bestCoupon =
-                flatPrice <= percentPrice ? flatResponse.get(0) : rateResponse.get(0);
-
-            return Optional.of(bestCoupon);
-
-        } else {
-            return Optional.empty();
+            return flatResponse.get().name() + " or " + rateResponse.get().name();
         }
+
+        return flatResponse.orElse(rateResponse.get()).name();
 
     }
 
     @Override
-    @Transactional(readOnly = true)
     public AccommodationDetailResponse findAccommodationWithRooms(
         Long accommodationId, LocalDate startDate, LocalDate endDate
     ) {
@@ -160,7 +168,58 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
             accommodationRepository.findById(accommodationId)
                 .orElseThrow(AccommodationNotFoundException::new);
 
-        return null;
+        List<Room> filterRooms = getFilteredRoomsByDate(
+            accommodation.getRooms(), startDate, endDate
+        );
+
+        return AccommodationDetailResponse.of(accommodation,
+            getMainCouponName(accommodationId),
+            accommodation.getRooms().stream()
+                .map(room -> RoomResponse.of(
+                        room, getDiscountPrice(room),
+                        !checkSoldOut(filterRooms, room),
+                        getMinFilteredRoomStock(room, startDate, endDate),
+                        couponService.getSortedTotalCouponInRoom(room)
+                    )
+                )
+                .toList()
+        );
+    }
+
+    private int getDiscountPrice(Room room) {
+        return couponService.getSortedTotalCouponInRoom(room)
+            .stream()
+            .findFirst()
+            .map(coupon -> coupon.price())
+            .orElse(room.getPrice().getOffWeekDaysMinFee());
+    }
+
+    private List<Room> getFilteredRoomsByDate(
+        List<Room> rooms, LocalDate startDate, LocalDate endDate
+    ) {
+        List<Room> filterRoom = new ArrayList<>();
+
+        for (Room room : rooms) {
+            List<RoomStock> filteredStocks = roomCommandUseCase.getFilteredRoomStocksByDate(room,
+                startDate, endDate);
+            if (!filteredStocks.isEmpty()) {
+                filterRoom.add(room);
+            }
+        }
+        return filterRoom;
+    }
+
+    private int getMinFilteredRoomStock(
+        Room room, LocalDate startDate, LocalDate endDate
+    ) {
+        return roomCommandUseCase.getFilteredRoomStocksByDate(room, startDate, endDate).stream()
+            .mapToInt(RoomStock::getCount)
+            .min()
+            .orElse(0);
+    }
+
+    private boolean checkSoldOut(List<Room> rooms, Room room) {
+        return rooms.contains(room);
     }
 
     private Accommodation saveAccommodation(AccommodationRegisterRequest request) {
@@ -171,7 +230,6 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                 .address(Address.builder()
                     .address(request.address())
                     .detailAddress(request.detailAddress())
-                    .zipCode(request.zipCode())
                     .build())
                 .description(request.description())
                 .category(category)

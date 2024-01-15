@@ -5,6 +5,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import java.time.LocalTime;
 import java.util.List;
 import lombok.Builder;
@@ -22,6 +23,8 @@ public interface RoomQueryUseCase {
     RoomImage findRoomImage(long roomImageId);
 
     void deleteRoomImages(List<RoomImage> requests);
+
+    List<RoomStock> findStockByRoom(Room room);
 
     @Builder
     record RoomSaveRequest(

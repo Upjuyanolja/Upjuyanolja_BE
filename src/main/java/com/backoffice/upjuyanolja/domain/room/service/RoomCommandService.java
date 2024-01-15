@@ -15,6 +15,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.exception.DuplicateRoomNameException;
 import com.backoffice.upjuyanolja.domain.room.exception.InvalidRoomStatusException;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
@@ -22,6 +23,7 @@ import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import com.backoffice.upjuyanolja.global.util.DateTimeParser;
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -75,6 +77,22 @@ public class RoomCommandService implements RoomCommandUseCase {
 
         return RoomInfoResponse.of(roomQueryUseCase.findRoomById(room.getId()));
     }
+
+
+    @Override
+    public List<RoomStock> getFilteredRoomStocksByDate(
+        Room room, LocalDate startDate, LocalDate endDate
+    ) {
+        return roomQueryUseCase.findStockByRoom(room).stream()
+            .filter(
+                stock ->
+                    !(stock.getDate().isBefore(startDate)) &&
+                        !(stock.getDate().isBefore(endDate)) &&
+                        stock.getCount() != 0
+            )
+            .toList();
+    }
+
 
     @Override
     public RoomInfoResponse modifyRoom(long memberId, long roomId, RoomUpdateRequest request) {
@@ -135,4 +153,5 @@ public class RoomCommandService implements RoomCommandUseCase {
             throw new InvalidRoomStatusException();
         }
     }
+
 }

@@ -4,6 +4,10 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomUpdateRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
+import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.Builder;
 
 public interface RoomCommandUseCase {
@@ -11,6 +15,8 @@ public interface RoomCommandUseCase {
     RoomInfoResponse registerRoom(long memberId, long accommodationId, RoomRegisterRequest request);
 
     RoomInfoResponse saveRoom(Accommodation accommodation, RoomRegisterRequest request);
+
+    List<RoomStock> getFilteredRoomStocksByDate(Room room, LocalDate startDate, LocalDate endDate);
 
     RoomInfoResponse modifyRoom(long memberId, long roomId, RoomUpdateRequest request);
 
