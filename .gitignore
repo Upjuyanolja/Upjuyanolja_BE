@@ -41,3 +41,4 @@ out/
 
 ### SSL ###
 **/ssl/
+/src/main/generated/
