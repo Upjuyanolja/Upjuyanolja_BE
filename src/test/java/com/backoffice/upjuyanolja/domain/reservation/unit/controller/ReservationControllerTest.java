@@ -73,11 +73,17 @@ class ReservationControllerTest {
   private ReservationService reservationService;
 
   static Member mockMember;
+  static Room mockRoom;
 
   @BeforeEach
   public void initTest() {
-    mockMember = Member.builder()
-        .id(1L)
+    mockMember = createMember(1L);
+    mockRoom = createRoom();
+  }
+
+  private static Member createMember(Long id) {
+    return Member.builder()
+        .id(id)
         .email("test@mail.com")
         .password("$10$ygrAExVYmFTkZn2d0.Pk3Ot5CNZwIBjZH5f.WW0AnUq4w4PtBi9Nm")
         .name("test")
@@ -88,13 +94,7 @@ class ReservationControllerTest {
         .build();
   }
 
-  private Reservation createReservation(
-      LocalDate startDate,
-      LocalDate endDate,
-      int discount,
-      boolean isCouponUsed,
-      ReservationStatus status
-  ) {
+  private static Room createRoom() {
     Category category = Category.builder()
         .id(5L)
         .name("TOURIST_HOTEL")
@@ -150,22 +150,31 @@ class ReservationControllerTest {
             .build())
         .images(new ArrayList<>())
         .build();
+    return room;
+  }
 
+  private Reservation createReservation(
+      LocalDate startDate,
+      LocalDate endDate,
+      int discount,
+      boolean isCouponUsed,
+      ReservationStatus status
+  ) {
     ReservationRoom reservationRoom = ReservationRoom.builder()
         .id(1L)
-        .room(room)
+        .room(mockRoom)
         .startDate(startDate)
         .endDate(endDate)
-        .price(room.getPrice().getOffWeekDaysMinFee())
+        .price(mockRoom.getPrice().getOffWeekDaysMinFee())
         .build();
 
     Payment payment = Payment.builder()
         .id(1L)
         .member(mockMember)
         .payMethod(PayMethod.KAKAO_PAY)
-        .roomPrice(room.getPrice().getOffWeekDaysMinFee())
+        .roomPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
         .discountAmount(discount)
-        .totalAmount(room.getPrice().getOffWeekDaysMinFee() - discount)
+        .totalAmount(mockRoom.getPrice().getOffWeekDaysMinFee() - discount)
         .build();
 
     Reservation reservation = Reservation.builder()

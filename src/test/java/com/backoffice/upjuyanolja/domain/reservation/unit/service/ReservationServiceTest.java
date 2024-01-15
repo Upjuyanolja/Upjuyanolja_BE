@@ -58,13 +58,20 @@ class ReservationServiceTest {
   ReservationRepository reservationRepository;
 
   static Member mockMember;
+  static Room mockRoom;
 
   static List<Reservation> mockReservations;
 
   @BeforeEach
   public void initTest() {
-    mockMember = Member.builder()
-        .id(1L)
+    mockMember = createMember(1L);
+    mockRoom = createRoom();
+    mockReservations = createReservations();
+  }
+
+  private static Member createMember(Long id) {
+    return Member.builder()
+        .id(id)
         .email("test@mail.com")
         .password("$10$ygrAExVYmFTkZn2d0.Pk3Ot5CNZwIBjZH5f.WW0AnUq4w4PtBi9Nm")
         .name("test")
@@ -73,8 +80,6 @@ class ReservationServiceTest {
             "https://fastly.picsum.photos/id/866/200/300.jpg?hmac=rcadCENKh4rD6MAp6V_ma-AyWv641M4iiOpe1RyFHeI")
         .authority(Authority.ROLE_USER)
         .build();
-
-    mockReservations = createReservations();
   }
 
   private List<Reservation> createReservations() {
@@ -103,13 +108,7 @@ class ReservationServiceTest {
     return reservations;
   }
 
-  private Reservation createReservation(
-      LocalDate startDate,
-      LocalDate endDate,
-      int discount,
-      boolean isCouponUsed,
-      ReservationStatus status
-  ) {
+  private static Room createRoom() {
     Category category = Category.builder()
         .id(5L)
         .name("TOURIST_HOTEL")
@@ -165,22 +164,31 @@ class ReservationServiceTest {
             .build())
         .images(new ArrayList<>())
         .build();
+    return room;
+  }
 
+  private Reservation createReservation(
+      LocalDate startDate,
+      LocalDate endDate,
+      int discount,
+      boolean isCouponUsed,
+      ReservationStatus status
+  ) {
     ReservationRoom reservationRoom = ReservationRoom.builder()
         .id(1L)
-        .room(room)
+        .room(mockRoom)
         .startDate(startDate)
         .endDate(endDate)
-        .price(room.getPrice().getOffWeekDaysMinFee())
+        .price(mockRoom.getPrice().getOffWeekDaysMinFee())
         .build();
 
     Payment payment = Payment.builder()
         .id(1L)
         .member(mockMember)
         .payMethod(PayMethod.KAKAO_PAY)
-        .roomPrice(room.getPrice().getOffWeekDaysMinFee())
+        .roomPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
         .discountAmount(discount)
-        .totalAmount(room.getPrice().getOffWeekDaysMinFee() - discount)
+        .totalAmount(mockRoom.getPrice().getOffWeekDaysMinFee() - discount)
         .build();
 
     Reservation reservation = Reservation.builder()
@@ -217,10 +225,6 @@ class ReservationServiceTest {
           eq(statuses),
           eq(pageable)
       )).thenReturn(new PageImpl<>(mockReservations, pageable, mockReservations.size()));
-
-//      verify(reservationRepository).findAllByMemberAndStatusIn(eq(mockMember),
-//          eq(statuses),
-//          eq(pageable));
 
       // when
       // then
