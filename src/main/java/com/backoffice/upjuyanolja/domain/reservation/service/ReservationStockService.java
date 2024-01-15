@@ -33,7 +33,7 @@ public class ReservationStockService {
   @ConcurrencyControl(targetName = "couponStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
   public void decreaseCouponStock(Long id, Coupon coupon) {
     try {
-      coupon.decreaseCouponInventory(1);
+      coupon.decreaseCouponStock(1);
     } catch (InsufficientCouponStockException e) {
       throw new InvalidCouponException();
     }
