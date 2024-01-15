@@ -8,6 +8,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
+import com.backoffice.upjuyanolja.domain.room.dto.request.RoomPageRequest;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
@@ -27,6 +28,7 @@ import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
@@ -102,9 +104,9 @@ public class RoomRepositoryTest {
             .build());
     }
 
-    private void saveRoom() {
+    private void saveRoom(Accommodation accommodation) {
         roomRepository.save(Room.builder()
-            .accommodation(saveAccommodation())
+            .accommodation(accommodation)
             .name("65m² 킹룸")
             .defaultCapacity(2)
             .maxCapacity(3)
@@ -128,6 +130,35 @@ public class RoomRepositoryTest {
     }
 
     @Nested
+    @DisplayName("findAllByAccommodation()는")
+    class Context_findAllByAccommodation {
+
+        @Test
+        @DisplayName("객실 목록을 페이지네이션하여 조회할 수 있다.")
+        void _willSuccess() {
+            // given
+            Accommodation accommodation = saveAccommodation();
+            saveRoom(accommodation);
+
+            // when
+            Page<Room> result = roomRepository.findAllByAccommodation(1L,
+                RoomPageRequest.builder()
+                    .pageNum(0)
+                    .pageSize(10)
+                    .build().of());
+
+            // then
+            assertThat(result.getNumber()).isEqualTo(0);
+            assertThat(result.getSize()).isEqualTo(10);
+            assertThat(result.getTotalPages()).isEqualTo(1);
+            assertThat(result.getTotalElements()).isEqualTo(1);
+            assertThat(result.isLast()).isEqualTo(true);
+            assertThat(result.get().findFirst().isPresent()).isEqualTo(true);
+            assertThat(result.get().findFirst().get().getId()).isEqualTo(1L);
+        }
+    }
+
+    @Nested
     @DisplayName("existsRoomByName()는")
     class Context_existsByEmail {
 
@@ -135,7 +166,7 @@ public class RoomRepositoryTest {
         @DisplayName("해당 객실 이름을 가진 객실의 존재 여부를 확인할 수 있다.")
         void _willSuccess() {
             // given
-            saveRoom();
+            saveRoom(saveAccommodation());
 
             // when
             boolean result = roomRepository.existsRoomByName("65m² 킹룸");
