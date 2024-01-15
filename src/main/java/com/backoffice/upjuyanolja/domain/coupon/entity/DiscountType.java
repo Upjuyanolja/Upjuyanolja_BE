@@ -1,11 +1,7 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.getMaxPrice;
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.getMaxRate;
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.getMinPrice;
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.getMinRate;
 
-import com.backoffice.upjuyanolja.domain.coupon.exception.WrongCouponInfoException;
+
 import static com.backoffice.upjuyanolja.domain.coupon.config.CouponProperties.getMaxPrice;
 import static com.backoffice.upjuyanolja.domain.coupon.config.CouponProperties.getMaxRate;
 import static com.backoffice.upjuyanolja.domain.coupon.config.CouponProperties.getMinPrice;
@@ -113,19 +109,14 @@ public enum DiscountType {
     DiscountType(
         final String titleName,
         final String listName,
+        final String shortName,
+        final String detailName,
         final BiFunction<String, Integer, String> makeTitleFormat,
         final BiFunction<String, Integer, String> makeListFormat,
+        final BiFunction<String, Integer, String> makeShortFormat,
+        final BiFunction<String, Integer, String> makeDetailFormat,
         final Predicate<Integer> discountValidate,
         final BiFunction<Integer, Integer, Integer> calcAmount
-        String titleName,
-        String listName,
-        String shortName,
-        String detailName,
-        BiFunction<String, Integer, String> makeTitleFormat,
-        BiFunction<String, Integer, String> makeListFormat,
-        BiFunction<String, Integer, String> makeShortFormat,
-        BiFunction<String, Integer, String> makeDetailFormat,
-        BiFunction<Integer, Integer, Integer> calcAmount
     ) {
         this.titleName = titleName;
         this.listName = listName;
