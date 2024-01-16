@@ -228,13 +228,6 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         .content(objectMapper.writeValueAsString(request))
         .contentType(MediaType.APPLICATION_JSON));
 
-    mockMvc.perform(MockMvcRequestBuilders.post("/api/reservations")
-            .content(objectMapper.writeValueAsString(request))
-            .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(MockMvcResultMatchers.status().is(HttpStatus.CREATED.value()))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("예약이 완료되었습니다."))
-        .andDo(print());
-
     //then
     result.andExpect(status().isCreated())
         .andDo(restDoc.document(
