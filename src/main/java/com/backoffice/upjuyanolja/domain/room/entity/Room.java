@@ -18,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -135,5 +136,10 @@ public class Room extends BaseTime {
         this.checkOutTime = DateTimeParser.timeParser(request.checkOutTime());
         this.amount = request.amount();
         this.option.updateRoomOption(request.option());
+    }
+
+    @Override
+    public void delete(LocalDateTime currentTime) {
+        super.delete(currentTime);
     }
 }

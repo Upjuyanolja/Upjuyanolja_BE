@@ -2,6 +2,8 @@ package com.backoffice.upjuyanolja.global.exception;
 
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.FailResponse;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
@@ -63,6 +65,24 @@ public class GlobalRestControllerAdvice {
     @ExceptionHandler
     public ResponseEntity<FailResponse> methodArgumentNotValidException(
         MethodArgumentNotValidException e) {
+        log.error(e.getMessage(), e);
+        return ApiResponse.error(FailResponse.builder()
+            .code(ErrorCode.INVALID_REQUEST_BODY.getCode())
+            .message(ErrorCode.INVALID_REQUEST_BODY.getMessage())
+            .build()
+        );
+    }
+
+    /**
+     * Custom annotation을 이용한 검증시 검증이 실패하면 ConstraintViolationException 이 발생함.
+     * ConstraintViolationException는 ValidationException을 상속받고 있어서 ValidationException으로 핸들러를 정의함.
+     * @param e ConstraintViolationException
+     * @return
+     */
+    @ExceptionHandler
+    public ResponseEntity<FailResponse> handleValidationException(
+        ValidationException e
+    ) {
         log.error(e.getMessage(), e);
         return ApiResponse.error(FailResponse.builder()
             .code(ErrorCode.INVALID_REQUEST_BODY.getCode())

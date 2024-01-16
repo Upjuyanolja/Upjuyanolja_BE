@@ -16,6 +16,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.exception.DuplicateRoomNameException;
 import com.backoffice.upjuyanolja.domain.room.exception.InvalidRoomStatusException;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
@@ -23,6 +24,8 @@ import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import com.backoffice.upjuyanolja.global.util.DateTimeParser;
 import jakarta.transaction.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -116,6 +119,28 @@ public class RoomCommandService implements RoomCommandUseCase {
         updateRoom(room, request);
 
         return RoomInfoResponse.of(roomQueryUseCase.findRoomById(roomId));
+    }
+
+    @Override
+    public List<RoomStock> getFilteredRoomStocksByDate(
+        Room room, LocalDate startDate, LocalDate endDate
+    ) {
+        return roomQueryUseCase.findStockByRoom(room).stream()
+            .filter(
+                stock ->
+                    !(stock.getDate().isBefore(startDate)) &&
+                        !(stock.getDate().isAfter(endDate))
+            )
+            .toList();
+    }
+
+    @Override
+    public RoomInfoResponse deleteRoom(long memberId, long roomId) {
+        Member member = memberGetService.getMemberById(memberId);
+        Room room = roomQueryUseCase.findRoomById(roomId);
+        checkOwnership(member, room.getAccommodation());
+        room.delete(LocalDateTime.now());
+        return RoomInfoResponse.of(room);
     }
 
     private void validateRoomName(String name) {

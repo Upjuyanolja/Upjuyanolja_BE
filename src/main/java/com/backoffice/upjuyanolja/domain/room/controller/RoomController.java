@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -101,6 +102,18 @@ public class RoomController {
                     roomId,
                     roomUpdateRequest)
                 )
+                .build()
+        );
+    }
+
+    @DeleteMapping("/{roomId}")
+    public ResponseEntity<SuccessResponse<RoomInfoResponse>> deleteRoom(@PathVariable long roomId) {
+        log.info("DELETE /api/rooms/{}", roomId);
+
+        return ApiResponse.success(HttpStatus.OK,
+            SuccessResponse.<RoomInfoResponse>builder()
+                .message("성공적으로 객실을 삭제했습니다.")
+                .data(roomCommandUseCase.deleteRoom(securityUtil.getCurrentMemberId(), roomId))
                 .build()
         );
     }
