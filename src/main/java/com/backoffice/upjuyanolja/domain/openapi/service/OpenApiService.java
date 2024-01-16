@@ -3,10 +3,18 @@ package com.backoffice.upjuyanolja.domain.openapi.service;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
+import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
+import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
+import com.backoffice.upjuyanolja.domain.openapi.dto.AccommodationType;
 import com.backoffice.upjuyanolja.domain.openapi.exception.InvalidDataException;
 import com.backoffice.upjuyanolja.domain.openapi.exception.OpenApiException;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
@@ -27,7 +35,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,9 +61,13 @@ public class OpenApiService {
     private final String DEFAULT_QUERY_PARAMS = "&MobileOS=ETC&MobileApp=AppTest&_type=json";
     private final int CONTENT_TYPE_ID = 32;
     private final int DEFAULT_PRICE = 100000;
+    private final String TEST_EMAIL = "ycouponcenter@gmail.com";
 
+    private final MemberRepository memberRepository;
     private final AccommodationRepository accommodationRepository;
     private final AccommodationImageRepository accommodationImageRepository;
+    private final AccommodationOwnershipRepository accommodationOwnershipRepository;
+    private final CategoryRepository categoryRepository;
     private final RoomRepository roomRepository;
     private final RoomImageRepository roomImageRepository;
     private final RoomStockRepository roomStockRepository;
@@ -76,7 +87,8 @@ public class OpenApiService {
     public void getData(int pageSize, int pageNum) throws JSONException {
         try {
             JSONArray stayArr = getItems(getAccommodation(pageSize, pageNum));
-
+            Member member = memberRepository.findByEmail(TEST_EMAIL)
+                .orElseThrow(MemberNotFoundException::new);
             for (int j = 0; j < stayArr.length(); j++) {
                 JSONObject stay = stayArr.getJSONObject(j);
                 int contentId = stay.getInt("contentid");
@@ -99,6 +111,7 @@ public class OpenApiService {
                     checkStay(stay);
 
                     Accommodation accommodation = saveAccommodation(stay, commonItem, introItem);
+                    saveOwnership(accommodation, member);
                     saveAccommodationImages(accommodation, images);
                     saveRooms(accommodation, introItem, rooms);
                 } catch (InvalidDataException | WrongCategoryException e) {
@@ -235,8 +248,13 @@ public class OpenApiService {
             .seminar(intro.get("seminar").equals("1"))
             .build();
 
+        Category category = categoryRepository.findCategoryByNameAndIdGreaterThan(
+                AccommodationType.getByCode(base.getString("cat3")).name(), 4L)
+            .orElseThrow(WrongCategoryException::new);
+
         Accommodation accommodation = Accommodation.builder()
             .name(base.getString("title"))
+            .category(category)
             .address(
                 Address.builder()
                     .address(base.getString("addr1"))
@@ -251,6 +269,13 @@ public class OpenApiService {
             .build();
 
         return accommodationRepository.save(accommodation);
+    }
+
+    private void saveOwnership(Accommodation accommodation, Member member) {
+        accommodationOwnershipRepository.save(AccommodationOwnership.builder()
+            .accommodation(accommodation)
+            .member(member)
+            .build());
     }
 
     private void saveAccommodationImages(Accommodation accommodation, JSONArray images) {
