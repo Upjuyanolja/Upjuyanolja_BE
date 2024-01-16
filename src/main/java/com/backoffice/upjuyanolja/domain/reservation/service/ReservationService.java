@@ -24,7 +24,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
-import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
+import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Arrays;
@@ -41,7 +41,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReservationService {
 
   private final RoomRepository roomRepository;
-  private final RoomStockRepository roomStockRepository;
   private final CouponRepository couponRepository;
 
   private final CouponRedeemRepository couponRedeemRepository;
@@ -49,6 +48,7 @@ public class ReservationService {
   private final ReservationRoomRepository reservationRoomRepository;
   private final ReservationRepository reservationRepository;
 
+  private final RoomCommandUseCase roomCommandUseCase;
   private final ReservationStockService stockService;
 
   @Transactional
@@ -113,7 +113,7 @@ public class ReservationService {
   private List<RoomStock> getRoomStock(Room room, LocalDate startDate, LocalDate endDate) {
     int daysCount = Period.between(startDate, endDate).getDays() + 1;
 
-    List<RoomStock> roomStocks = roomStockRepository.findByRoomAndDateBetween(room,
+    List<RoomStock> roomStocks = roomCommandUseCase.getFilteredRoomStocksByDate(room,
         startDate, endDate);
 
     if (roomStocks.size() != daysCount ||
