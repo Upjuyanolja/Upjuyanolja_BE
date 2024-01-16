@@ -2,6 +2,7 @@ package com.backoffice.upjuyanolja.global.aspect;
 
 import com.backoffice.upjuyanolja.global.annotation.ConcurrencyControl;
 import java.lang.reflect.Method;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -14,13 +15,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class ConcurrencyAspect {
 
   private final RedissonClient redissonClient;
-
-  public ConcurrencyAspect(RedissonClient redissonClient) {
-    this.redissonClient = redissonClient;
-  }
 
   @Around("@annotation(com.backoffice.upjuyanolja.global.annotation.ConcurrencyControl)&&args(targetId)")
   public Object handleConcurrency(ProceedingJoinPoint joinPoint, Long targetId) throws Throwable {
