@@ -20,73 +20,75 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 public class MemberAuthControllerDocsTest extends RestDocsSupport {
 
-    @MockBean
-    private MemberAuthService memberAuthService;
+  @MockBean
+  private MemberAuthService memberAuthService;
 
-    @MockBean
-    private MemberGetService memberGetService;
+  @MockBean
+  private MemberGetService memberGetService;
 
-    @MockBean
-    private SecurityUtil securityUtil;
+  @MockBean
+  private SecurityUtil securityUtil;
 
-    @Test
-    @DisplayName("checkEmailDuplicate()는 이메일 중복 검사를 할 수 있다.")
-    void checkEmailDuplicate() throws Exception {
-        // given
-        CheckEmailDuplicateResponse checkEmailDuplicateResponse = CheckEmailDuplicateResponse.builder()
-            .isExists(true)
-            .build();
+  @Test
+  @DisplayName("checkEmailDuplicate()는 이메일 중복 검사를 할 수 있다.")
+  void checkEmailDuplicate() throws Exception {
+    // given
+    CheckEmailDuplicateResponse checkEmailDuplicateResponse = CheckEmailDuplicateResponse.builder()
+        .isExists(true)
+        .build();
 
-        given(memberAuthService.checkEmailDuplicate(any(String.class)))
-            .willReturn(checkEmailDuplicateResponse);
+    given(memberAuthService.checkEmailDuplicate(any(String.class)))
+        .willReturn(checkEmailDuplicateResponse);
 
-        // when then
-        mockMvc.perform(get("/api/auth/members/email")
-                .queryParam("email", "test@mail.com"))
-            .andDo(restDoc.document(
-                queryParameters(
-                    parameterWithName("email").description("이메일")
-                ),
-                responseFields(successResponseCommon()).and(
-                    fieldWithPath("data.isExists").type(JsonFieldType.BOOLEAN)
-                        .description("이메일 중복 여부")
-                )
-            ));
-    }
+    // when then
+    mockMvc.perform(get("/api/auth/members/email")
+            .queryParam("email", "test@mail.com"))
+        .andDo(restDoc.document(
+            queryParameters(
+                parameterWithName("email").description("이메일")
+            ),
+            responseFields(successResponseCommon()).and(
+                fieldWithPath("data.isExists").type(JsonFieldType.BOOLEAN)
+                    .description("이메일 중복 여부")
+            )
+        ));
+  }
 
-    @Test
-    @DisplayName("getMember()는 회원 정보를 조회할 수 있다.")
-    void getMember() throws Exception {
-        // given
-        MemberInfoResponse memberInfoResponse = MemberInfoResponse.builder()
-            .memberId(1L)
-            .email("test@mail.com")
-            .name("test")
-            .phoneNumber("010-1234-1234")
-            .build();
+  @Test
+  @DisplayName("getMember()는 회원 정보를 조회할 수 있다.")
+  void getMember() throws Exception {
+    // given
+    MemberInfoResponse memberInfoResponse = MemberInfoResponse.builder()
+        .memberId(1L)
+        .email("test@mail.com")
+        .name("test")
+        .phoneNumber("010-1234-1234")
+        .build();
 
-        given(securityUtil.getCurrentMemberId()).willReturn(1L);
-        given(memberGetService.getMember(any(Long.TYPE)))
-            .willReturn(memberInfoResponse);
+    given(securityUtil.getCurrentMemberId()).willReturn(1L);
+    given(memberGetService.getMember(any(Long.TYPE)))
+        .willReturn(memberInfoResponse);
 
-        // when then
-        mockMvc.perform(get("/api/auth/members"))
-            .andDo(restDoc.document(
-                responseFields(successResponseCommon()).and(
-                    fieldWithPath("data.memberId").type(JsonFieldType.NUMBER)
-                        .description("회원 식별자"),
-                    fieldWithPath("data.email").type(JsonFieldType.STRING)
-                        .description("이메일"),
-                    fieldWithPath("data.name").type(JsonFieldType.STRING)
-                        .description("이름"),
-                    fieldWithPath("data.phoneNumber").type(JsonFieldType.STRING)
-                        .description("전화번호")
-                )
-            ));
+    // when then
+    mockMvc.perform(get("/api/auth/members"))
+        .andDo(restDoc.document(
+            responseFields(successResponseCommon()).and(
+                fieldWithPath("data.memberId").type(JsonFieldType.NUMBER)
+                    .description("회원 식별자"),
+                fieldWithPath("data.email").type(JsonFieldType.STRING)
+                    .description("이메일"),
+                fieldWithPath("data.name").type(JsonFieldType.STRING)
+                    .description("이름"),
+                fieldWithPath("data.phoneNumber").type(JsonFieldType.STRING)
+                    .description("전화번호")
+            )
+        ));
 
-        verify(memberGetService, times(1)).getMember(any(Long.TYPE));
-    }
+    verify(memberGetService, times(1)).getMember(any(Long.TYPE));
+  }
 }
