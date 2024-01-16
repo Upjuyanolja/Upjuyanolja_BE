@@ -44,7 +44,7 @@ public class PointCharges extends BaseTime {
 
     @Column(nullable = false)
     @Comment("충전 포인트")
-    private int chargePoint;
+    private long chargePoint;
 
     @Column(nullable = false)
     @Comment("충전 일시")

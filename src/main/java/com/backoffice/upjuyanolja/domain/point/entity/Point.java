@@ -30,7 +30,7 @@ public class Point extends BaseTime {
 
     @Column(nullable = false)
     @Comment("보유 포인트")
-    private int pointBalance;
+    private long pointBalance;
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
