@@ -17,6 +17,8 @@ import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationRoom;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
 import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidCouponException;
 import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidReservationInfoException;
+import com.backoffice.upjuyanolja.domain.reservation.exception.NoSuchReservationException;
+import com.backoffice.upjuyanolja.domain.reservation.exception.NoSuchReservationRoomException;
 import com.backoffice.upjuyanolja.domain.reservation.exception.PaymentFailureException;
 import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRepository;
 import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRoomRepository;
@@ -184,6 +186,57 @@ public class ReservationService {
         .payment(payment)
         .isCouponUsed(request.getCouponId() != null)
         .build());
+  }
+
+  @Transactional
+  public void cancel(Member currentMember, Long reservationId) {
+    Reservation reservation = reservationRepository.findByIdAndMember(reservationId, currentMember)
+        .orElseThrow(NoSuchReservationException::new);
+
+    /*
+     * 객실 재고 증가
+     * */
+    increaseRoomStock(reservation.getReservationRoom());
+
+    /*
+     * 쿠폰 재고 증가 & 쿠폰 시용 내역 제거
+     * - 쿠폰 미사용 예약 내역 시 스킵
+     * */
+    if (reservation.getIsCouponUsed()) {
+      increaseCouponStock(reservation);
+    }
+
+    /*
+     * 예약 상태값 변경 ReservationStatus.CANCELLED
+     * */
+    reservation.updateStatus(ReservationStatus.CANCELLED);
+    reservationRepository.save(reservation);
+  }
+
+  private void increaseCouponStock(Reservation reservation) {
+    CouponRedeem couponRedeem = couponRedeemRepository.findByReservation(reservation)
+        .orElseThrow(NoSuchReservationException::new);
+    Coupon coupon = couponRedeem.getCoupon();
+
+    stockService.increaseCouponStock(coupon.getId(), coupon);
+
+    couponRedeemRepository.delete(couponRedeem);
+  }
+
+  private void increaseRoomStock(ReservationRoom reservationRoom) {
+    int daysCount =
+        Period.between(reservationRoom.getStartDate(), reservationRoom.getEndDate()).getDays() + 1;
+
+    List<RoomStock> roomStocks = roomCommandUseCase.getFilteredRoomStocksByDate(
+        reservationRoom.getRoom(), reservationRoom.getStartDate(), reservationRoom.getEndDate());
+
+    if (roomStocks.size() != daysCount) {
+      throw new NoSuchReservationRoomException();
+    }
+
+    for (RoomStock roomStock : roomStocks) {
+      stockService.increaseRoomStock(roomStock.getId(), roomStock); //lock
+    }
   }
 
   @Transactional(readOnly = true)

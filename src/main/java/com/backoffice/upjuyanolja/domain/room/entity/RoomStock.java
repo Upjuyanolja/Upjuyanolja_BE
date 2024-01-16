@@ -50,11 +50,15 @@ public class RoomStock {
     this.date = date;
   }
 
-  public void decrease(int n) throws IllegalArgumentException {
-    if (this.count - n < 0) {
+  public void increase(int quantity) {
+    this.count += quantity;
+  }
+
+  public void decrease(int quantity) {
+    if (this.count - quantity < 0) {
       throw new IllegalArgumentException();
     }
 
-    this.count -= n;
+    this.count -= quantity;
   }
 }
