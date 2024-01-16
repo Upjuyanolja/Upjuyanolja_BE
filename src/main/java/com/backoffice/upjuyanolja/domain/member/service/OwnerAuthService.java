@@ -14,6 +14,7 @@ import com.backoffice.upjuyanolja.domain.member.exception.CreateVerificationCode
 import com.backoffice.upjuyanolja.domain.member.exception.IncorrectPasswordException;
 import com.backoffice.upjuyanolja.domain.member.exception.IncorrectVerificationCodeException;
 import com.backoffice.upjuyanolja.domain.member.exception.InvalidRoleException;
+import com.backoffice.upjuyanolja.domain.member.exception.MemberEmailDuplicationException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
 import com.backoffice.upjuyanolja.domain.member.exception.NotRegisteredEmailException;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
@@ -54,6 +55,11 @@ public class OwnerAuthService implements
     private long authCodeExpirationMillis;
 
     public OwnerEmailResponse sendVerificationCodeToEmail(OwnerEmailRequest request) {
+
+        //이미 회원가입 된 상태인지 검증 (존재한다면 예외 발생)
+        if (memberRepository.existsByEmail(request.getEmail())){
+            throw new MemberEmailDuplicationException();
+        }
 
         //DB에 이미 존재하는 이메일인지 검증 (존재 해야 회원가입 가능)
         if (!ownerRepository.existsByEmail(request.getEmail())) {
@@ -114,7 +120,6 @@ public class OwnerAuthService implements
             .phone(ownerInfo.getPhone())
             .email(request.getEmail())
             .password(encoder.encode(request.getPassword()))
-            .imageUrl(ownerInfo.getImageUrl())
             .authority(ROLE_ADMIN)
             .build());
 
