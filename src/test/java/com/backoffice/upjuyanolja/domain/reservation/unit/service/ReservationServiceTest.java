@@ -2,35 +2,52 @@ package com.backoffice.upjuyanolja.domain.reservation.unit.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
+import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
+import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
+import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.payment.entity.PayMethod;
 import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
+import com.backoffice.upjuyanolja.domain.reservation.dto.request.CreateReservationRequest;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetCanceledResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationRoom;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
+import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidCouponException;
+import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidReservationInfoException;
 import com.backoffice.upjuyanolja.domain.reservation.exception.NoSuchReservationRoomException;
+import com.backoffice.upjuyanolja.domain.reservation.exception.PaymentFailureException;
 import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRepository;
+import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRoomRepository;
 import com.backoffice.upjuyanolja.domain.reservation.service.ReservationService;
+import com.backoffice.upjuyanolja.domain.reservation.service.ReservationStockService;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -55,17 +72,36 @@ class ReservationServiceTest {
   ReservationService reservationService;
 
   @Mock
+  ReservationStockService stockService;
+
+  @Mock
+  RoomRepository roomRepository;
+
+  @Mock
+  RoomStockRepository roomStockRepository;
+
+  @Mock
+  CouponRepository couponRepository;
+
+  @Mock
+  ReservationRoomRepository reservationRoomRepository;
+  @Mock
   ReservationRepository reservationRepository;
 
   static Member mockMember;
+  static Accommodation mockAccommodation;
   static Room mockRoom;
+
+  static Coupon mockCoupon;
 
   static List<Reservation> mockReservations;
 
   @BeforeEach
   public void initTest() {
     mockMember = createMember(1L);
-    mockRoom = createRoom();
+    mockAccommodation = createAccommodation();
+    mockRoom = createRoom(1L, RoomStatus.SELLING);
+    mockCoupon = createCoupon(1L, mockRoom, CouponStatus.ENABLE, 1);
     mockReservations = createReservations();
   }
 
@@ -82,33 +118,7 @@ class ReservationServiceTest {
         .build();
   }
 
-  private List<Reservation> createReservations() {
-    List<Reservation> reservations = new ArrayList<>();
-
-    reservations.add(createReservation(
-        LocalDate.now(), LocalDate.now().plusDays(1),
-        0, false, ReservationStatus.RESERVED
-    ));
-
-    reservations.add(createReservation(
-        LocalDate.now(), LocalDate.now().plusDays(1),
-        1000, true, ReservationStatus.RESERVED
-    ));
-
-    reservations.add(createReservation(
-        LocalDate.now(), LocalDate.now().plusDays(1),
-        0, false, ReservationStatus.SERVICED
-    ));
-
-    reservations.add(createReservation(
-        LocalDate.now(), LocalDate.now().plusDays(1),
-        0, false, ReservationStatus.CANCELLED
-    ));
-
-    return reservations;
-  }
-
-  private static Room createRoom() {
+  private static Accommodation createAccommodation() {
     Category category = Category.builder()
         .id(5L)
         .name("TOURIST_HOTEL")
@@ -140,10 +150,13 @@ class ReservationServiceTest {
         .images(new ArrayList<>())
         .rooms(new ArrayList<>())
         .build();
+    return accommodation;
+  }
 
+  private static Room createRoom(Long id, RoomStatus status) {
     Room room = Room.builder()
-        .id(1L)
-        .accommodation(accommodation)
+        .id(id)
+        .accommodation(mockAccommodation)
         .name("65m² 킹룸")
         .defaultCapacity(2)
         .maxCapacity(3)
@@ -156,7 +169,7 @@ class ReservationServiceTest {
             .peakWeekendMinFee(100000)
             .build())
         .amount(858)
-        .status(RoomStatus.SELLING)
+        .status(status)
         .option(RoomOption.builder()
             .airCondition(true)
             .tv(true)
@@ -203,6 +216,273 @@ class ReservationServiceTest {
         .build();
 
     return reservation;
+  }
+
+  private List<Reservation> createReservations() {
+    List<Reservation> reservations = new ArrayList<>();
+
+    reservations.add(createReservation(
+        LocalDate.now(), LocalDate.now().plusDays(1),
+        0, false, ReservationStatus.RESERVED
+    ));
+
+    reservations.add(createReservation(
+        LocalDate.now(), LocalDate.now().plusDays(1),
+        1000, true, ReservationStatus.RESERVED
+    ));
+
+    reservations.add(createReservation(
+        LocalDate.now(), LocalDate.now().plusDays(1),
+        0, false, ReservationStatus.SERVICED
+    ));
+
+    reservations.add(createReservation(
+        LocalDate.now(), LocalDate.now().plusDays(1),
+        0, false, ReservationStatus.CANCELLED
+    ));
+
+    return reservations;
+  }
+
+  private RoomStock createRoomStock(Room room, int count) {
+    return RoomStock.builder()
+        .id(1L)
+        .room(room)
+        .count(count)
+        .date(LocalDate.now())
+        .build();
+  }
+
+  private static Coupon createCoupon(Long id, Room room, CouponStatus status, int stock) {
+    return Coupon.builder()
+        .id(id)
+        .room(room)
+        .couponType(CouponType.ALL_DAYS)
+        .discountType(DiscountType.FLAT)
+        .couponStatus(status)
+        .discount(10000)
+        .endDate(LocalDate.now().plusMonths(1))
+        .dayLimit(10)
+        .stock(stock)
+        .build();
+  }
+
+  @Nested
+  @DisplayName("예약 생성 서비스")
+  class CrateReservation {
+
+    /*
+     * [정상 객실] ID: 1L, RoomStatus.SELLING
+     * [정상 쿠폰] ID: 1L, CouponStatus.ENABLE
+     * 객실 가격: 100000
+     * 객실+쿠폰 결제 금액: 90000
+     * */
+    static final Long defaultRoomId = 1L;
+    static final Long defaultCouponId = 1L;
+    static int defaultTotalPrice = 9000;
+
+    private CreateReservationRequest createRequest(Long roomId, Long couponId, int totalPrice) {
+      return CreateReservationRequest.builder()
+          .roomId(roomId)
+          .visitorName("홍길동")
+          .visitorPhone("010-1234-5678")
+          .startDate(LocalDate.now())
+          .endDate(LocalDate.now())
+          .couponId(couponId)
+          .totalPrice(totalPrice)
+          .payMethod(PayMethod.KAKAO_PAY)
+          .build();
+    }
+
+    @Test
+    @DisplayName("RoomId가 유효한 경우 InvalidReservationInfoException")
+    void RoomNotFoundException_invalidRoomId() {
+      // given
+      CreateReservationRequest request = createRequest(5L, defaultCouponId, defaultTotalPrice);
+
+      when(roomRepository.findById(eq(request.getRoomId()))).thenThrow(
+          new InvalidReservationInfoException());
+
+      // when
+      // then
+      Throwable exception = assertThrows(InvalidReservationInfoException.class, () -> {
+        reservationService.create(mockMember, request);
+      });
+
+      assertEquals("예약 정보가 유효하지 않습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("RoomStatus가 판매중이 아닌경우 InvalidReservationInfoException")
+    void InvalidReservationInfoException_invalidRoomStatus() {
+      // given
+      Long stopSellingRoomID = 2L;
+      Room stopSellingRoom = createRoom(stopSellingRoomID, RoomStatus.STOP_SELLING);
+      CreateReservationRequest request = createRequest(stopSellingRoomID, defaultCouponId,
+          defaultTotalPrice);
+
+      when(roomRepository.findById(eq(request.getRoomId()))).thenReturn(
+          Optional.ofNullable(stopSellingRoom));
+
+      // when
+      // then
+      Throwable exception = assertThrows(InvalidReservationInfoException.class, () -> {
+        reservationService.create(mockMember, request);
+      });
+
+      assertEquals("예약 정보가 유효하지 않습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("객실 재고가 없는 경우 InvalidReservationInfoException")
+    void InvalidReservationInfoException_noRoomStock() {
+      // given
+      RoomStock roomStock = createRoomStock(mockRoom, 0);
+      List<RoomStock> roomStockList = new ArrayList<>(Arrays.asList(roomStock));
+      CreateReservationRequest request = createRequest(defaultRoomId, defaultCouponId,
+          defaultTotalPrice);
+
+      when(roomRepository.findById(any(Long.class))).thenReturn(Optional.ofNullable(mockRoom));
+      when(roomStockRepository.findByRoomAndDateBetween(
+          any(Room.class), any(LocalDate.class), any(LocalDate.class)
+      )).thenReturn(roomStockList);
+
+      // when
+      // then
+      Throwable exception = assertThrows(InvalidReservationInfoException.class, () -> {
+        reservationService.create(mockMember, request);
+      });
+
+      assertEquals("예약 정보가 유효하지 않습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("RoomId와 CouponId가 연관 되지 않은 경우 InvalidCouponException")
+    void InvalidCouponException_invalidCouponId() {
+      // given
+      Long notMatchedRoomID = 2L;
+      Room notMatchedRoom = createRoom(notMatchedRoomID, RoomStatus.SELLING);
+      RoomStock roomStock = createRoomStock(notMatchedRoom, 1);
+      List<RoomStock> roomStockList = new ArrayList<>(Arrays.asList(roomStock));
+
+      CreateReservationRequest request = createRequest(notMatchedRoomID, defaultCouponId,
+          defaultTotalPrice);
+
+      when(roomRepository.findById(any(Long.class))).thenReturn(
+          Optional.ofNullable(notMatchedRoom));
+      when(roomStockRepository.findByRoomAndDateBetween(
+          any(Room.class), any(LocalDate.class), any(LocalDate.class)
+      )).thenReturn(roomStockList);
+      doNothing().when(stockService).decreaseRoomStock(any(Long.class), any(RoomStock.class));
+      when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
+          eq(notMatchedRoom))).thenThrow(
+          new InvalidCouponException());
+
+      // when
+      // then
+      Throwable exception = assertThrows(InvalidCouponException.class, () -> {
+        reservationService.create(mockMember, request);
+      });
+
+      assertEquals("쿠폰이 유효하지 않습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("CouponStatus가 발급 중이 아닌 경우 InvalidCouponException")
+    void InvalidCouponException_invalidCouponStatus() {
+      // given
+      Long disabledCouponId = 2L;
+      Coupon disabledCoupon = createCoupon(disabledCouponId, mockRoom, CouponStatus.DISABLE, 1);
+      RoomStock roomStock = createRoomStock(mockRoom, 1);
+      List<RoomStock> roomStockList = new ArrayList<>(Arrays.asList(roomStock));
+
+      CreateReservationRequest request = createRequest(defaultRoomId, disabledCouponId,
+          defaultTotalPrice);
+
+      when(roomRepository.findById(any(Long.class))).thenReturn(
+          Optional.ofNullable(mockRoom));
+      when(roomStockRepository.findByRoomAndDateBetween(
+          any(Room.class), any(LocalDate.class), any(LocalDate.class)
+      )).thenReturn(roomStockList);
+      doNothing().when(stockService).decreaseRoomStock(any(Long.class), any(RoomStock.class));
+      when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
+          eq(mockRoom))).thenReturn(Optional.ofNullable(disabledCoupon));
+
+      // when
+      // then
+      Throwable exception = assertThrows(InvalidCouponException.class, () -> {
+        reservationService.create(mockMember, request);
+      });
+
+      assertEquals("쿠폰이 유효하지 않습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("쿠폰 재고가 없는 경우 InvalidCouponException")
+    void InvalidCouponException_noCouponStock() {
+      Long noStockCouponId = 2L;
+      Coupon noStockCoupon = createCoupon(noStockCouponId, mockRoom, CouponStatus.ENABLE, 0);
+      RoomStock roomStock = createRoomStock(mockRoom, 1);
+      List<RoomStock> roomStockList = new ArrayList<>(Arrays.asList(roomStock));
+
+      CreateReservationRequest request = createRequest(defaultRoomId, noStockCouponId,
+          defaultTotalPrice);
+
+      when(roomRepository.findById(any(Long.class))).thenReturn(
+          Optional.ofNullable(mockRoom));
+      when(roomStockRepository.findByRoomAndDateBetween(
+          any(Room.class), any(LocalDate.class), any(LocalDate.class)
+      )).thenReturn(roomStockList);
+      doNothing().when(stockService).decreaseRoomStock(any(Long.class), any(RoomStock.class));
+      when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
+          eq(mockRoom))).thenReturn(Optional.ofNullable(noStockCoupon));
+
+      // when
+      // then
+      Throwable exception = assertThrows(InvalidCouponException.class, () -> {
+        reservationService.create(mockMember, request);
+      });
+
+      assertEquals("쿠폰이 유효하지 않습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("입력 받은 결제 금액과 계산된 결제 금액이 다른 경우 PaymentFailureException")
+    void PaymentFailureException_notMatchTotalPrice() {
+      int invalidTotalPrice = 5000;
+      RoomStock roomStock = createRoomStock(mockRoom, 1);
+      List<RoomStock> roomStockList = new ArrayList<>(Arrays.asList(roomStock));
+
+      CreateReservationRequest request = createRequest(defaultRoomId, defaultCouponId,
+          invalidTotalPrice);
+
+      ReservationRoom reservationRoom = ReservationRoom.builder()
+          .id(1L)
+          .room(mockRoom)
+          .startDate(request.getStartDate())
+          .endDate(request.getEndDate())
+          .price(mockRoom.getPrice().getOffWeekDaysMinFee())
+          .build();
+
+      when(roomRepository.findById(any(Long.class))).thenReturn(
+          Optional.ofNullable(mockRoom));
+      when(roomStockRepository.findByRoomAndDateBetween(
+          any(Room.class), any(LocalDate.class), any(LocalDate.class)
+      )).thenReturn(roomStockList);
+      doNothing().when(stockService).decreaseRoomStock(any(Long.class), any(RoomStock.class));
+      when(couponRepository.findByIdAndRoom(any(Long.class),
+          any(Room.class))).thenReturn(Optional.ofNullable(mockCoupon));
+      doNothing().when(stockService).decreaseCouponStock(any(Long.class), any(Coupon.class));
+      when(reservationRoomRepository.save(any(ReservationRoom.class))).thenReturn(reservationRoom);
+
+      // when
+      // then
+      Throwable exception = assertThrows(PaymentFailureException.class, () -> {
+        reservationService.create(mockMember, request);
+      });
+
+      assertEquals("결제에 실패 했습니다.", exception.getMessage());
+    }
   }
 
   @Nested

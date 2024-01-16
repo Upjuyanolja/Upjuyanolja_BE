@@ -23,7 +23,6 @@ import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRoomR
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
-import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import java.time.LocalDate;
@@ -61,7 +60,7 @@ public class ReservationService {
      * 객실 재고 수정 및 예약 객실 생성
      * */
     Room room = roomRepository.findById(request.getRoomId())
-        .orElseThrow(RoomNotFoundException::new);
+        .orElseThrow(InvalidReservationInfoException::new);
 
     decreaseRoomStock(room, request.getStartDate(), request.getEndDate());
 
@@ -117,7 +116,7 @@ public class ReservationService {
     List<RoomStock> roomStocks = roomStockRepository.findByRoomAndDateBetween(room,
         startDate, endDate);
 
-    if (roomStocks.size() != daysCount &&
+    if (roomStocks.size() != daysCount ||
         !roomStocks.stream().allMatch(r -> r.getCount() >= 1)) {
       throw new InvalidReservationInfoException();
     }
@@ -127,7 +126,7 @@ public class ReservationService {
   }
 
   private void decreaseCouponStock(Coupon coupon) {
-    if (coupon.getCouponStatus() != CouponStatus.ENABLE && coupon.getStock() < 1) {
+    if (coupon.getCouponStatus() != CouponStatus.ENABLE || coupon.getStock() < 1) {
       throw new InvalidCouponException();
     }
 
