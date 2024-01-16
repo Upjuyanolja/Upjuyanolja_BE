@@ -249,11 +249,8 @@ public class OpenApiService {
             .build();
 
         Category category = categoryRepository.findCategoryByNameAndIdGreaterThan(
-            AccommodationType
-                .getByCode(base.getString("cat3"))
-                .name(),
-            4L
-        ).orElseThrow(WrongCategoryException::new);
+                AccommodationType.getByCode(base.getString("cat3")).name(), 4L)
+            .orElseThrow(WrongCategoryException::new);
 
         Accommodation accommodation = Accommodation.builder()
             .name(base.getString("title"))
