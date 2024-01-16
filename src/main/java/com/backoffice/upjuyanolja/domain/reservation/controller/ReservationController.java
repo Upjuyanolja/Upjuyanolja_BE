@@ -9,13 +9,16 @@ import com.backoffice.upjuyanolja.domain.reservation.service.ReservationService;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
+import com.backoffice.upjuyanolja.global.validator.ValidId;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,6 +43,20 @@ public class ReservationController {
     return ApiResponse.success(HttpStatus.CREATED,
         SuccessResponse.builder()
             .message("예약이 완료되었습니다.")
+            .data(null)
+            .build());
+  }
+
+  @DeleteMapping("/{reservationId}")
+  public ResponseEntity<SuccessResponse<Object>> cancel(
+      @ValidId @PathVariable(name = "reservationId") Long reservationId
+  ) {
+    Member currentMember = getCurrentMember();
+    reservationService.cancel(currentMember, reservationId);
+
+    return ApiResponse.success(HttpStatus.NO_CONTENT,
+        SuccessResponse.builder()
+            .message("성공적으로 예약을 취소했습니다.")
             .data(null)
             .build());
   }
