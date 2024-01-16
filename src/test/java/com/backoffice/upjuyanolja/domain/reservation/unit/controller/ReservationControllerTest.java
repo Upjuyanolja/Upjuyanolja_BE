@@ -9,12 +9,17 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
+import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
+import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.payment.entity.PayMethod;
 import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
 import com.backoffice.upjuyanolja.domain.reservation.controller.ReservationController;
+import com.backoffice.upjuyanolja.domain.reservation.dto.request.CreateReservationRequest;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetCanceledResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
@@ -27,6 +32,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -49,10 +55,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+@ActiveProfiles("test")
 @WebMvcTest(value = ReservationController.class,
     excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
         SecurityConfig.class,
@@ -62,6 +70,9 @@ class ReservationControllerTest {
 
   @Autowired
   protected MockMvc mockMvc;
+
+  @Autowired
+  protected ObjectMapper objectMapper;
 
   @MockBean
   private SecurityUtil securityUtil;
@@ -73,11 +84,17 @@ class ReservationControllerTest {
   private ReservationService reservationService;
 
   static Member mockMember;
+  static Room mockRoom;
 
   @BeforeEach
   public void initTest() {
-    mockMember = Member.builder()
-        .id(1L)
+    mockMember = createMember(1L);
+    mockRoom = createRoom();
+  }
+
+  private static Member createMember(Long id) {
+    return Member.builder()
+        .id(id)
         .email("test@mail.com")
         .password("$10$ygrAExVYmFTkZn2d0.Pk3Ot5CNZwIBjZH5f.WW0AnUq4w4PtBi9Nm")
         .name("test")
@@ -88,13 +105,7 @@ class ReservationControllerTest {
         .build();
   }
 
-  private Reservation createReservation(
-      LocalDate startDate,
-      LocalDate endDate,
-      int discount,
-      boolean isCouponUsed,
-      ReservationStatus status
-  ) {
+  private static Room createRoom() {
     Category category = Category.builder()
         .id(5L)
         .name("TOURIST_HOTEL")
@@ -150,22 +161,44 @@ class ReservationControllerTest {
             .build())
         .images(new ArrayList<>())
         .build();
+    return room;
+  }
 
+  private static Coupon createCoupon() {
+    return Coupon.builder()
+        .room(mockRoom)
+        .couponType(CouponType.ALL_DAYS)
+        .discountType(DiscountType.FLAT)
+        .couponStatus(CouponStatus.ENABLE)
+        .discount(1000)
+        .endDate(LocalDate.now().plusMonths(1))
+        .dayLimit(10)
+        .stock(5)
+        .build();
+  }
+
+  private Reservation createReservation(
+      LocalDate startDate,
+      LocalDate endDate,
+      int discount,
+      boolean isCouponUsed,
+      ReservationStatus status
+  ) {
     ReservationRoom reservationRoom = ReservationRoom.builder()
         .id(1L)
-        .room(room)
+        .room(mockRoom)
         .startDate(startDate)
         .endDate(endDate)
-        .price(room.getPrice().getOffWeekDaysMinFee())
+        .price(mockRoom.getPrice().getOffWeekDaysMinFee())
         .build();
 
     Payment payment = Payment.builder()
         .id(1L)
         .member(mockMember)
         .payMethod(PayMethod.KAKAO_PAY)
-        .roomPrice(room.getPrice().getOffWeekDaysMinFee())
+        .roomPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
         .discountAmount(discount)
-        .totalAmount(room.getPrice().getOffWeekDaysMinFee() - discount)
+        .totalAmount(mockRoom.getPrice().getOffWeekDaysMinFee() - discount)
         .build();
 
     Reservation reservation = Reservation.builder()
@@ -180,6 +213,68 @@ class ReservationControllerTest {
         .build();
 
     return reservation;
+  }
+
+  @Nested
+  @DisplayName("예약 하기")
+  class CreateReservation {
+
+    private static CreateReservationRequest createRequest(Long couponId) {
+      if (couponId == null) {
+        return CreateReservationRequest.builder()
+            .roomId(1L)
+            .visitorName("홍길동")
+            .visitorPhone("010-1234-5678")
+            .startDate(LocalDate.now())
+            .endDate(LocalDate.now().plusDays(1))
+            .totalPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .payMethod(PayMethod.KAKAO_PAY)
+            .build();
+      }
+
+      return CreateReservationRequest.builder()
+          .roomId(1L)
+          .visitorName("홍길동")
+          .visitorPhone("010-1234-5678")
+          .startDate(LocalDate.now())
+          .endDate(LocalDate.now().plusDays(1))
+          .couponId(couponId)
+          .totalPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
+          .payMethod(PayMethod.KAKAO_PAY)
+          .build();
+    }
+
+    @Test
+    @DisplayName("쿠폰 미사용 예약 생성")
+    void createReservation_couponIdNull() throws Exception {
+      // given
+      CreateReservationRequest request = createRequest(null);
+
+      // when
+      // then
+      mockMvc.perform(MockMvcRequestBuilders.post("/api/reservations")
+              .content(objectMapper.writeValueAsString(request))
+              .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(MockMvcResultMatchers.status().is(HttpStatus.CREATED.value()))
+          .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("예약이 완료되었습니다."))
+          .andDo(print());
+    }
+
+    @Test
+    @DisplayName("쿠폰 사용 예약 생성")
+    void createReservation_couponId() throws Exception {
+      // given
+      CreateReservationRequest request = createRequest(1L);
+
+      // when
+      // then
+      mockMvc.perform(MockMvcRequestBuilders.post("/api/reservations")
+              .content(objectMapper.writeValueAsString(request))
+              .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(MockMvcResultMatchers.status().is(HttpStatus.CREATED.value()))
+          .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("예약이 완료되었습니다."))
+          .andDo(print());
+    }
   }
 
   @Nested

@@ -2,12 +2,16 @@ package com.backoffice.upjuyanolja.domain.reservation.docs;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.restdocs.snippet.Attributes.key;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
@@ -19,6 +23,7 @@ import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.payment.entity.PayMethod;
 import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
+import com.backoffice.upjuyanolja.domain.reservation.dto.request.CreateReservationRequest;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetCanceledResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
@@ -42,10 +47,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.constraints.ConstraintDescriptions;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+@ActiveProfiles("test")
 public class ReservationControllerDocsTest extends RestDocsSupport {
 
   @MockBean
@@ -58,10 +68,19 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
   private ReservationService reservationService;
 
   static Member mockMember;
+  static Room mockRoom;
+
+  private final ConstraintDescriptions createReservationRequestDescriptions = new ConstraintDescriptions(
+      CreateReservationRequest.class);
 
   @BeforeEach
   public void initTest() {
-    mockMember = Member.builder()
+    mockMember = createMember();
+    mockRoom = createRoom();
+  }
+
+  private static Member createMember() {
+    return Member.builder()
         .id(1L)
         .email("test@mail.com")
         .password("$10$ygrAExVYmFTkZn2d0.Pk3Ot5CNZwIBjZH5f.WW0AnUq4w4PtBi9Nm")
@@ -73,13 +92,7 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         .build();
   }
 
-  private Reservation createReservation(
-      LocalDate startDate,
-      LocalDate endDate,
-      int discount,
-      boolean isCouponUsed,
-      ReservationStatus status
-  ) {
+  private static Room createRoom() {
     Category category = Category.builder()
         .id(5L)
         .name("TOURIST_HOTEL")
@@ -135,22 +148,31 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
             .build())
         .images(new ArrayList<>())
         .build();
+    return room;
+  }
 
+  private Reservation createReservation(
+      LocalDate startDate,
+      LocalDate endDate,
+      int discount,
+      boolean isCouponUsed,
+      ReservationStatus status
+  ) {
     ReservationRoom reservationRoom = ReservationRoom.builder()
         .id(1L)
-        .room(room)
+        .room(mockRoom)
         .startDate(startDate)
         .endDate(endDate)
-        .price(room.getPrice().getOffWeekDaysMinFee())
+        .price(mockRoom.getPrice().getOffWeekDaysMinFee())
         .build();
 
     Payment payment = Payment.builder()
         .id(1L)
         .member(mockMember)
         .payMethod(PayMethod.KAKAO_PAY)
-        .roomPrice(room.getPrice().getOffWeekDaysMinFee())
+        .roomPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
         .discountAmount(discount)
-        .totalAmount(room.getPrice().getOffWeekDaysMinFee() - discount)
+        .totalAmount(mockRoom.getPrice().getOffWeekDaysMinFee() - discount)
         .build();
 
     Reservation reservation = Reservation.builder()
@@ -165,6 +187,95 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         .build();
 
     return reservation;
+  }
+
+  private static CreateReservationRequest createRequest(Long couponId) {
+    if (couponId == null) {
+      return CreateReservationRequest.builder()
+          .roomId(1L)
+          .visitorName("홍길동")
+          .visitorPhone("010-1234-5678")
+          .startDate(LocalDate.now())
+          .endDate(LocalDate.now().plusDays(1))
+          .totalPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
+          .payMethod(PayMethod.KAKAO_PAY)
+          .build();
+    }
+
+    return CreateReservationRequest.builder()
+        .roomId(1L)
+        .visitorName("홍길동")
+        .visitorPhone("010-1234-5678")
+        .startDate(LocalDate.now())
+        .endDate(LocalDate.now().plusDays(1))
+        .couponId(couponId)
+        .totalPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
+        .payMethod(PayMethod.KAKAO_PAY)
+        .build();
+  }
+
+  @Test
+  void createReservation() throws Exception {
+    //given
+    CreateReservationRequest request = createRequest(null);
+    when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+    when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+    doNothing().when(reservationService).create(any(Member.class), eq(request));
+
+    //when
+    ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post("/api/reservations")
+        .content(objectMapper.writeValueAsString(request))
+        .contentType(MediaType.APPLICATION_JSON));
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/api/reservations")
+            .content(objectMapper.writeValueAsString(request))
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.status().is(HttpStatus.CREATED.value()))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("예약이 완료되었습니다."))
+        .andDo(print());
+
+    //then
+    result.andExpect(status().isCreated())
+        .andDo(restDoc.document(
+            requestFields(
+                fieldWithPath("roomId").description("객실 id")
+                    .attributes(key("constraints")
+                        .value(createReservationRequestDescriptions.descriptionsForProperty(
+                            "roomId"))),
+                fieldWithPath("visitorName").description("방문자 성함")
+                    .attributes(key("constraints")
+                        .value(createReservationRequestDescriptions.descriptionsForProperty(
+                            "visitorName"))),
+                fieldWithPath("visitorPhone").description("방문자 전화번호")
+                    .attributes(key("constraints")
+                        .value(createReservationRequestDescriptions.descriptionsForProperty(
+                            "visitorPhone"))),
+                fieldWithPath("startDate").description("입실일")
+                    .attributes(key("constraints")
+                        .value(createReservationRequestDescriptions.descriptionsForProperty(
+                            "startDate"))),
+                fieldWithPath("endDate").description("퇴실일")
+                    .attributes(key("constraints")
+                        .value(createReservationRequestDescriptions.descriptionsForProperty(
+                            "endDate"))),
+                fieldWithPath("couponId").description("쿠폰 id")
+                    .attributes(key("constraints")
+                        .value(createReservationRequestDescriptions.descriptionsForProperty(
+                            "couponId"))),
+                fieldWithPath("totalPrice").description("결제 금액")
+                    .attributes(key("constraints")
+                        .value(createReservationRequestDescriptions.descriptionsForProperty(
+                            "totalPrice"))),
+                fieldWithPath("payMethod").description("결제수단")
+                    .attributes(key("constraints")
+                        .value(createReservationRequestDescriptions.descriptionsForProperty(
+                            "payMethod")))
+            ),
+            responseFields(
+                fieldWithPath("message").description("응답 메세지"),
+                subsectionWithPath("data").description("응답 데이터")
+            )
+        ));
   }
 
   @Test
