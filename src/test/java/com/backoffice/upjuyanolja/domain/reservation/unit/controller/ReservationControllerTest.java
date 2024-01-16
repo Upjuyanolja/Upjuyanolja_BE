@@ -3,6 +3,7 @@ package com.backoffice.upjuyanolja.domain.reservation.unit.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
@@ -273,6 +274,26 @@ class ReservationControllerTest {
               .contentType(MediaType.APPLICATION_JSON))
           .andExpect(MockMvcResultMatchers.status().is(HttpStatus.CREATED.value()))
           .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("예약이 완료되었습니다."))
+          .andDo(print());
+    }
+  }
+
+  @Nested
+  @DisplayName("예약 취소 하기")
+  class CancelReservation {
+
+    @Test
+    @DisplayName("예약 취소")
+    void createReservation_couponIdNull() throws Exception {
+      // given
+      Long revervationId = 1L;
+
+      // when
+      // then
+      mockMvc.perform(delete("/api/reservations/{reservationId}", revervationId)
+              .contentType(MediaType.APPLICATION_JSON))
+          .andExpect(MockMvcResultMatchers.status().is(HttpStatus.NO_CONTENT.value()))
+          .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("성공적으로 예약을 취소했습니다."))
           .andDo(print());
     }
   }
