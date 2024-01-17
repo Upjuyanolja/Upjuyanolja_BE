@@ -1,8 +1,10 @@
 package com.backoffice.upjuyanolja.domain.point.entity;
 
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import com.backoffice.upjuyanolja.domain.point.util.YearMonthConverter;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -33,6 +35,7 @@ public class Point extends BaseTime {
 
     @Column(nullable = false)
     @Comment("기준 날짜")
+    @Convert(converter = YearMonthConverter.class)
     private YearMonth standardDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
