@@ -4,6 +4,8 @@ import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,6 +31,11 @@ public class PointCharges extends BaseTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("포인트 충전 식별자")
     private Long id;
+
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    @Comment("포인트 유형")
+    private PointType pointType;
 
     @Column(nullable = false)
     @Comment("포인트 결제 키")
@@ -69,6 +76,7 @@ public class PointCharges extends BaseTime {
     @Builder
     public PointCharges(
         Long id,
+        PointType pointType,
         String paymentKey,
         String paymentName,
         String orderName,
@@ -80,6 +88,7 @@ public class PointCharges extends BaseTime {
         List<PointRefunds> refunds
     ) {
         this.id = id;
+        this.pointType = pointType;
         this.paymentKey = paymentKey;
         this.paymentName = paymentName;
         this.orderName = orderName;

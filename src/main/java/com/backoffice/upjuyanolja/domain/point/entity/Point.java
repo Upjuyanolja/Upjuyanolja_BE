@@ -32,11 +32,6 @@ public class Point extends BaseTime {
     @Comment("보유 포인트")
     private long pointBalance;
 
-    @Column(nullable = false)
-    @Enumerated(value = EnumType.STRING)
-    @Comment("포인트 유형")
-    private PointType pointType;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     @Comment("회원 식별자")
@@ -47,12 +42,10 @@ public class Point extends BaseTime {
     public Point(
         Long id,
         int pointBalance,
-        PointType pointType,
         Member member
     ) {
         this.id = id;
         this.pointBalance = pointBalance;
-        this.pointType = pointType;
         this.member = member;
     }
 
