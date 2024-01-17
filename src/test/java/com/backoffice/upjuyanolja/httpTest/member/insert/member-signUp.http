@@ -4,6 +4,6 @@ Content-Type: application/json
 {
   "name": "test2",
   "phone": "010-1234-9876",
-  "email": "test@mail.com",
-  "password": "testPassword!!5432"
+  "email": "{{email}}",
+  "password": "{{password}}"
 }
