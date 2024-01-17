@@ -114,7 +114,8 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
 
         for (Room room : accommodation.getRooms()) {
-            pq.offer(room.getPrice().getOffWeekDaysMinFee());
+            int roomPrice = room.getPrice().getOffWeekDaysMinFee();
+            pq.offer(roomPrice);
         }
 
         return pq.poll();
