@@ -238,7 +238,8 @@ public class AccommodationCommandServiceTest {
             given(accommodationQueryUseCase
                 .saveOwnership(any(Member.class), any(Accommodation.class)))
                 .willReturn(accommodationOwnership);
-            given(roomCommandService.saveRoom(any(Accommodation.class), any(RoomRegisterRequest.class)))
+            given(roomCommandService.saveRoom(any(Accommodation.class),
+                any(RoomRegisterRequest.class)))
                 .willReturn(roomInfoResponse);
             given(accommodationQueryUseCase.getAccommodationById(any(Long.TYPE)))
                 .willReturn(savedAccommodation);

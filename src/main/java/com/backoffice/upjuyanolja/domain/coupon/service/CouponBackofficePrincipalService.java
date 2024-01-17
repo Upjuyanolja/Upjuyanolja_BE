@@ -14,7 +14,7 @@ public class CouponBackofficePrincipalService {
 
     private final CouponRepository couponRepository;
 
-    public Object createCoupon(List<CouponRoomsRequest> couponRooms)  {
+    public Object createCoupon(List<CouponRoomsRequest> couponRooms) {
         for (CouponRoomsRequest couponRoom : couponRooms) {
             // 1. 먼저 roomId와 discount로 발행된 쿠폰이 있는지 검색한다.
             Integer presentCouponRoomId = couponRepository.findByPresentRoomId(
@@ -33,9 +33,7 @@ public class CouponBackofficePrincipalService {
 
             // 4. 업주의 보유 포인트 차감 -> 메시지 발행?
 
-
         }
-        
 
         return null;
     }

@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RoomStockRepository extends JpaRepository<RoomStock, Long> {
 
-  Optional<List<RoomStock>> findByRoom(Room room);
+    Optional<List<RoomStock>> findByRoom(Room room);
 }

@@ -43,7 +43,7 @@ dependencies {
 
     //Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    
+
     // Redisson
     implementation 'org.redisson:redisson-spring-boot-starter:3.17.4'
 
@@ -112,6 +112,12 @@ task copyPrivate(type: Copy) {
         from './submodule-data/ssl'
         include "keystore.p12"
         into 'src/main/resources/ssl'
+    }
+
+    copy {
+        from './submodule-data/docker'
+        include "Dockerfile", "docker-compose.yaml"
+        into './'
     }
 }
 

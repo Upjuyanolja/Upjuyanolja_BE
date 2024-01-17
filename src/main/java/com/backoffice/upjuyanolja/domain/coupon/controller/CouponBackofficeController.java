@@ -1,6 +1,5 @@
 package com.backoffice.upjuyanolja.domain.coupon.controller;
 
-import com.backoffice.upjuyanolja.domain.coupon.config.CouponProperties;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.CouponMakeRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidRequestBodyException;

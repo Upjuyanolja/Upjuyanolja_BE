@@ -1,11 +1,9 @@
 package com.backoffice.upjuyanolja.domain.coupon.service;
 
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
-import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.CouponMakeRequest;
 import com.backoffice.upjuyanolja.domain.coupon.exception.PointInsufficientException;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
-import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +16,6 @@ public class CouponValidationService {
     private final CouponRepository couponRepository;
 
     /**
-     *
      * @param couponMakeRequest 쿠폰 등록 요청 Dto
      * @param currentMemberId   현재 접속한 회원(업주) id
      * @return

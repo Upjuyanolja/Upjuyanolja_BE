@@ -17,6 +17,8 @@ import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationRoom;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
 import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidCouponException;
 import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidReservationInfoException;
+import com.backoffice.upjuyanolja.domain.reservation.exception.NoSuchReservationException;
+import com.backoffice.upjuyanolja.domain.reservation.exception.NoSuchReservationRoomException;
 import com.backoffice.upjuyanolja.domain.reservation.exception.PaymentFailureException;
 import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRepository;
 import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRoomRepository;
@@ -40,169 +42,223 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ReservationService {
 
-  private final RoomRepository roomRepository;
-  private final CouponRepository couponRepository;
+    private final RoomRepository roomRepository;
+    private final CouponRepository couponRepository;
 
-  private final CouponRedeemRepository couponRedeemRepository;
-  private final PaymentRepository paymentRepository;
-  private final ReservationRoomRepository reservationRoomRepository;
-  private final ReservationRepository reservationRepository;
+    private final CouponRedeemRepository couponRedeemRepository;
+    private final PaymentRepository paymentRepository;
+    private final ReservationRoomRepository reservationRoomRepository;
+    private final ReservationRepository reservationRepository;
 
-  private final RoomCommandUseCase roomCommandUseCase;
-  private final ReservationStockService stockService;
+    private final RoomCommandUseCase roomCommandUseCase;
+    private final ReservationStockService stockService;
 
-  @Transactional
-  public void create(Member currentMember, CreateReservationRequest request) {
-    int discountAmount = 0;
-    Coupon coupon = null;
+    @Transactional
+    public void create(Member currentMember, CreateReservationRequest request) {
+        int discountAmount = 0;
+        Coupon coupon = null;
 
-    /*
-     * 객실 재고 수정 및 예약 객실 생성
-     * */
-    Room room = roomRepository.findById(request.getRoomId())
-        .orElseThrow(InvalidReservationInfoException::new);
+        /*
+         * 객실 재고 수정 및 예약 객실 생성
+         * */
+        Room room = roomRepository.findById(request.getRoomId())
+            .orElseThrow(InvalidReservationInfoException::new);
 
-    decreaseRoomStock(room, request.getStartDate(), request.getEndDate());
+        decreaseRoomStock(room, request.getStartDate(), request.getEndDate());
 
-    /*
-     * 쿠폰 재고 수정
-     * request.getCouponId() = null 인 경우 스킵
-     * */
-    if (request.getCouponId() != null) {
-      // room - coupon 유효성 검사
-      coupon = couponRepository.findByIdAndRoom(request.getCouponId(), room)
-          .orElseThrow(InvalidCouponException::new);
+        /*
+         * 쿠폰 재고 수정
+         * request.getCouponId() = null 인 경우 스킵
+         * */
+        if (request.getCouponId() != null) {
+            // room - coupon 유효성 검사
+            coupon = couponRepository.findByIdAndRoom(request.getCouponId(), room)
+                .orElseThrow(InvalidCouponException::new);
 
-      // 쿠폰 재고 수정
-      decreaseCouponStock(coupon);
+            // 쿠폰 재고 수정
+            decreaseCouponStock(coupon);
 
-      // 할인 금액 계산
-      discountAmount = DiscountType.getPaymentPrice(coupon.getDiscountType(),
-          room.getPrice().getOffWeekDaysMinFee(), coupon.getDiscount());
+            // 할인 금액 계산
+            discountAmount = DiscountType.getPaymentPrice(coupon.getDiscountType(),
+                room.getPrice().getOffWeekDaysMinFee(), coupon.getDiscount());
+        }
+
+        /*
+         * 예약 및 결제 저장
+         * */
+        Reservation reservation = saveReservation(currentMember, request, room, discountAmount);
+
+        // 쿠폰 사용 시 쿠폰 사용 내역 저장
+        if (reservation.getIsCouponUsed()) {
+            couponRedeemRepository.save(CouponRedeem.builder()
+                .coupon(coupon)
+                .reservation(reservation)
+                .build());
+        }
     }
 
-    /*
-     * 예약 및 결제 저장
-     * */
-    Reservation reservation = saveReservation(currentMember, request, room, discountAmount);
+    private void decreaseRoomStock(Room room, LocalDate startDate, LocalDate endDate) {
+        if (room.getStatus() != RoomStatus.SELLING) {
+            throw new InvalidReservationInfoException();
+        }
 
-    // 쿠폰 사용 시 쿠폰 사용 내역 저장
-    if (reservation.getIsCouponUsed()) {
-      couponRedeemRepository.save(CouponRedeem.builder()
-          .coupon(coupon)
-          .reservation(reservation)
-          .build());
-    }
-  }
+        // 객실 재고 검증 및 get
+        List<RoomStock> roomStocks = getRoomStock(room, startDate, endDate);
 
-  private void decreaseRoomStock(Room room, LocalDate startDate, LocalDate endDate) {
-    if (room.getStatus() != RoomStatus.SELLING) {
-      throw new InvalidReservationInfoException();
+        // 객실 락 획득 및 재고 수정
+        for (RoomStock roomStock : roomStocks) {
+            stockService.decreaseRoomStock(roomStock.getId(), roomStock); //lock
+        }
     }
 
-    // 객실 재고 검증 및 get
-    List<RoomStock> roomStocks = getRoomStock(room, startDate, endDate);
+    // 기간 내의 모든 재고가 1 이상 이어야 함
+    private List<RoomStock> getRoomStock(Room room, LocalDate startDate, LocalDate endDate) {
+        int daysCount = Period.between(startDate, endDate).getDays() + 1;
 
-    // 객실 락 획득 및 재고 수정
-    for (RoomStock roomStock : roomStocks) {
-      stockService.decreaseRoomStock(roomStock.getId(), roomStock); //lock
-    }
-  }
+        List<RoomStock> roomStocks = roomCommandUseCase.getFilteredRoomStocksByDate(room,
+            startDate, endDate);
 
-  // 기간 내의 모든 재고가 1 이상 이어야 함
-  private List<RoomStock> getRoomStock(Room room, LocalDate startDate, LocalDate endDate) {
-    int daysCount = Period.between(startDate, endDate).getDays() + 1;
+        if (roomStocks.size() != daysCount ||
+            !roomStocks.stream().allMatch(r -> r.getCount() >= 1)) {
+            throw new InvalidReservationInfoException();
+        }
 
-    List<RoomStock> roomStocks = roomCommandUseCase.getFilteredRoomStocksByDate(room,
-        startDate, endDate);
-
-    if (roomStocks.size() != daysCount ||
-        !roomStocks.stream().allMatch(r -> r.getCount() >= 1)) {
-      throw new InvalidReservationInfoException();
+        roomStocks.sort(Comparator.comparing(RoomStock::getDate));
+        return roomStocks;
     }
 
-    roomStocks.sort(Comparator.comparing(RoomStock::getDate));
-    return roomStocks;
-  }
+    private void decreaseCouponStock(Coupon coupon) {
+        if (coupon.getCouponStatus() != CouponStatus.ENABLE || coupon.getStock() < 1) {
+            throw new InvalidCouponException();
+        }
 
-  private void decreaseCouponStock(Coupon coupon) {
-    if (coupon.getCouponStatus() != CouponStatus.ENABLE || coupon.getStock() < 1) {
-      throw new InvalidCouponException();
+        stockService.decreaseCouponStock(coupon.getId(), coupon); //lock
     }
 
-    stockService.decreaseCouponStock(coupon.getId(), coupon); //lock
-  }
+    private Payment savePayment(Member member, CreateReservationRequest request, int roomPrice,
+        int discountAmount) {
+        int totalAmount = roomPrice - discountAmount;
 
-  private Payment savePayment(Member member, CreateReservationRequest request, int roomPrice,
-      int discountAmount) {
-    int totalAmount = roomPrice - discountAmount;
+        if (totalAmount != request.getTotalPrice()) {
+            throw new PaymentFailureException();
+        }
 
-    if (totalAmount != request.getTotalPrice()) {
-      throw new PaymentFailureException();
+        return paymentRepository.save(Payment.builder()
+            .member(member)
+            .payMethod(request.getPayMethod())
+            .roomPrice(roomPrice)
+            .discountAmount(discountAmount)
+            .totalAmount(totalAmount)
+            .build());
     }
 
-    return paymentRepository.save(Payment.builder()
-        .member(member)
-        .payMethod(request.getPayMethod())
-        .roomPrice(roomPrice)
-        .discountAmount(discountAmount)
-        .totalAmount(totalAmount)
-        .build());
-  }
+    private Reservation saveReservation(
+        Member currentMember,
+        CreateReservationRequest request,
+        Room room,
+        int discountAmount
+    ) {
+        /*
+         * 예약 객실 저장
+         * */
+        ReservationRoom reservationRoom = reservationRoomRepository.save(ReservationRoom.builder()
+            .room(room)
+            .startDate(request.getStartDate())
+            .endDate(request.getEndDate())
+            .price(room.getPrice().getOffWeekDaysMinFee())
+            .build());
 
-  private Reservation saveReservation(
-      Member currentMember,
-      CreateReservationRequest request,
-      Room room,
-      int discountAmount
-  ) {
-    /*
-     * 예약 객실 저장
-     * */
-    ReservationRoom reservationRoom = reservationRoomRepository.save(ReservationRoom.builder()
-        .room(room)
-        .startDate(request.getStartDate())
-        .endDate(request.getEndDate())
-        .price(room.getPrice().getOffWeekDaysMinFee())
-        .build());
+        /*
+         * 결제 정보 저장
+         * 계산한 결제 금액과 요청 결제 금액이 다르면 결제 오류
+         */
+        Payment payment = savePayment(currentMember, request, reservationRoom.getPrice(),
+            discountAmount);
 
-    /*
-     * 결제 정보 저장
-     * 계산한 결제 금액과 요청 결제 금액이 다르면 결제 오류
-     */
-    Payment payment = savePayment(currentMember, request, reservationRoom.getPrice(),
-        discountAmount);
+        /*
+         * 예약 저장
+         * */
+        return reservationRepository.save(Reservation.builder()
+            .member(currentMember)
+            .reservationRoom(reservationRoom)
+            .visitorName(request.getVisitorName())
+            .visitorPhone(request.getVisitorPhone())
+            .payment(payment)
+            .isCouponUsed(request.getCouponId() != null)
+            .build());
+    }
 
-    /*
-     * 예약 저장
-     * */
-    return reservationRepository.save(Reservation.builder()
-        .member(currentMember)
-        .reservationRoom(reservationRoom)
-        .visitorName(request.getVisitorName())
-        .visitorPhone(request.getVisitorPhone())
-        .payment(payment)
-        .isCouponUsed(request.getCouponId() != null)
-        .build());
-  }
+    @Transactional
+    public void cancel(Member currentMember, Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdAndMember(reservationId,
+                currentMember)
+            .orElseThrow(NoSuchReservationException::new);
 
-  @Transactional(readOnly = true)
-  public GetReservedResponse getReserved(Member currentMember, Pageable pageable) {
-    Page<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
-        currentMember,
-        Arrays.asList(ReservationStatus.RESERVED, ReservationStatus.SERVICED),
-        pageable
-    );
-    return new GetReservedResponse(reservations);
-  }
+        /*
+         * 객실 재고 증가
+         * */
+        increaseRoomStock(reservation.getReservationRoom());
 
-  @Transactional(readOnly = true)
-  public GetCanceledResponse getCanceled(Member currentMember, Pageable pageable) {
-    Page<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
-        currentMember,
-        List.of(ReservationStatus.CANCELLED),
-        pageable
-    );
-    return new GetCanceledResponse(reservations);
-  }
+        /*
+         * 쿠폰 재고 증가 & 쿠폰 시용 내역 제거
+         * - 쿠폰 미사용 예약 내역 시 스킵
+         * */
+        if (reservation.getIsCouponUsed()) {
+            increaseCouponStock(reservation);
+        }
+
+        /*
+         * 예약 상태값 변경 ReservationStatus.CANCELLED
+         * */
+        reservation.updateStatus(ReservationStatus.CANCELLED);
+        reservationRepository.save(reservation);
+    }
+
+    private void increaseCouponStock(Reservation reservation) {
+        CouponRedeem couponRedeem = couponRedeemRepository.findByReservation(reservation)
+            .orElseThrow(NoSuchReservationException::new);
+        Coupon coupon = couponRedeem.getCoupon();
+
+        stockService.increaseCouponStock(coupon.getId(), coupon);
+
+        couponRedeemRepository.delete(couponRedeem);
+    }
+
+    private void increaseRoomStock(ReservationRoom reservationRoom) {
+        int daysCount =
+            Period.between(reservationRoom.getStartDate(), reservationRoom.getEndDate()).getDays()
+                + 1;
+
+        List<RoomStock> roomStocks = roomCommandUseCase.getFilteredRoomStocksByDate(
+            reservationRoom.getRoom(), reservationRoom.getStartDate(),
+            reservationRoom.getEndDate());
+
+        if (roomStocks.size() != daysCount) {
+            throw new NoSuchReservationRoomException();
+        }
+
+        for (RoomStock roomStock : roomStocks) {
+            stockService.increaseRoomStock(roomStock.getId(), roomStock); //lock
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public GetReservedResponse getReserved(Member currentMember, Pageable pageable) {
+        Page<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
+            currentMember,
+            Arrays.asList(ReservationStatus.RESERVED, ReservationStatus.SERVICED),
+            pageable
+        );
+        return new GetReservedResponse(reservations);
+    }
+
+    @Transactional(readOnly = true)
+    public GetCanceledResponse getCanceled(Member currentMember, Pageable pageable) {
+        Page<Reservation> reservations = reservationRepository.findAllByMemberAndStatusIn(
+            currentMember,
+            List.of(ReservationStatus.CANCELLED),
+            pageable
+        );
+        return new GetCanceledResponse(reservations);
+    }
 }

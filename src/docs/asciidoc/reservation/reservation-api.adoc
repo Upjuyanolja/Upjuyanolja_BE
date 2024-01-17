@@ -23,6 +23,20 @@ include::{snippets}/reservation-controller-docs-test/create-reservation/http-req
 include::{snippets}/reservation-controller-docs-test/create-reservation/http-response.adoc[]
 include::{snippets}/reservation-controller-docs-test/create-reservation/response-fields.adoc[]
 
+[[Cancel-Reservation]]
+== 예약 취소
+
+예약 취소 API 입니다.
+
+=== HttpRequest
+
+include::{snippets}/reservation-controller-docs-test/cancel-reservation/http-request.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/reservation-controller-docs-test/cancel-reservation/http-response.adoc[]
+include::{snippets}/reservation-controller-docs-test/cancel-reservation/response-fields.adoc[]
+
 [[Get-Reserved]]
 == 예약 내역 조회
 

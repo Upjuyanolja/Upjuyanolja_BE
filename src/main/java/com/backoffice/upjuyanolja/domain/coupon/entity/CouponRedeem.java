@@ -20,29 +20,29 @@ import org.hibernate.annotations.Comment;
 @Entity
 public class CouponRedeem extends BaseTime {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Comment("쿠폰 사용 식별자")
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("쿠폰 사용 식별자")
+    private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "coupon_id")
-  @Comment("쿠폰 식별자")
-  private Coupon coupon;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id")
+    @Comment("쿠폰 식별자")
+    private Coupon coupon;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "reservation_id")
-  @Comment("예약 식별자")
-  private Reservation reservation;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reservation_id")
+    @Comment("예약 식별자")
+    private Reservation reservation;
 
-  @Builder
-  public CouponRedeem(
-      Long id,
-      Coupon coupon,
-      Reservation reservation
-  ) {
-    this.id = id;
-    this.coupon = coupon;
-    this.reservation = reservation;
-  }
+    @Builder
+    public CouponRedeem(
+        Long id,
+        Coupon coupon,
+        Reservation reservation
+    ) {
+        this.id = id;
+        this.coupon = coupon;
+        this.reservation = reservation;
+    }
 }

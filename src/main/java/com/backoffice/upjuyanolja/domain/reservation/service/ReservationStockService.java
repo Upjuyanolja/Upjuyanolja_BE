@@ -16,28 +16,40 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ReservationStockService {
 
-  private final RoomStockRepository roomStockRepository;
-  private final CouponRepository couponRepository;
+    private final RoomStockRepository roomStockRepository;
+    private final CouponRepository couponRepository;
 
-  @ConcurrencyControl(targetName = "roomStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
-  public void decreaseRoomStock(Long id, RoomStock roomStock) {
-    try {
-      roomStock.decrease(1);
-    } catch (IllegalArgumentException e) {
-      throw new InvalidReservationInfoException();
+    @ConcurrencyControl(targetName = "roomStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
+    public void increaseRoomStock(Long id, RoomStock roomStock) {
+        roomStock.increase(1);
+        roomStockRepository.save(roomStock);
     }
 
-    roomStockRepository.save(roomStock);
-  }
+    @ConcurrencyControl(targetName = "roomStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
+    public void decreaseRoomStock(Long id, RoomStock roomStock) {
+        try {
+            roomStock.decrease(1);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidReservationInfoException();
+        }
 
-  @ConcurrencyControl(targetName = "couponStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
-  public void decreaseCouponStock(Long id, Coupon coupon) {
-    try {
-      coupon.decreaseCouponStock(1);
-    } catch (InsufficientCouponStockException e) {
-      throw new InvalidCouponException();
+        roomStockRepository.save(roomStock);
     }
 
-    couponRepository.save(coupon);
-  }
+    @ConcurrencyControl(targetName = "couponStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
+    public void increaseCouponStock(Long id, Coupon coupon) {
+        coupon.increaseCouponStock(1);
+        couponRepository.save(coupon);
+    }
+
+    @ConcurrencyControl(targetName = "couponStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
+    public void decreaseCouponStock(Long id, Coupon coupon) {
+        try {
+            coupon.decreaseCouponStock(1);
+        } catch (InsufficientCouponStockException e) {
+            throw new InvalidCouponException();
+        }
+
+        couponRepository.save(coupon);
+    }
 }

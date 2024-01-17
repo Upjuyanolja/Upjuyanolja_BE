@@ -20,41 +20,45 @@ import org.hibernate.annotations.Comment;
 @Entity
 public class RoomStock {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Comment("객실 재고 식별자")
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("객실 재고 식별자")
+    private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(nullable = false, name = "room_id")
-  @Comment("객실 식별자")
-  private Room room;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "room_id")
+    @Comment("객실 식별자")
+    private Room room;
 
-  @Column(nullable = false)
-  @Comment("객실 재고")
-  private int count;
+    @Column(nullable = false)
+    @Comment("객실 재고")
+    private int count;
 
-  @Comment("날짜")
-  private LocalDate date;
+    @Comment("날짜")
+    private LocalDate date;
 
-  @Builder
-  public RoomStock(
-      Long id,
-      Room room,
-      int count,
-      LocalDate date
-  ) {
-    this.id = id;
-    this.room = room;
-    this.count = count;
-    this.date = date;
-  }
-
-  public void decrease(int n) throws IllegalArgumentException {
-    if (this.count - n < 0) {
-      throw new IllegalArgumentException();
+    @Builder
+    public RoomStock(
+        Long id,
+        Room room,
+        int count,
+        LocalDate date
+    ) {
+        this.id = id;
+        this.room = room;
+        this.count = count;
+        this.date = date;
     }
 
-    this.count -= n;
-  }
+    public void increase(int quantity) {
+        this.count += quantity;
+    }
+
+    public void decrease(int quantity) {
+        if (this.count - quantity < 0) {
+            throw new IllegalArgumentException();
+        }
+
+        this.count -= quantity;
+    }
 }
