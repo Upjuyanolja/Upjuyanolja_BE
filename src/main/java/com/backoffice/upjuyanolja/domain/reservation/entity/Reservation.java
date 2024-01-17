@@ -82,4 +82,8 @@ public class Reservation extends BaseTime {
     this.isCouponUsed = isCouponUsed;
     this.status = status;
   }
+
+  public void updateStatus(ReservationStatus status) {
+    this.status = status;
+  }
 }

@@ -20,6 +20,12 @@ public class ReservationStockService {
   private final CouponRepository couponRepository;
 
   @ConcurrencyControl(targetName = "roomStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
+  public void increaseRoomStock(Long id, RoomStock roomStock) {
+    roomStock.increase(1);
+    roomStockRepository.save(roomStock);
+  }
+
+  @ConcurrencyControl(targetName = "roomStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
   public void decreaseRoomStock(Long id, RoomStock roomStock) {
     try {
       roomStock.decrease(1);
@@ -28,6 +34,12 @@ public class ReservationStockService {
     }
 
     roomStockRepository.save(roomStock);
+  }
+
+  @ConcurrencyControl(targetName = "couponStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
+  public void increaseCouponStock(Long id, Coupon coupon) {
+    coupon.increaseCouponStock(1);
+    couponRepository.save(coupon);
   }
 
   @ConcurrencyControl(targetName = "couponStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)

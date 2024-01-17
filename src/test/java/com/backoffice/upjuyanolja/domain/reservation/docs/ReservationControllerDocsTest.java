@@ -11,6 +11,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.subsecti
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.restdocs.snippet.Attributes.key;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -227,13 +228,6 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         .content(objectMapper.writeValueAsString(request))
         .contentType(MediaType.APPLICATION_JSON));
 
-    mockMvc.perform(MockMvcRequestBuilders.post("/api/reservations")
-            .content(objectMapper.writeValueAsString(request))
-            .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(MockMvcResultMatchers.status().is(HttpStatus.CREATED.value()))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("예약이 완료되었습니다."))
-        .andDo(print());
-
     //then
     result.andExpect(status().isCreated())
         .andDo(restDoc.document(
@@ -271,6 +265,37 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
                         .value(createReservationRequestDescriptions.descriptionsForProperty(
                             "payMethod")))
             ),
+            responseFields(
+                fieldWithPath("message").description("응답 메세지"),
+                subsectionWithPath("data").description("응답 데이터")
+            )
+        ));
+  }
+
+  @Test
+  void cancelReservation() throws Exception {
+    // given
+    Long revervationId = 1L;
+    when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+    when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+    doNothing().when(reservationService).cancel(any(Member.class), any(Long.class));
+
+    // when
+    // then
+    mockMvc.perform(delete("/api/reservations/{reservationId}", revervationId)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(MockMvcResultMatchers.status().is(HttpStatus.NO_CONTENT.value()))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("성공적으로 예약을 취소했습니다."))
+        .andDo(print());
+
+    //when
+    ResultActions result = mockMvc.perform(
+        delete("/api/reservations/{reservationId}", revervationId)
+            .contentType(MediaType.APPLICATION_JSON));
+
+    //then
+    result.andExpect(status().isNoContent())
+        .andDo(restDoc.document(
             responseFields(
                 fieldWithPath("message").description("응답 메세지"),
                 subsectionWithPath("data").description("응답 데이터")

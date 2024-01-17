@@ -15,6 +15,7 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
+import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRedeemRepository;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
@@ -28,6 +29,7 @@ import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationRoom;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
 import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidCouponException;
 import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidReservationInfoException;
+import com.backoffice.upjuyanolja.domain.reservation.exception.NoSuchReservationException;
 import com.backoffice.upjuyanolja.domain.reservation.exception.NoSuchReservationRoomException;
 import com.backoffice.upjuyanolja.domain.reservation.exception.PaymentFailureException;
 import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRepository;
@@ -82,6 +84,9 @@ class ReservationServiceTest {
 
   @Mock
   CouponRepository couponRepository;
+
+  @Mock
+  CouponRedeemRepository couponRedeemRepository;
 
   @Mock
   ReservationRoomRepository reservationRoomRepository;
@@ -487,6 +492,104 @@ class ReservationServiceTest {
   }
 
   @Nested
+  @DisplayName("예약 취소 서비스")
+  class CanCelReservation {
+
+    static final Long defaultReservationId = 1L;
+
+    @Test
+    @DisplayName("reservationId가 유효한 경우 NoSuchReservationException")
+    void NoSuchReservationException_invalidReservationId() {
+      // given
+      Long invalidReservationId = 10L;
+
+      when(reservationRepository.findByIdAndMember(eq(invalidReservationId),
+          any(Member.class))).thenThrow(
+          new NoSuchReservationException());
+
+      // when
+      // then
+      Throwable exception = assertThrows(NoSuchReservationException.class, () -> {
+        reservationService.cancel(mockMember, invalidReservationId);
+      });
+
+      assertEquals("예약 정보를 찾을 수 없습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("reservationId가 로그인한 회원의 예약이 아닌 경우 NoSuchReservationException")
+    void NoSuchReservationException_notMachReservationAndMember() {
+      // given
+      Long invalidReservationId = 10L;
+
+      when(reservationRepository.findByIdAndMember(eq(invalidReservationId),
+          any(Member.class))).thenThrow(
+          new NoSuchReservationException());
+
+      // when
+      // then
+      Throwable exception = assertThrows(NoSuchReservationException.class, () -> {
+        reservationService.cancel(mockMember, invalidReservationId);
+      });
+
+      assertEquals("예약 정보를 찾을 수 없습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("객실 재고 증가 시 재고 정보가 없는 경우 NoSuchReservationRoomException")
+    void NoSuchReservationRoomException_noSuchRoomStock() {
+      // given
+      Reservation reservation = createReservation(
+          LocalDate.now(), LocalDate.now(),
+          0, true, ReservationStatus.RESERVED
+      );
+
+      when(reservationRepository.findByIdAndMember(any(Long.class), any(Member.class))).thenReturn(
+          Optional.ofNullable(reservation));
+      when(roomCommandUseCase.getFilteredRoomStocksByDate(
+          any(Room.class), any(LocalDate.class), any(LocalDate.class)
+      )).thenReturn(new ArrayList<>());
+
+      // when
+      // then
+      Throwable exception = assertThrows(NoSuchReservationRoomException.class, () -> {
+        reservationService.cancel(mockMember, defaultReservationId);
+      });
+      assertEquals("예약 숙소 정보를 찾을 수 없습니다.", exception.getMessage());
+
+    }
+
+    @Test
+    @DisplayName("쿠폰 사용 정보가 없는 경우 NoSuchReservationException")
+    void NoSuchReservationException_noSuchCouponRedeem() {
+      // given
+      RoomStock roomStock = createRoomStock(mockRoom, 1);
+      List<RoomStock> roomStockList = new ArrayList<>(Arrays.asList(roomStock));
+      Reservation reservation = createReservation(
+          LocalDate.now(), LocalDate.now(),
+          0, true, ReservationStatus.RESERVED
+      );
+
+      when(reservationRepository.findByIdAndMember(any(Long.class), any(Member.class)))
+          .thenReturn(Optional.ofNullable(reservation));
+      when(roomCommandUseCase.getFilteredRoomStocksByDate(
+          any(Room.class), any(LocalDate.class), any(LocalDate.class)
+      )).thenReturn(roomStockList);
+      doNothing().when(stockService).increaseRoomStock(any(Long.class), any(RoomStock.class));
+      when(couponRedeemRepository.findByReservation(eq(reservation))).thenThrow(
+          new NoSuchReservationException());
+
+      // when
+      // then
+      Throwable exception = assertThrows(NoSuchReservationException.class, () -> {
+        reservationService.cancel(mockMember, defaultReservationId);
+      });
+      assertEquals("예약 정보를 찾을 수 없습니다.", exception.getMessage());
+
+    }
+  }
+
+  @Nested
   @DisplayName("예약 내역 조회 서비스")
   class SearchReservation {
 
@@ -580,50 +683,50 @@ class ReservationServiceTest {
       });
       assertEquals("예약 숙소 정보를 찾을 수 없습니다.", exception.getMessage());
     }
-  }
 
-  @Test
-  @DisplayName("getCanceled()를 호출 시 숙소 정보를 찾을 수 없는 경우 NoSuchReservationRoomException")
-  void NoSuchReservationRoomException_noRoom_getCanceled() {
-    // given
-    int pageNumber = 0;
-    int pageSize = 5;
-    Sort sort = Sort.by(Direction.ASC, "id");
-    Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
+    @Test
+    @DisplayName("getCanceled()를 호출 시 숙소 정보를 찾을 수 없는 경우 NoSuchReservationRoomException")
+    void NoSuchReservationRoomException_noRoom_getCanceled() {
+      // given
+      int pageNumber = 0;
+      int pageSize = 5;
+      Sort sort = Sort.by(Direction.ASC, "id");
+      Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
 
-    Payment payment = Payment.builder()
-        .id(1L)
-        .member(mockMember)
-        .payMethod(PayMethod.KAKAO_PAY)
-        .roomPrice(10000)
-        .discountAmount(1000)
-        .totalAmount(9000)
-        .build();
+      Payment payment = Payment.builder()
+          .id(1L)
+          .member(mockMember)
+          .payMethod(PayMethod.KAKAO_PAY)
+          .roomPrice(10000)
+          .discountAmount(1000)
+          .totalAmount(9000)
+          .build();
 
-    Reservation wrongReservation = Reservation.builder()
-        .member(mockMember)
-        .reservationRoom(null)
-        .visitorName("홍길동")
-        .visitorPhone("010-1234-5678")
-        .payment(payment)
-        .isCouponUsed(false)
-        .status(ReservationStatus.CANCELLED)
-        .build();
+      Reservation wrongReservation = Reservation.builder()
+          .member(mockMember)
+          .reservationRoom(null)
+          .visitorName("홍길동")
+          .visitorPhone("010-1234-5678")
+          .payment(payment)
+          .isCouponUsed(false)
+          .status(ReservationStatus.CANCELLED)
+          .build();
 
-    mockReservations.add(wrongReservation);
+      mockReservations.add(wrongReservation);
 
-    Collection<ReservationStatus> statuses = Arrays.asList(ReservationStatus.CANCELLED);
-    when(reservationRepository.findAllByMemberAndStatusIn(
-        eq(mockMember),
-        eq(statuses),
-        eq(pageable)
-    )).thenReturn(new PageImpl<>(mockReservations, pageable, mockReservations.size()));
+      Collection<ReservationStatus> statuses = Arrays.asList(ReservationStatus.CANCELLED);
+      when(reservationRepository.findAllByMemberAndStatusIn(
+          eq(mockMember),
+          eq(statuses),
+          eq(pageable)
+      )).thenReturn(new PageImpl<>(mockReservations, pageable, mockReservations.size()));
 
-    // when
-    // then
-    Throwable exception = assertThrows(NoSuchReservationRoomException.class, () -> {
-      reservationService.getCanceled(mockMember, pageable);
-    });
-    assertEquals("예약 숙소 정보를 찾을 수 없습니다.", exception.getMessage());
+      // when
+      // then
+      Throwable exception = assertThrows(NoSuchReservationRoomException.class, () -> {
+        reservationService.getCanceled(mockMember, pageable);
+      });
+      assertEquals("예약 숙소 정보를 찾을 수 없습니다.", exception.getMessage());
+    }
   }
 }
