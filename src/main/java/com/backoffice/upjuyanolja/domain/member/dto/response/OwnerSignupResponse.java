@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.member.dto.response;
 
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.entity.Owner;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,7 +29,7 @@ public class OwnerSignupResponse {
         this.imageUrl = imageUrl;
     }
 
-    public static OwnerSignupResponse fromEntity(Member member){
+    public static OwnerSignupResponse fromEntity(Member member) {
         return OwnerSignupResponse.builder()
             .id(member.getId())
             .name(member.getName())

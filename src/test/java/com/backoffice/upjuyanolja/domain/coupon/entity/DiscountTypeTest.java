@@ -1,7 +1,10 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.*;
-import static org.assertj.core.api.Assertions.*;
+import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.FLAT;
+import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.RATE;
+import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.getPaymentPrice;
+import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.isRightDiscount;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidCouponInfoException;

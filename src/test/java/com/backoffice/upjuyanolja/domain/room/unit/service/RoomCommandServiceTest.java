@@ -762,8 +762,6 @@ public class RoomCommandServiceTest {
                 .images(List.of(roomImage1))
                 .build();
 
-
-
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(room);
             given(accommodationQueryUseCase.existsOwnershipByMemberAndAccommodation(

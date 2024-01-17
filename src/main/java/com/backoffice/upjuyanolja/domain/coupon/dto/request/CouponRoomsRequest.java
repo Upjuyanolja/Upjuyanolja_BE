@@ -28,10 +28,11 @@ public record CouponRoomsRequest(
 
     /**
      * 새로운 쿠폰을 만든다.
-     * @param room 객실 객체
+     *
+     * @param room         객실 객체
      * @param discountType 쿠폰 유형(정액/정률)
-     * @param discount 할인 금액(할인율)
-     * @param quantity 발급 수량
+     * @param discount     할인 금액(할인율)
+     * @param quantity     발급 수량
      * @return
      */
     public static Coupon toEntity(

@@ -20,46 +20,46 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ConcurrencyAspect {
 
-  private final RedissonClient redissonClient;
+    private final RedissonClient redissonClient;
 
-  @Around("@annotation(com.backoffice.upjuyanolja.global.annotation.ConcurrencyControl)&&args(targetId)")
-  public Object handleConcurrency(ProceedingJoinPoint joinPoint, Long targetId) throws Throwable {
-    Object result;
+    @Around("@annotation(com.backoffice.upjuyanolja.global.annotation.ConcurrencyControl)&&args(targetId)")
+    public Object handleConcurrency(ProceedingJoinPoint joinPoint, Long targetId) throws Throwable {
+        Object result;
 
-    // Get annotation
-    ConcurrencyControl annotation = getAnnotation(joinPoint);
+        // Get annotation
+        ConcurrencyControl annotation = getAnnotation(joinPoint);
 
-    // Get lock name and acquire lock
-    String lockName = getLockName(targetId, annotation);
-    RLock lock = redissonClient.getLock(lockName);
+        // Get lock name and acquire lock
+        String lockName = getLockName(targetId, annotation);
+        RLock lock = redissonClient.getLock(lockName);
 
-    try {
-      boolean available = lock.tryLock(annotation.waitTime(), annotation.leaseTime(),
-          annotation.timeUnit());
+        try {
+            boolean available = lock.tryLock(annotation.waitTime(), annotation.leaseTime(),
+                annotation.timeUnit());
 
-      if (!available) {
-        log.warn("{} - redisson getLock timeout", lockName);
-        throw new IllegalArgumentException();
-      }
+            if (!available) {
+                log.warn("{} - redisson getLock timeout", lockName);
+                throw new IllegalArgumentException();
+            }
 
-      // Proceed with the original method execution
-      result = joinPoint.proceed();
-    } finally {
-      lock.unlock();
+            // Proceed with the original method execution
+            result = joinPoint.proceed();
+        } finally {
+            lock.unlock();
+        }
+
+        return result;
     }
 
-    return result;
-  }
+    private ConcurrencyControl getAnnotation(ProceedingJoinPoint joinPoint) {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        Method method = signature.getMethod();
+        return method.getAnnotation(ConcurrencyControl.class);
+    }
 
-  private ConcurrencyControl getAnnotation(ProceedingJoinPoint joinPoint) {
-    MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-    Method method = signature.getMethod();
-    return method.getAnnotation(ConcurrencyControl.class);
-  }
-
-  private String getLockName(Long targetId, ConcurrencyControl annotation) {
-    String lockNameFormat = "lock:%s:%s";
-    String relevantParameter = targetId.toString();
-    return String.format(lockNameFormat, annotation.targetName(), relevantParameter);
-  }
+    private String getLockName(Long targetId, ConcurrencyControl annotation) {
+        String lockNameFormat = "lock:%s:%s";
+        String relevantParameter = targetId.toString();
+        return String.format(lockNameFormat, annotation.targetName(), relevantParameter);
+    }
 }

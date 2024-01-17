@@ -15,4 +15,5 @@ public record CouponMakeRequest(
     @NotNull
     List<CouponRoomsRequest> rooms
 ) {
+
 }

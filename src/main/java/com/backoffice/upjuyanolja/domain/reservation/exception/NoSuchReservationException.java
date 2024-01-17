@@ -6,7 +6,7 @@ import com.backoffice.upjuyanolja.global.exception.ApplicationException;
 
 public class NoSuchReservationException extends ApplicationException {
 
-  public NoSuchReservationException() {
-    super(RESERVATION_NOT_FOUND);
-  }
+    public NoSuchReservationException() {
+        super(RESERVATION_NOT_FOUND);
+    }
 }

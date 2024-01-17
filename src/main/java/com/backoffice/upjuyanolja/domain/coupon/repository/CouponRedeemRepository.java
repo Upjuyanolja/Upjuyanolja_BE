@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CouponRedeemRepository extends JpaRepository<CouponRedeem, Long> {
 
-  Optional<CouponRedeem> findByReservation(Reservation reservation);
+    Optional<CouponRedeem> findByReservation(Reservation reservation);
 }

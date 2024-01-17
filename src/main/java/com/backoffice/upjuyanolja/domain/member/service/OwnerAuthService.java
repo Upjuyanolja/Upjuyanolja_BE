@@ -57,7 +57,7 @@ public class OwnerAuthService implements
     public OwnerEmailResponse sendVerificationCodeToEmail(OwnerEmailRequest request) {
 
         //이미 회원가입 된 상태인지 검증 (존재한다면 예외 발생)
-        if (memberRepository.existsByEmail(request.getEmail())){
+        if (memberRepository.existsByEmail(request.getEmail())) {
             throw new MemberEmailDuplicationException();
         }
 

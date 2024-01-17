@@ -14,23 +14,23 @@ import org.springframework.context.annotation.Description;
 @Description("Concurrency control annotation to acquire a lock on the target resource.")
 public @interface ConcurrencyControl {
 
-  /**
-   * The name of the target resource to acquire a lock on.
-   */
-  String targetName();
+    /**
+     * The name of the target resource to acquire a lock on.
+     */
+    String targetName();
 
-  /**
-   * The maximum time to wait for the lock to be available, in the specified time unit.
-   */
-  long waitTime();
+    /**
+     * The maximum time to wait for the lock to be available, in the specified time unit.
+     */
+    long waitTime();
 
-  /**
-   * The duration to hold the lock for, in the specified time unit.
-   */
-  long leaseTime();
+    /**
+     * The duration to hold the lock for, in the specified time unit.
+     */
+    long leaseTime();
 
-  /**
-   * The time unit for the waitTime and leaseTime values.
-   */
-  TimeUnit timeUnit();
+    /**
+     * The time unit for the waitTime and leaseTime values.
+     */
+    TimeUnit timeUnit();
 }
