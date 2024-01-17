@@ -29,8 +29,8 @@ public class GlobalRestControllerAdvice {
     public ResponseEntity<FailResponse> bindException(BindException e) {
         log.error(e.getMessage(), e);
         return ApiResponse.error(FailResponse.builder()
-            .code(ErrorCode.INVALID_DATE.getCode())
-            .message(e.getMessage())
+            .code(ErrorCode.INVALID_REQUEST_BODY.getCode())
+            .message(e.getBindingResult().getAllErrors().get(0).getDefaultMessage())
             .build()
         );
     }
