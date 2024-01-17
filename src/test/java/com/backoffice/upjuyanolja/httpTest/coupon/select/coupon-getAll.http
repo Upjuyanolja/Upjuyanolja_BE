@@ -1,2 +1,0 @@
-GET http://localhost:8080/api/coupons/backoffice?page=0
-Accept: application/json
