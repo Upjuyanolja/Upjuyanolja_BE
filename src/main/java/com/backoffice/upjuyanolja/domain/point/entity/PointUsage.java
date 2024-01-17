@@ -41,6 +41,10 @@ public class PointUsage extends BaseTime {
     @Comment("주문 일시")
     private LocalDateTime orderDate;
 
+    @Column(nullable = false)
+    @Comment("주문 금액")
+    private long orderPrice;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "point_id")
     @Comment("포인트 식별자")
@@ -52,12 +56,14 @@ public class PointUsage extends BaseTime {
         PointType pointType,
         String orderName,
         LocalDateTime orderDate,
+        long orderPrice,
         Point point
     ) {
         this.id = id;
         this.pointType = pointType;
         this.orderName = orderName;
         this.orderDate = orderDate;
+        this.orderPrice = orderPrice;
         this.point = point;
     }
 }
