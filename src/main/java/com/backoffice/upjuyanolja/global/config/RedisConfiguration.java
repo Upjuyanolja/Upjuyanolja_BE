@@ -22,48 +22,48 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Slf4j
 public class RedisConfiguration {
 
-  private final RedisProperties redisProperties;
+    private final RedisProperties redisProperties;
 
-  private static final String REDISSON_HOST_PREFIX = "redis://";
+    private static final String REDISSON_HOST_PREFIX = "redis://";
 
-  @Value("${spring.data.redis.host}")
-  private String redisHost;
+    @Value("${spring.data.redis.host}")
+    private String redisHost;
 
-  @Value("${spring.data.redis.port}")
-  private int redisPort;
+    @Value("${spring.data.redis.port}")
+    private int redisPort;
 
-  @Bean
-  public RedisConnectionFactory redisConnectionFactory() {
-    return new LettuceConnectionFactory(redisHost, redisPort);
-  }
+    @Bean
+    public RedisConnectionFactory redisConnectionFactory() {
+        return new LettuceConnectionFactory(redisHost, redisPort);
+    }
 
-  @Bean
-  public RedisTemplate<String, Object> redisTemplate() {
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate() {
 
-    RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-    redisTemplate.setConnectionFactory(redisConnectionFactory());
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory());
 
-    // 일반적인 key:value의 경우 시리얼라이저
-    redisTemplate.setKeySerializer(new StringRedisSerializer());
-    redisTemplate.setValueSerializer(new StringRedisSerializer());
+        // 일반적인 key:value의 경우 시리얼라이저
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
 
-    // Hash를 사용할 경우 시리얼라이저
-    redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-    redisTemplate.setHashValueSerializer(new StringRedisSerializer());
+        // Hash를 사용할 경우 시리얼라이저
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new StringRedisSerializer());
 
-    // 모든 경우
-    redisTemplate.setDefaultSerializer(new StringRedisSerializer());
+        // 모든 경우
+        redisTemplate.setDefaultSerializer(new StringRedisSerializer());
 
-    return redisTemplate;
-  }
+        return redisTemplate;
+    }
 
-  @Profile("prod")
-  @Bean
-  public RedissonClient redissonClient() {
-    Config config = new Config();
-    config.useSingleServer()
-        .setAddress(REDISSON_HOST_PREFIX + redisHost + ":" + redisPort);
-    return Redisson.create(config);
-  }
+    @Profile("prod")
+    @Bean
+    public RedissonClient redissonClient() {
+        Config config = new Config();
+        config.useSingleServer()
+            .setAddress(REDISSON_HOST_PREFIX + redisHost + ":" + redisPort);
+        return Redisson.create(config);
+    }
 
 }

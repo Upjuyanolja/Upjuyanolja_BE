@@ -9,6 +9,7 @@ public record CouponMakeViewResponse(
     String accommodationName,
     List<CouponRoomsResponse> rooms
 ) {
+
     public static CouponMakeViewResponse of(
         AccommodationResponse accommodationResponse,
         List<CouponRoomsResponse> roomListRespons

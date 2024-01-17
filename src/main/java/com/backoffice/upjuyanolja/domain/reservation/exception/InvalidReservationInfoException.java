@@ -6,7 +6,7 @@ import com.backoffice.upjuyanolja.global.exception.ApplicationException;
 
 public class InvalidReservationInfoException extends ApplicationException {
 
-  public InvalidReservationInfoException() {
-    super(INVALID_RESERVATION_INFO);
-  }
+    public InvalidReservationInfoException() {
+        super(INVALID_RESERVATION_INFO);
+    }
 }

@@ -79,7 +79,7 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
             .orElseThrow(MemberNotFoundException::new);
         log.info("authentication get name is :{}", authentication.getName());
 
-        if (!memberInfo.getAuthority().name().equals("ROLE_USER")){
+        if (!memberInfo.getAuthority().name().equals("ROLE_USER")) {
             throw new InvalidRoleException();
         }
 

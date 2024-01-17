@@ -6,7 +6,7 @@ import com.backoffice.upjuyanolja.global.exception.ApplicationException;
 
 public class InvalidCouponException extends ApplicationException {
 
-  public InvalidCouponException() {
-    super(INVALID_COUPON);
-  }
+    public InvalidCouponException() {
+        super(INVALID_COUPON);
+    }
 }

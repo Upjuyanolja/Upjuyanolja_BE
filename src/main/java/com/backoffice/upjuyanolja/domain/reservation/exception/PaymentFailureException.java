@@ -6,7 +6,7 @@ import com.backoffice.upjuyanolja.global.exception.ApplicationException;
 
 public class PaymentFailureException extends ApplicationException {
 
-  public PaymentFailureException() {
-    super(RESERVATION_PAYMENT_FAILED);
-  }
+    public PaymentFailureException() {
+        super(RESERVATION_PAYMENT_FAILED);
+    }
 }

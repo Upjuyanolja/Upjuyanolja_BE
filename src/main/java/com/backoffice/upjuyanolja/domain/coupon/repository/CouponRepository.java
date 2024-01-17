@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CouponRepository extends JpaRepository<Coupon, Long>, CouponRepositoryCustom {
 
-  Optional<Coupon> findByIdAndRoom(Long couponId, Room room);
+    Optional<Coupon> findByIdAndRoom(Long couponId, Room room);
 }

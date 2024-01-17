@@ -40,7 +40,7 @@ public class Accommodation extends BaseTime {
     private Address address;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="category_id")
+    @JoinColumn(name = "category_id")
     @Comment("숙소 카테고리")
     private Category category;
 

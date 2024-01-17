@@ -23,47 +23,47 @@ import org.hibernate.annotations.Comment;
 @Entity
 public class Payment extends BaseTime {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Comment("결제 식별자")
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("결제 식별자")
+    private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(nullable = false, name = "member_id")
-  @Comment("회원 식별자")
-  private Member member;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "member_id")
+    @Comment("회원 식별자")
+    private Member member;
 
-  @Column(nullable = false, name = "pay_method")
-  @Enumerated(value = EnumType.STRING)
-  @Comment("결제 수단")
-  private PayMethod payMethod;
+    @Column(nullable = false, name = "pay_method")
+    @Enumerated(value = EnumType.STRING)
+    @Comment("결제 수단")
+    private PayMethod payMethod;
 
-  @Column(nullable = false, name = "room_price")
-  @Comment("객실 가격")
-  private Integer roomPrice;
+    @Column(nullable = false, name = "room_price")
+    @Comment("객실 가격")
+    private Integer roomPrice;
 
-  @Column(nullable = false, name = "discount_amount")
-  @Comment("할인 금액")
-  private Integer discountAmount;
+    @Column(nullable = false, name = "discount_amount")
+    @Comment("할인 금액")
+    private Integer discountAmount;
 
-  @Column(nullable = false, name = "total_amount")
-  @Comment("결제 금액")
-  private Integer totalAmount;
+    @Column(nullable = false, name = "total_amount")
+    @Comment("결제 금액")
+    private Integer totalAmount;
 
-  @Builder
-  public Payment(
-      Long id,
-      Member member,
-      PayMethod payMethod,
-      Integer roomPrice,
-      Integer discountAmount,
-      Integer totalAmount
-  ) {
-    this.id = id;
-    this.member = member;
-    this.payMethod = payMethod;
-    this.roomPrice = roomPrice;
-    this.discountAmount = discountAmount;
-    this.totalAmount = totalAmount;
-  }
+    @Builder
+    public Payment(
+        Long id,
+        Member member,
+        PayMethod payMethod,
+        Integer roomPrice,
+        Integer discountAmount,
+        Integer totalAmount
+    ) {
+        this.id = id;
+        this.member = member;
+        this.payMethod = payMethod;
+        this.roomPrice = roomPrice;
+        this.discountAmount = discountAmount;
+        this.totalAmount = totalAmount;
+    }
 }
