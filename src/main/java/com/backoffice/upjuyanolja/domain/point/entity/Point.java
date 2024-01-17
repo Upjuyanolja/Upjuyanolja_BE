@@ -17,6 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
+import org.hibernate.validator.constraints.Range;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -31,6 +32,11 @@ public class Point extends BaseTime {
     @Column(nullable = false)
     @Comment("보유 포인트")
     private long pointBalance;
+
+    @Column(nullable = false)
+    @Comment("기준 달")
+    @Range(min = 1, max = 12, message = "기준 달은 1에서 12 사이 여야 합니다")
+    private int standardMonth;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
