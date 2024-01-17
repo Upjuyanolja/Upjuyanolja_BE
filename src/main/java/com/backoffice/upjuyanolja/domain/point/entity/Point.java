@@ -1,5 +1,8 @@
 package com.backoffice.upjuyanolja.domain.point.entity;
 
+import static com.backoffice.upjuyanolja.global.exception.ErrorCode.POINT_INSUFFICIENT;
+
+import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
@@ -42,6 +45,12 @@ public class Point extends BaseTime {
     @Comment("회원 식별자")
     private Member member;
 
+    public void decreasePointBalance(int usedPoints) {
+        if (pointBalance - usedPoints < 0) {
+            throw new InsufficientPointsException();
+        }
+        pointBalance -= usedPoints;
+    }
 
     @Builder
     public Point(
