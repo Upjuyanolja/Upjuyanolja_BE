@@ -57,4 +57,9 @@ public class Point extends BaseTime {
         this.member = member;
     }
 
+    public void updatePoint(Long pointBalance, YearMonth rangeDate){
+        this.pointBalance = pointBalance;
+        this.standardDate = rangeDate;
+    }
+
 }
