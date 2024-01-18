@@ -23,7 +23,7 @@ public class ConcurrencyAspect {
     private final RedissonClient redissonClient;
     private final TransactionAspect transactionAspect;
 
-    @Around("@annotation(com.backoffice.upjuyanolja.global.annotation.ConcurrencyControl)&&args(targetId)")
+    @Around("@annotation(com.backoffice.upjuyanolja.global.concurrency.annotation.ConcurrencyControl)&&args(targetId)")
     public Object handleConcurrency(ProceedingJoinPoint joinPoint, Long targetId) throws Throwable {
         Object result;
 
