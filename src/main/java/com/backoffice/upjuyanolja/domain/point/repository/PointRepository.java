@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PointRepository extends JpaRepository<Point, Long> {
 
     Optional<Point> findByMember(Member member);
+
+    Optional<Point> findByMemberId(Long id);
 }

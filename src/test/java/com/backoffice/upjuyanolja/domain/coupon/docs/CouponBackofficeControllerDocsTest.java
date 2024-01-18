@@ -34,6 +34,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.constraints.ConstraintDescriptions;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -62,6 +63,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
 
     @Test
     @DisplayName("업주님의 숙소와 쿠폰을 등록할 객실 목록을 조회할 수 있다.")
+    @WithMockUser(roles = "ADMIN")
     public void roomsResponseByAccommodation() throws Exception {
         // given
         Long accommodationId = 1L;

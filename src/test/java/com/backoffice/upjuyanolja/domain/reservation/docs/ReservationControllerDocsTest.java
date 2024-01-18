@@ -51,6 +51,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.constraints.ConstraintDescriptions;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -216,6 +217,7 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void createReservation() throws Exception {
         //given
         CreateReservationRequest request = createRequest(null);
@@ -273,16 +275,17 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void cancelReservation() throws Exception {
         // given
-        Long revervationId = 1L;
+        Long reservationId = 1L;
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
         when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
         doNothing().when(reservationService).cancel(any(Member.class), any(Long.class));
 
         // when
         // then
-        mockMvc.perform(delete("/api/reservations/{reservationId}", revervationId)
+        mockMvc.perform(delete("/api/reservations/{reservationId}", reservationId)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().is(HttpStatus.NO_CONTENT.value()))
             .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("성공적으로 예약을 취소했습니다."))
@@ -290,7 +293,7 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
 
         //when
         ResultActions result = mockMvc.perform(
-            delete("/api/reservations/{reservationId}", revervationId)
+            delete("/api/reservations/{reservationId}", reservationId)
                 .contentType(MediaType.APPLICATION_JSON));
 
         //then
@@ -304,6 +307,7 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void getReserved() throws Exception {
         // given
         Pageable pageable = PageRequest.of(0, 3);
@@ -369,6 +373,7 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void getCanceled() throws Exception {
         // given
         Pageable pageable = PageRequest.of(0, 3);

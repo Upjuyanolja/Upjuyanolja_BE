@@ -1,0 +1,18 @@
+POST http://localhost:8080/api/auth/members/signin
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+  client.log(response.body.data.accessToken);
+  client.global.set("access_token",response.body.data.accessToken)
+%}
+
+###
+
+GET http://localhost:8080/api/points/summary?rangeDate=2024-01
+Accept: application/json
+Authorization: Bearer {{access_token}}
