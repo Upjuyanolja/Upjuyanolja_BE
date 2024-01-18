@@ -37,6 +37,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +53,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
-@ActiveProfiles("test")
+//@ActiveProfiles("test")
 @DataJpaTest
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Import(QueryDslConfig.class)
@@ -298,7 +299,7 @@ class CouponRepositoryTest {
             .id(pointId)
             .member(member)
             .pointBalance(100000)
-            .pointType(PointType.USE)
+            .standardDate(YearMonth.of(2024,01))
             .build();
         pointRepository.save(point);
         return point;

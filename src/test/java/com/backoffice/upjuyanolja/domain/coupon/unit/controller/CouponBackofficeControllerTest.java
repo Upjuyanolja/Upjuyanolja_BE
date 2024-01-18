@@ -191,7 +191,6 @@ class CouponBackofficeControllerTest {
             .id(pointId)
             .member(member)
             .pointBalance(balance)
-            .pointType(PointType.USE)
             .build();
     }
 
