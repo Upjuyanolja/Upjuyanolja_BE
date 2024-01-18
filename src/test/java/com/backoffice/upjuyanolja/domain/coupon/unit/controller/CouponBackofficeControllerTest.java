@@ -2,6 +2,7 @@ package com.backoffice.upjuyanolja.domain.coupon.unit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -129,8 +130,7 @@ class CouponBackofficeControllerTest {
                 mockCouponRoomsRequests, 1L);
             mockPoint = createPoint(1L, mockMember, 50000);
 
-            given(couponBackofficeService.createCoupon(any(CouponMakeRequest.class), any(Member.class)))
-                .willReturn(new Object());
+            doNothing().when(couponBackofficeService).createCoupon(any(CouponMakeRequest.class), any(Member.class));
 
             // when & Then
             mockMvc.perform(post("/api/coupons/backoffice/buy")

@@ -44,10 +44,10 @@ public class CouponBackofficeService {
         return couponRepository.findRoomsIdByAccommodationId(accommodationId);
     }
 
-    public Object createCoupon(
+    public void createCoupon(
         final CouponMakeRequest couponMakeRequest, final Member currentMember
     ) {
-        final int totalPoints = couponMakeRequest.totalPoints();
+        final long totalPoints = couponMakeRequest.totalPoints();
         Point point = validationPoint(currentMember, totalPoints);
 
         List<CouponRoomsRequest> couponRooms = couponMakeRequest.rooms();
@@ -97,7 +97,6 @@ public class CouponBackofficeService {
         // 7. 포인트 사용 이력 전달
         // Todo: 포인트 사용 내역 Point 도메인에 전달하기
         log.info("쿠폰 발급 성공");
-        return new Object();
     }
 
     private CouponIssuance createCouponIssuance(Coupon coupon, Room room, Point point) {
@@ -108,7 +107,7 @@ public class CouponBackofficeService {
             .build();
     }
 
-    private Point validationPoint(Member member, int requestPoint) {
+    private Point validationPoint(Member member, long requestPoint) {
         // 업주의 보유 포인트 검증
         Optional<Point> resultPoint = pointRepository.findByMember(member);
         Point point = resultPoint.orElseThrow(PointNotFoundException::new);

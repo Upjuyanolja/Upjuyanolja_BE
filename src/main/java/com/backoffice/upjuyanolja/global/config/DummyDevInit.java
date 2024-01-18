@@ -29,6 +29,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -67,7 +68,7 @@ public class DummyDevInit {
                 Accommodation accommodation = createAccommodation(1L);
                 createAccommodationOwnership(accommodation, member);
                 createRooms(accommodation);
-                createPoint(1L, member, 50000);
+                createPoint(1L, member, 50000L);
             }
         };
     }
@@ -205,11 +206,12 @@ public class DummyDevInit {
         return couponIssuance;
     }
 
-    private Point createPoint(Long pointId, Member member, int balance) {
+    private Point createPoint(Long pointId, Member member, long balance) {
         Point point = Point.builder()
             .id(pointId)
             .member(member)
             .pointBalance(balance)
+            .standardDate(YearMonth.of(2024,01))
             .build();
         pointRepository.save(point);
         return point;

@@ -19,7 +19,7 @@ public record CouponMakeRequest(
     Long accommodationId,
     @NotNull(message = "합계 금액은 필수입니다.")
     @Min(value = 1000, message = "합계 금액을 확인하여 주세요.")
-    int totalPoints,
+    long totalPoints,
     @NotNull
     List<CouponRoomsRequest> rooms
 ) {
@@ -34,7 +34,7 @@ public record CouponMakeRequest(
             .discount(request.discount()) // 할인가-할인율
             .couponType(CouponType.ALL_DAYS) // 초기값 상시(ALL_DAYS)
             .couponStatus(CouponStatus.ENABLE) // 쿠폰 상태 -> 발급 중(ENABLE)
-            .endDate(LocalDate.now().plusWeeks(5)) // 초기값 5주
+            .endDate(LocalDate.now().plusMonths(1)) // 기본 5주(한달)
             .dayLimit(getDayLimit()) // 초기값 무제한(-1), 일일사용한도
             .stock(request.quantity()) // 쿠폰 재고(수량)
             .build();
