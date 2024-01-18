@@ -18,6 +18,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.Accommoda
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase.AccommodationSaveRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
+import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
@@ -104,8 +105,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     }
 
     private boolean checkCouponAvailability(Accommodation accommodation) {
-        return accommodation.getRooms().stream()
-            .anyMatch(room -> !room.getCouponIssuances().isEmpty());
+        return !couponService.findCouponInAccommodation(accommodation.getId()).isEmpty();
     }
 
     private int getLowestPrice(Long accommodationId) {
@@ -122,20 +122,22 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
     private int getDiscountPrice(Long accommodationId) {
         return getDiscountInfo(accommodationId)
-            .map(couponIssuance -> couponIssuance.price())
+            .map(coupon -> coupon.price())
             .orElse(getLowestPrice(accommodationId));
     }
 
     private String getCouponName(Long accommodationId) {
         return getDiscountInfo(accommodationId)
-            .map(couponIssuance -> couponIssuance.name())
+            .map(coupon -> coupon.name())
             .orElse("");
     }
 
     private Optional<CouponDetailResponse> getDiscountInfo(Long accommodationId) {
         List<CouponDetailResponse> responses = new ArrayList<>();
-        responses.addAll(couponService.getSortedFlatCouponInAccommodation(accommodationId));
-        responses.addAll(couponService.getSortedRateCouponInAccommodation(accommodationId));
+        responses.addAll(
+            couponService.getSortedCouponInAccommodation(accommodationId, DiscountType.FLAT));
+        responses.addAll(
+            couponService.getSortedCouponInAccommodation(accommodationId, DiscountType.RATE));
 
         return responses.stream()
             .min(Comparator.comparingInt(CouponDetailResponse::price));
@@ -143,11 +145,13 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
     private String getMainCouponName(Long accommodationId) {
         Optional<CouponDetailResponse> flatResponse =
-            couponService.getSortedFlatCouponInAccommodation(accommodationId).stream()
+            couponService.getSortedCouponInAccommodation(accommodationId, DiscountType.FLAT)
+                .stream()
                 .findFirst();
 
         Optional<CouponDetailResponse> rateResponse =
-            couponService.getSortedRateCouponInAccommodation(accommodationId).stream()
+            couponService.getSortedCouponInAccommodation(accommodationId, DiscountType.RATE)
+                .stream()
                 .findFirst();
 
         if (flatResponse.isEmpty() && rateResponse.isEmpty()) {
