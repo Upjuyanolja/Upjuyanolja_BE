@@ -1,5 +1,6 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
+import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
@@ -36,26 +37,15 @@ public class CouponIssuance extends BaseTime {
     @Comment("객실 식별자")
     private Room room;
 
-    @Column(nullable = false, name = "coupon_amount")
-    @Comment("쿠폰 발급 수량")
-    private Integer couponAmount;
-
-    @Column(nullable = false, name = "coupon_balance")
-    @Comment("쿠폰 잔여 수량")
-    private Integer couponBalance;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "point_id")
+    private Point point;
 
     @Builder
-    public CouponIssuance(
-        Long id,
-        Coupon coupon,
-        Room room,
-        Integer couponAmount,
-        Integer couponBalance
-    ) {
+    public CouponIssuance(Long id, Coupon coupon, Room room, Point point) {
         this.id = id;
         this.coupon = coupon;
         this.room = room;
-        this.couponAmount = couponAmount;
-        this.couponBalance = couponBalance;
+        this.point = point;
     }
 }
