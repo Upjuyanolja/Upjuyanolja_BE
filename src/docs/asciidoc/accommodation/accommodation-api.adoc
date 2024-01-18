@@ -37,3 +37,21 @@ include::{snippets}/accommodation-controller-docs-test/get-accommodation-ownersh
 
 include::{snippets}/accommodation-controller-docs-test/get-accommodation-ownership/http-response.adoc[]
 include::{snippets}/accommodation-controller-docs-test/get-accommodation-ownership/response-fields.adoc[]
+
+[[Save-Images]]
+== 이미지 저장
+
+이미지 저장 API 입니다.
+이미지를 저장하고 URL을 반환합니다.
+
+=== HttpRequest
+
+Http Request 가 이미지로 인해 길어져, Httpie Request 로 문서화했습니다.
+
+include::{snippets}/accommodation-controller-docs-test/save-images/httpie-request.adoc[]
+include::{snippets}/accommodation-controller-docs-test/save-images/request-parts.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/accommodation-controller-docs-test/save-images/http-response.adoc[]
+include::{snippets}/accommodation-controller-docs-test/save-images/response-fields.adoc[]
