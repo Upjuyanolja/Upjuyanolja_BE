@@ -8,11 +8,14 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationSummaryResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageUrlResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.FailedSaveImageException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
@@ -25,6 +28,7 @@ import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -36,6 +40,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional
@@ -47,6 +52,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     private final CouponService couponService;
     private final RoomCommandUseCase roomCommandUseCase;
     private final MemberGetService memberGetService;
+    private final S3UploadService s3UploadService;
 
     @Override
     public AccommodationInfoResponse createAccommodation(
@@ -99,6 +105,31 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
             AccommodationNameResponse.of(ownership.getAccommodation())));
         return AccommodationOwnershipResponse.builder()
             .accommodations(accommodations)
+            .build();
+    }
+
+    @Override
+    public ImageResponse saveImages(List<MultipartFile> imageMultipartFiles) {
+        List<ImageUrlResponse> imageUrls = new ArrayList<>();
+
+        for (MultipartFile multipartFile : imageMultipartFiles) {
+            try {
+                if (multipartFile.isEmpty()) {
+                    imageUrls.add(ImageUrlResponse.builder()
+                        .url(null)
+                        .build());
+                } else {
+                    imageUrls.add(ImageUrlResponse.builder()
+                        .url(s3UploadService.saveFile(multipartFile))
+                        .build());
+                }
+            } catch (IOException e) {
+                throw new FailedSaveImageException();
+            }
+        }
+
+        return ImageResponse.builder()
+            .urls(imageUrls)
             .build();
     }
 
@@ -227,6 +258,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
     private Accommodation saveAccommodation(AccommodationRegisterRequest request) {
         Category category = accommodationQueryUseCase.getCategoryByName(request.category());
+
         Accommodation accommodation = accommodationQueryUseCase.saveAccommodation(
             AccommodationSaveRequest.builder()
                 .name(request.name())
@@ -239,6 +271,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                 .category(category)
                 .thumbnail(request.thumbnail())
                 .build());
+
         accommodationQueryUseCase.saveAllImages(AccommodationImageRequest
             .toEntity(accommodation, request.images()));
 
