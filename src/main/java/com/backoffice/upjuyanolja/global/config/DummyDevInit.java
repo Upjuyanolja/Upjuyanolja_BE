@@ -210,7 +210,6 @@ public class DummyDevInit {
             .id(pointId)
             .member(member)
             .pointBalance(balance)
-            .pointType(PointType.USE)
             .build();
         pointRepository.save(point);
         return point;
