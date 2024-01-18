@@ -46,7 +46,7 @@ public class Point extends BaseTime {
     @Comment("회원 식별자")
     private Member member;
 
-    public void decreasePointBalance(int usedPoints) {
+    public void decreasePointBalance(long usedPoints) {
         if (pointBalance - usedPoints < 0) {
             throw new InsufficientPointsException();
         }
@@ -56,7 +56,7 @@ public class Point extends BaseTime {
     @Builder
     public Point(
         Long id,
-        int pointBalance,
+        long pointBalance,
         YearMonth standardDate,
         Member member
     ) {
