@@ -2,6 +2,7 @@ package com.backoffice.upjuyanolja.domain.coupon.docs;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -99,10 +100,14 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
         verify(couponBackofficeService, times(1)).getRoomsByAccommodation(accommodationId);
     }
 
-    @DisplayName("쿠폰 만들기 테스")
+    @DisplayName("쿠폰 만들기 테스트")
     @Test
+    @WithMockUser(roles = "ADMIN")
     public void createCoupon() throws Exception {
         // given
+        when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+
         List<CouponRoomsRequest> mockRequests = List.of(
             new CouponRoomsRequest(1L, DiscountType.FLAT, 5000, 10, 10000),
             new CouponRoomsRequest(2L, DiscountType.RATE, 5, 20, 10000),
@@ -110,15 +115,11 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
         );
         CouponMakeRequest mockCouponMakeRequest = CouponMakeRequest.builder()
             .accommodationId(1L)
-            .totalPoints(30000)
+            .totalPoints(30000L)
             .rooms(mockRequests)
             .build();
 
-        when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
-
-        given(couponBackofficeService.createCoupon(any(CouponMakeRequest.class), any(Member.class)))
-            .willReturn(new Object());
+        doNothing().when(couponBackofficeService).createCoupon(any(CouponMakeRequest.class), any(Member.class));
 
         // when & Then
         mockMvc.perform(post("/api/coupons/backoffice/buy")
