@@ -50,7 +50,7 @@ public class AuthenticationConfig {
             .authorizeHttpRequests(request -> request
                 .requestMatchers(PERMIT_ALL_URL_ARRAY)
                 .permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/accommodations/")
+                .requestMatchers(HttpMethod.GET, "/api/accommodations/**")
                 .permitAll()
                 .requestMatchers("/api/reservations/**")
                 .hasRole("USER")
