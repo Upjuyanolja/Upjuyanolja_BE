@@ -1,0 +1,17 @@
+POST http://localhost:8080/api/auth/members/signin
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+  client.test("Validate", function() {
+    client.assert(response.status === 200, "Response status is not 200");
+    client.assert(response.contentType.mimeType === "application/json", "Expected 'application/json'");
+  });
+
+  client.log(response.body.data.accessToken);
+  client.global.set("access_token",response.body.data.accessToken)
+%}

@@ -3,6 +3,8 @@ package com.backoffice.upjuyanolja.domain.point.entity;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,12 +29,21 @@ public class PointUsage extends BaseTime {
     private Long id;
 
     @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    @Comment("포인트 유형")
+    private PointType pointType;
+
+    @Column(nullable = false)
     @Comment("주문 이름")
     private String orderName;
 
     @Column(nullable = false)
     @Comment("주문 일시")
     private LocalDateTime orderDate;
+
+    @Column(nullable = false)
+    @Comment("주문 금액")
+    private long orderPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "point_id")
@@ -42,13 +53,17 @@ public class PointUsage extends BaseTime {
     @Builder
     public PointUsage(
         Long id,
+        PointType pointType,
         String orderName,
         LocalDateTime orderDate,
+        long orderPrice,
         Point point
     ) {
         this.id = id;
+        this.pointType = pointType;
         this.orderName = orderName;
         this.orderDate = orderDate;
+        this.orderPrice = orderPrice;
         this.point = point;
     }
 }
