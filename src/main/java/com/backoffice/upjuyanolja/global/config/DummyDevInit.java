@@ -71,6 +71,7 @@ public class DummyDevInit {
             }
         };
     }
+
     private void createMember(Long id) {
         Member member = Member.builder()
             .id(id)
