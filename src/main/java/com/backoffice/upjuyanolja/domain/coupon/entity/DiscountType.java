@@ -136,11 +136,11 @@ public enum DiscountType {
     }
 
     public static String makeShortName(final DiscountType discountType, int discount) {
-        return discountType.makeShortFormat.apply(discountType.getTitleName(), discount);
+        return discountType.makeShortFormat.apply(discountType.getShortName(), discount);
     }
 
     public static String makeDetailName(final DiscountType discountType, int discount) {
-        return discountType.makeDetailFormat.apply(discountType.getListName(), discount);
+        return discountType.makeDetailFormat.apply(discountType.getDetailName(), discount);
     }
 
     public static Boolean isRightDiscount(final DiscountType discountType, final Integer discount) {
