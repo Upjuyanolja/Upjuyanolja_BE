@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
@@ -381,7 +380,7 @@ class ReservationServiceTest {
             when(roomCommandUseCase.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
-            doNothing().when(stockService).decreaseRoomStock(any(Long.class), any(RoomStock.class));
+            when(stockService.decreaseRoomStock(any(Long.class))).thenReturn(roomStock);
             when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
                 eq(notMatchedRoom))).thenThrow(
                 new InvalidCouponException());
@@ -413,7 +412,7 @@ class ReservationServiceTest {
             when(roomCommandUseCase.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
-            doNothing().when(stockService).decreaseRoomStock(any(Long.class), any(RoomStock.class));
+            when(stockService.decreaseRoomStock(any(Long.class))).thenReturn(roomStock);
             when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
                 eq(mockRoom))).thenReturn(Optional.ofNullable(disabledCoupon));
 
@@ -442,7 +441,7 @@ class ReservationServiceTest {
             when(roomCommandUseCase.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
-            doNothing().when(stockService).decreaseRoomStock(any(Long.class), any(RoomStock.class));
+            when(stockService.decreaseRoomStock(any(Long.class))).thenReturn(roomStock);
             when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
                 eq(mockRoom))).thenReturn(Optional.ofNullable(noStockCoupon));
 
@@ -478,10 +477,11 @@ class ReservationServiceTest {
             when(roomCommandUseCase.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
-            doNothing().when(stockService).decreaseRoomStock(any(Long.class), any(RoomStock.class));
+            when(stockService.decreaseRoomStock(any(Long.class))).thenReturn(roomStock);
             when(couponRepository.findByIdAndRoom(any(Long.class),
                 any(Room.class))).thenReturn(Optional.ofNullable(mockCoupon));
-            doNothing().when(stockService).decreaseCouponStock(any(Long.class), any(Coupon.class));
+            when(stockService.decreaseCouponStock(any(Long.class))).thenReturn(mockCoupon);
+            ;
             when(reservationRoomRepository.save(any(ReservationRoom.class))).thenReturn(
                 reservationRoom);
 
@@ -580,7 +580,7 @@ class ReservationServiceTest {
             when(roomCommandUseCase.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
-            doNothing().when(stockService).increaseRoomStock(any(Long.class), any(RoomStock.class));
+            when(stockService.increaseRoomStock(any(Long.class))).thenReturn(roomStock);
             when(couponRedeemRepository.findByReservation(eq(reservation))).thenThrow(
                 new NoSuchReservationException());
 
