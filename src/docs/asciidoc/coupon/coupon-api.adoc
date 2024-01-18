@@ -22,3 +22,22 @@ include::{snippets}/coupon-backoffice-controller-docs-test/rooms-response-by-acc
 
 include::{snippets}/coupon-backoffice-controller-docs-test/rooms-response-by-accommodation/http-response.adoc[]
 include::{snippets}/coupon-backoffice-controller-docs-test/rooms-response-by-accommodation/response-fields.adoc[]
+
+[[Create-Coupons]]
+
+== 쿠폰 만들기
+
+쿠폰 만들기 Request API
+
+=== HttpRequest
+
+include::{snippets}/coupon-backoffice-controller-docs-test/create-coupon/http-request.adoc[]
+include::{snippets}/coupon-backoffice-controller-docs-test/create-coupon/request-fields.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/coupon-backoffice-controller-docs-test/create-coupon/http-response.adoc[]
+include::{snippets}/coupon-backoffice-controller-docs-test/create-coupon/response-fields.adoc[]
+
+
+

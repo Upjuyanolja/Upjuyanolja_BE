@@ -74,7 +74,7 @@ public class Coupon extends BaseTime {
     @Comment("일일 사용 한도")
     private int dayLimit;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "stock")
     @Comment("쿠폰 개수(재고)")
     private int stock;
 

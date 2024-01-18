@@ -14,4 +14,7 @@ public interface CouponRepository extends JpaRepository<Coupon, Long>, CouponRep
     List<Coupon> findByRoom(Room room);
 
     List<Coupon> findByRoomAndDiscountTypeOrderByDiscountDesc(Room room, DiscountType discountType);
+
+    Optional<Coupon> findByRoomIdAndDiscount(Long roomId, int discount);
+
 }
