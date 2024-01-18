@@ -37,6 +37,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.constraints.ConstraintDescriptions;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
@@ -63,6 +64,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
 
     @Test
     @DisplayName("객실을 추가 등록할 수 있다.")
+    @WithMockUser(roles = "ADMIN")
     void registerRoom() throws Exception {
         // given
         RoomRegisterRequest request = RoomRegisterRequest.builder()
@@ -209,6 +211,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
 
     @Test
     @DisplayName("객실 목록을 조회할 수 있다.")
+    @WithMockUser(roles = "ADMIN")
     void getRooms() throws Exception {
         // given
         RoomInfoResponse roomInfoResponse = RoomInfoResponse.builder()
@@ -315,6 +318,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
 
     @Test
     @DisplayName("객실을 조회할 수 있다.")
+    @WithMockUser(roles = "ADMIN")
     void getRoom() throws Exception {
         // given
         RoomInfoResponse roomInfoResponse = RoomInfoResponse.builder()
@@ -392,6 +396,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
 
     @Test
     @DisplayName("객실을 수정할 수 있다.")
+    @WithMockUser(roles = "ADMIN")
     void modifyRoom() throws Exception {
         // given
         RoomUpdateRequest request = RoomUpdateRequest.builder()
@@ -552,6 +557,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
 
     @Test
     @DisplayName("객실을 삭제할 수 있다.")
+    @WithMockUser(roles = "ADMIN")
     void deleteRoom() throws Exception {
         // given
         RoomInfoResponse roomInfoResponse = RoomInfoResponse.builder()
