@@ -4,9 +4,13 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.QAccommodation;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -17,31 +21,47 @@ public class AccommodationCustomRepositoryImpl implements AccommodationCustomRep
     private final QAccommodation qAccommodation = QAccommodation.accommodation;
 
     @Override
-    public List<Accommodation> findByCategoryWithTypeAndName(
-        String category, String type, String keyword
-
+    public Page<Accommodation> searchPageByCategoryWithTypeAndName(
+        String category, String type, String keyword, Pageable pageable
     ) {
-        List<Accommodation> result = getAccommodations(
-            category, category, keyword
+        Page<Accommodation> result = getAccommodations(
+            category, type, keyword, pageable
         );
 
         return result;
     }
 
-    private List<Accommodation> getAccommodations(
-        String category, String type, String keyword
+    private Page<Accommodation> getAccommodations(
+        String category, String type, String keyword, Pageable pageable
     ) {
-        return query.selectFrom(qAccommodation)
+        List<Accommodation> content = query.selectFrom(qAccommodation)
             .leftJoin(qAccommodation)
             .where(
-                eqCategory(category, category),
+                eqCategory(category, type),
                 eqKeyword(keyword)
             )
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
             .fetch();
+
+        JPAQuery<Long> countQuery = getCountQuery(category, type, keyword);
+
+        return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchOne());
+    }
+
+    private JPAQuery<Long> getCountQuery(
+        String category, String type, String keyword
+    ) {
+        return query.select(qAccommodation.count())
+            .from(qAccommodation)
+            .where(
+                eqCategory(category, type),
+                eqKeyword(keyword)
+            );
     }
 
     private BooleanExpression eqCategory(String category, String type) {
-        if (category.equals("ALL") && category.equals("ALL")) {
+        if (category.equals("ALL") && type.equals("ALL")) {
             return null;
         }
         BooleanExpression categoryExpression = qAccommodation.category.parent.name.eq(category);

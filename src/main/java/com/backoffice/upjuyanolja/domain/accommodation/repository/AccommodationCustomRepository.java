@@ -1,11 +1,12 @@
 package com.backoffice.upjuyanolja.domain.accommodation.repository;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface AccommodationCustomRepository {
 
-    List<Accommodation> findByCategoryWithTypeAndName(
-        String category, String type, String keyword
+    Page<Accommodation> searchPageByCategoryWithTypeAndName(
+        String category, String type, String keyword, Pageable pageable
     );
 }

@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -67,8 +68,8 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     public AccommodationPageResponse findAccommodations(
         String category, String type, boolean onlyHasCoupon, String keyword, Pageable pageable
     ) {
-        List<Accommodation> accommodations = accommodationRepository
-            .findByCategoryWithTypeAndName(category, type, keyword);
+        Page<Accommodation> accommodations = accommodationRepository
+            .searchPageByCategoryWithTypeAndName(category, type, keyword, pageable);
 
         return AccommodationPageResponse.from(
             new PageImpl<>(
@@ -83,7 +84,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                     ))
                     .toList(),
                 pageable,
-                accommodations.size()
+                accommodations.getTotalElements()
             )
         );
     }
@@ -108,9 +109,8 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     }
 
     private int getLowestPrice(Long accommodationId) {
-        Accommodation accommodation = accommodationRepository.findById(accommodationId).orElseThrow(
-            AccommodationNotFoundException::new
-        );
+        Accommodation accommodation = findAccommodationById(accommodationId);
+
         PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
 
         for (Room room : accommodation.getRooms()) {
@@ -167,9 +167,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     public AccommodationDetailResponse findAccommodationWithRooms(
         Long accommodationId, LocalDate startDate, LocalDate endDate
     ) {
-        Accommodation accommodation =
-            accommodationRepository.findById(accommodationId)
-                .orElseThrow(AccommodationNotFoundException::new);
+        Accommodation accommodation = findAccommodationById(accommodationId);
 
         List<Room> filterRooms = getFilteredRoomsByDate(
             accommodation.getRooms(), startDate, endDate
@@ -187,6 +185,13 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                 )
                 .toList()
         );
+    }
+
+    private Accommodation findAccommodationById(Long accommodationId) {
+        Accommodation accommodation =
+            accommodationRepository.findById(accommodationId)
+                .orElseThrow(AccommodationNotFoundException::new);
+        return accommodation;
     }
 
     private int getDiscountPrice(Room room) {
