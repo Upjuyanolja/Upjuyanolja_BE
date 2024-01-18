@@ -27,18 +27,18 @@ public enum DiscountType {
             return sb.toString();
         },
         (listName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(listName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(listName);
             return sb.toString();
         },
         (shortName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(shortName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(shortName);
             return sb.toString();
         },
         (detailName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(detailName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(detailName);
             return sb.toString();
         },
         discount -> {
@@ -64,18 +64,18 @@ public enum DiscountType {
             return sb.toString();
         },
         (listName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(listName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(listName);
             return sb.toString();
         },
         (shortName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(shortName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(shortName);
             return sb.toString();
         },
         (detailName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(detailName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(detailName);
             return sb.toString();
         },
         discount -> {
