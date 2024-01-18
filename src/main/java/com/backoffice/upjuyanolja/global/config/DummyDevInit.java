@@ -9,11 +9,9 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationO
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
-import com.backoffice.upjuyanolja.domain.coupon.repository.CouponIssuanceRepository;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
@@ -53,7 +51,6 @@ public class DummyDevInit {
     private final RoomRepository roomRepository;
     private final CategoryRepository categoryRepository;
     private final PointRepository pointRepository;
-    private final CouponIssuanceRepository couponIssuanceRepository;
     private final BCryptPasswordEncoder encoder;
     private final MemberGetService memberGetService;
 
@@ -194,16 +191,6 @@ public class DummyDevInit {
             .build();
         couponRepository.save(coupon);
         return coupon;
-    }
-
-    private CouponIssuance saveCouponIssuance(Coupon coupon, Room room, Point point) {
-        CouponIssuance couponIssuance = CouponIssuance.builder()
-            .coupon(coupon)
-            .room(room)
-            .point(point)
-            .build();
-        couponIssuanceRepository.save(couponIssuance);
-        return couponIssuance;
     }
 
     private Point createPoint(Long pointId, Member member, long balance) {

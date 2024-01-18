@@ -7,10 +7,8 @@ import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMak
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponRoomsRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidCouponInfoException;
-import com.backoffice.upjuyanolja.domain.coupon.repository.CouponIssuanceRepository;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
@@ -35,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class CouponBackofficeService {
 
     private final CouponRepository couponRepository;
-    private final CouponIssuanceRepository couponIssuanceRepository;
     private final RoomRepository roomRepository;
     private final PointRepository pointRepository;
     private final MemberGetService memberGetService;
@@ -52,7 +49,6 @@ public class CouponBackofficeService {
 
         List<CouponRoomsRequest> couponRooms = couponMakeRequest.rooms();
         List<Coupon> coupons = new ArrayList<>();
-        List<CouponIssuance> couponIssuanceList = new ArrayList<>();
         List<PointUsage> pointUsages = new ArrayList<>();
 
         Coupon coupon;
@@ -83,11 +79,9 @@ public class CouponBackofficeService {
                 log.info("신규 쿠폰 발급: {}", quantity);
             }
 
-            // 5. 쿠폰 발급 이력 저장을 위한 객체 생성
-            couponIssuanceList.add(createCouponIssuance(coupon, room, point));
+
         }
         couponRepository.saveAll(coupons);
-        couponIssuanceRepository.saveAll(couponIssuanceList);
 
         // 6. 업주의 보유 포인트 차감
         // todo: 도메인이 다른 서비스를 트랜잭션 안에서 호출하는 게 좋은 설계일까 고민해 보기.
@@ -99,13 +93,6 @@ public class CouponBackofficeService {
         log.info("쿠폰 발급 성공");
     }
 
-    private CouponIssuance createCouponIssuance(Coupon coupon, Room room, Point point) {
-        return CouponIssuance.builder()
-            .coupon(coupon)
-            .room(room)
-            .point(point)
-            .build();
-    }
 
     private Point validationPoint(Member member, long requestPoint) {
         // 업주의 보유 포인트 검증
