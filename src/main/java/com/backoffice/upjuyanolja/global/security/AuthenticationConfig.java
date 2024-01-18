@@ -1,5 +1,6 @@
 package com.backoffice.upjuyanolja.global.security;
 
+import com.backoffice.upjuyanolja.global.config.CustomCorsConfiguration;
 import com.backoffice.upjuyanolja.global.security.jwt.JwtAccessDeniedHandler;
 import com.backoffice.upjuyanolja.global.security.jwt.JwtAuthenticationEntryPoint;
 import com.backoffice.upjuyanolja.global.security.jwt.JwtAuthenticationFilter;
@@ -22,6 +23,7 @@ import org.springframework.web.cors.CorsConfiguration;
 public class AuthenticationConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final CustomCorsConfiguration corsConfiguration;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private static final String[] PERMIT_URL_ARRAY = {
@@ -34,21 +36,11 @@ public class AuthenticationConfig {
     };
 
     @Bean
-    SecurityFilterChain http(HttpSecurity http) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
             .formLogin(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configurationSource(request -> {
-                CorsConfiguration configuration = new CorsConfiguration();
-                configuration.setAllowCredentials(true);
-//                configuration.setAllowedOrigins(
-//                    Arrays.asList("http://localhost:3000", "http://localhost:3001", "https://candid-horse-912de6.netlify.app"));
-                configuration.setAllowedHeaders(Arrays.asList("*"));
-                configuration.setAllowedMethods(
-                    Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-                configuration.addExposedHeader("X-AUTH-TOKEN");
-                return configuration;
-            }))
+            .addFilter(corsConfiguration.corsFilter())
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(sessionConfig ->
                 sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
