@@ -1,20 +1,20 @@
 package com.backoffice.upjuyanolja.global.security;
 
+import com.backoffice.upjuyanolja.global.config.CustomCorsConfiguration;
 import com.backoffice.upjuyanolja.global.security.jwt.JwtAccessDeniedHandler;
 import com.backoffice.upjuyanolja.global.security.jwt.JwtAuthenticationEntryPoint;
 import com.backoffice.upjuyanolja.global.security.jwt.JwtAuthenticationFilter;
 import com.backoffice.upjuyanolja.global.security.jwt.JwtTokenProvider;
-import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -22,45 +22,48 @@ import org.springframework.web.cors.CorsConfiguration;
 public class AuthenticationConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final CustomCorsConfiguration corsConfiguration;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
-    private static final String[] PERMIT_URL_ARRAY = {
+    private static final String[] PERMIT_ALL_URL_ARRAY = {
         "/",
         "/error",
         "/docs/**",
-        "/api/members/**",
-        "/api/products/**",
+        "/api/auth/**",
         "/api/open-api"
+    };
+    private static final String[] PERMIT_OWNER_URL_ARRAY = {
+        "/api/accommodations/backoffice",
+        "/api/coupons/**",
+        "/api/points/**",
+        "/api/rooms/**"
     };
 
     @Bean
-    SecurityFilterChain http(HttpSecurity http) throws Exception {
-
-        http
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.httpBasic(AbstractHttpConfigurer::disable)
             .formLogin(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configurationSource(request -> {
-                CorsConfiguration configuration = new CorsConfiguration();
-                configuration.setAllowCredentials(true);
-//                configuration.setAllowedOrigins(
-//                    Arrays.asList("http://localhost:3000", "http://localhost:3001", "https://candid-horse-912de6.netlify.app"));
-                configuration.setAllowedHeaders(Arrays.asList("*"));
-                configuration.setAllowedMethods(
-                    Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-                configuration.addExposedHeader("X-AUTH-TOKEN");
-                return configuration;
-            }))
             .csrf(AbstractHttpConfigurer::disable)
+            .addFilter(corsConfiguration.corsFilter())
             .sessionManagement(sessionConfig ->
-                sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        http.authorizeHttpRequests(request -> request.
-
-            requestMatchers("/v1/reservations/**").authenticated()
-            .requestMatchers("/v1/carts/**").authenticated()
-            .anyRequest().permitAll()
-        );
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
-            UsernamePasswordAuthenticationFilter.class);
+                sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(request -> request
+                .requestMatchers(PERMIT_ALL_URL_ARRAY)
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/accommodations/")
+                .permitAll()
+                .requestMatchers("/api/reservations/**")
+                .hasRole("USER")
+                .requestMatchers(PERMIT_OWNER_URL_ARRAY)
+                .hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/accommodations/**")
+                .hasRole("ADMIN")
+                .anyRequest().authenticated())
+            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+                UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(AuthenticationManager -> AuthenticationManager
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .accessDeniedHandler(jwtAccessDeniedHandler));
         return http.build();
     }
 }
