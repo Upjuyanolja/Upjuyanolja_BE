@@ -44,6 +44,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.constraints.ConstraintDescriptions;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
@@ -70,6 +71,7 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
 
     @Test
     @DisplayName("객실을 등록할 수 있다.")
+    @WithMockUser(roles = "ADMIN")
     void registerAccommodation() throws Exception {
         // given
         AccommodationRegisterRequest request = AccommodationRegisterRequest.builder()
@@ -368,6 +370,7 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
 
     @Test
     @DisplayName("보유 숙소 목록을 조회할 수 있다.")
+    @WithMockUser(roles = "ADMIN")
     void getAccommodationOwnership() throws Exception {
         // given
         AccommodationNameResponse accommodationNameResponse1 = AccommodationNameResponse.builder()

@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum PointType {
 
     CHARGE("충전"),
+    REFUND("충전"),
     USE("사용");
 
     private final String description;
