@@ -6,17 +6,15 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.util.StringUtils;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 public class AccommodationCustomRepositoryImpl implements AccommodationCustomRepository {
 
     private final JPAQueryFactory query;
     private final QAccommodation qAccommodation = QAccommodation.accommodation;
-
-    public AccommodationCustomRepositoryImpl(JPAQueryFactory query) {
-        this.query = query;
-    }
 
     @Override
     public List<Accommodation> findByCategoryWithTypeAndName(

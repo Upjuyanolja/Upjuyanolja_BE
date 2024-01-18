@@ -1,17 +1,18 @@
 package com.backoffice.upjuyanolja.domain.point.entity;
 
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import com.backoffice.upjuyanolja.domain.point.util.YearMonthConverter;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.time.YearMonth;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,12 +31,12 @@ public class Point extends BaseTime {
 
     @Column(nullable = false)
     @Comment("보유 포인트")
-    private int pointBalance;
+    private long pointBalance;
 
     @Column(nullable = false)
-    @Enumerated(value = EnumType.STRING)
-    @Comment("포인트 유형")
-    private PointType pointType;
+    @Comment("기준 날짜")
+    @Convert(converter = YearMonthConverter.class)
+    private YearMonth standardDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -47,13 +48,18 @@ public class Point extends BaseTime {
     public Point(
         Long id,
         int pointBalance,
-        PointType pointType,
+        YearMonth standardDate,
         Member member
     ) {
         this.id = id;
         this.pointBalance = pointBalance;
-        this.pointType = pointType;
+        this.standardDate = standardDate;
         this.member = member;
+    }
+
+    public void updatePoint(Long pointBalance, YearMonth rangeDate){
+        this.pointBalance = pointBalance;
+        this.standardDate = rangeDate;
     }
 
 }
