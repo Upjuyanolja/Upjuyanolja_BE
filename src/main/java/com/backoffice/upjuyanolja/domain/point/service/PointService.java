@@ -32,7 +32,6 @@ public class PointService {
                 getUsePoint(memberPoint, rangeDate) -
                 getUsePoint(memberPoint, rangeDate.minusMonths(1));
 
-        updatePoint(memberPoint, currentPoint, rangeDate);
 
         return PointSummaryResponse.builder()
             .chargePoint(getChargePoint(memberPoint, rangeDate))
@@ -48,8 +47,7 @@ public class PointService {
 
     private Point createPoint(Long currentMemberId) {
         Point newPoint = Point.builder()
-            .pointBalance(0)
-            .standardDate(YearMonth.now())
+            .totalPointBalance(0)
             .member(memberGetService.getMemberById(currentMemberId))
             .build();
 
@@ -58,8 +56,8 @@ public class PointService {
         return newPoint;
     }
 
-    private void updatePoint(Point point, Long pointBalance, YearMonth rangeDate){
-        point.updatePoint(pointBalance,rangeDate);
+    private void updatePoint(Point point, Long pointBalance){
+        point.updatePoint(pointBalance);
         pointRepository.save(point);
     }
 
@@ -72,9 +70,6 @@ public class PointService {
     }
 
     private long getUsePoint(Point point, YearMonth rangeDate) {
-        List<PointUsage> byPointAndChargeDateWithin = pointUsageRepository.findByPointAndChargeDateWithin(
-            point, rangeDate
-        );
         return pointUsageRepository.findByPointAndChargeDateWithin(
                 point, rangeDate
             ).stream()

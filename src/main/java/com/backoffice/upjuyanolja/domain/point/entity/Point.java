@@ -31,12 +31,7 @@ public class Point extends BaseTime {
 
     @Column(nullable = false)
     @Comment("보유 포인트")
-    private long pointBalance;
-
-    @Column(nullable = false)
-    @Comment("기준 날짜")
-    @Convert(converter = YearMonthConverter.class)
-    private YearMonth standardDate;
+    private long totalPointBalance;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -47,19 +42,16 @@ public class Point extends BaseTime {
     @Builder
     public Point(
         Long id,
-        int pointBalance,
-        YearMonth standardDate,
+        long totalPointBalance,
         Member member
     ) {
         this.id = id;
-        this.pointBalance = pointBalance;
-        this.standardDate = standardDate;
+        this.totalPointBalance = totalPointBalance;
         this.member = member;
     }
 
-    public void updatePoint(Long pointBalance, YearMonth rangeDate){
-        this.pointBalance = pointBalance;
-        this.standardDate = rangeDate;
+    public void updatePoint(long totalPointBalance){
+        this.totalPointBalance = totalPointBalance;
     }
 
 }
