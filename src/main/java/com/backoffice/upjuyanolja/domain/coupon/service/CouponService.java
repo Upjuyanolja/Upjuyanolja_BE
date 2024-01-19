@@ -25,7 +25,7 @@ public class CouponService {
     private final RoomQueryUseCase roomQueryUseCase;
 
     @Transactional(readOnly = true)
-    public List<CouponAccommodationResponse> findCouponInAccommodation(Long accommodationId) {
+    public List<CouponAccommodationResponse> findCouponResponseInAccommodation(Long accommodationId) {
         List<CouponAccommodationResponse> responses = new ArrayList<>();
         List<Room> rooms = roomQueryUseCase.findByAccommodationId(accommodationId);
 
@@ -40,24 +40,24 @@ public class CouponService {
         return responses;
     }
 
-    @Transactional(readOnly = true)
-    public List<CouponDetailResponse> getSortedCouponInRoom(
+    public List<CouponDetailResponse> getSortedCouponResponseInRoom(
         Room room, List<Coupon> coupons, DiscountType discountType
     ) {
         List<CouponDetailResponse> responses = new ArrayList<>();
+        List<Coupon> resultCoupons = new ArrayList<>();
         int roomPrice = room.getPrice().getOffWeekDaysMinFee();
-        List<Coupon> resultCoupons = getDiscountTypeCouponInRoom(coupons, discountType);
+        resultCoupons.addAll(getDiscountTypeCouponInRoom(coupons, discountType));
 
         if (resultCoupons.isEmpty()) {
             return new ArrayList<>();
         }
 
-        Collections.sort(coupons, Comparator.comparingInt(coupon -> DiscountType.getPaymentPrice(
+        Collections.sort(resultCoupons, Comparator.comparingInt(coupon -> DiscountType.getPaymentPrice(
                 coupon.getDiscountType(), roomPrice, coupon.getDiscount()
             ))
         );
 
-        for (Coupon coupon : coupons) {
+        for (Coupon coupon : resultCoupons) {
             responses.add(CouponDetailResponse.of(
                 coupon,
                 DiscountType.getPaymentPrice(coupon.getDiscountType(), roomPrice,
@@ -84,7 +84,7 @@ public class CouponService {
     }
 
     @Transactional(readOnly = true)
-    public List<CouponDetailResponse> getSortedTotalCouponInRoom(Room room) {
+    public List<CouponDetailResponse> getSortedTotalCouponResponseInRoom(Room room) {
         List<Coupon> roomCoupons = couponRepository.findByRoom(room);
         int roomPrice = room.getPrice().getOffWeekDaysMinFee();
 

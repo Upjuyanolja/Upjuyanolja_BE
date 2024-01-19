@@ -145,7 +145,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     }
 
     private boolean checkCouponAvailability(Accommodation accommodation) {
-        return !couponService.findCouponInAccommodation(accommodation.getId()).isEmpty();
+        return !couponService.findCouponResponseInAccommodation(accommodation.getId()).isEmpty();
     }
 
     private int getLowestPrice(Long accommodationId) {
@@ -165,14 +165,13 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
         List<Coupon> coupons = new ArrayList<>();
 
-        for (Room room:rooms) {
+        for (Room room : rooms) {
             coupons = couponService.getCouponInRoom(room);
             responses.addAll(
-                couponService.getSortedCouponInRoom(room, coupons, DiscountType.FLAT));
+                couponService.getSortedCouponResponseInRoom(room, coupons, DiscountType.FLAT));
             responses.addAll(
-                couponService.getSortedCouponInRoom(room, coupons, DiscountType.RATE));
+                couponService.getSortedCouponResponseInRoom(room, coupons, DiscountType.RATE));
         }
-
 
         return responses.stream()
             .min(Comparator.comparingInt(CouponDetailResponse::price));
@@ -181,27 +180,35 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     private String getMainCouponName(Long accommodationId) {
         List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
         List<Coupon> coupons = new ArrayList<>();
-        List<CouponDetailResponse> flatResponse = new ArrayList<>();
-        List<CouponDetailResponse> rateResponse = new ArrayList<>();
+        List<CouponDetailResponse> flatResponses = new ArrayList<>();
+        List<CouponDetailResponse> rateResponses = new ArrayList<>();
 
-        for (Room room:rooms) {
+        for (Room room : rooms) {
             coupons = couponService.getCouponInRoom(room);
-            flatResponse.add(couponService.getSortedCouponInRoom(room, coupons, DiscountType.FLAT).get(0));
-            rateResponse.add(couponService.getSortedCouponInRoom(room, coupons, DiscountType.RATE).get(0));
+            List<CouponDetailResponse> flat = couponService.getSortedCouponResponseInRoom(
+                room, coupons, DiscountType.FLAT);
+            List<CouponDetailResponse> rate = couponService.getSortedCouponResponseInRoom(
+                room, coupons, DiscountType.RATE);
+            if (!flat.isEmpty()) {
+                flatResponses.add(flat.get(0));
+            }
+            if (!rate.isEmpty()) {
+                rateResponses.add(rate.get(0));
+            }
         }
 
-        flatResponse.sort(Comparator.comparingInt(CouponDetailResponse::price));
-        rateResponse.sort(Comparator.comparingInt(CouponDetailResponse::price));
+        flatResponses.sort(Comparator.comparingInt(CouponDetailResponse::price));
+        rateResponses.sort(Comparator.comparingInt(CouponDetailResponse::price));
 
-        if (flatResponse.isEmpty() && rateResponse.isEmpty()) {
+        if (flatResponses.isEmpty() && rateResponses.isEmpty()) {
             return "";
         }
 
-        if (!flatResponse.isEmpty() && !rateResponse.isEmpty()) {
-            return flatResponse.get(0).name() + " or " + rateResponse.get(0).name();
+        if (!flatResponses.isEmpty() && !rateResponses.isEmpty()) {
+            return flatResponses.get(0).name() + " or " + rateResponses.get(0).name();
         }
 
-        return flatResponse.isEmpty()? rateResponse.get(0).name() : flatResponse.get(0).name();
+        return flatResponses.isEmpty() ? rateResponses.get(0).name() : flatResponses.get(0).name();
 
     }
 
@@ -223,7 +230,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                         room, getDiscountPrice(room),
                         !checkSoldOut(filterRooms, room),
                         getMinFilteredRoomStock(room, startDate, endDate),
-                        couponService.getSortedTotalCouponInRoom(room)
+                        couponService.getSortedTotalCouponResponseInRoom(room)
                     )
                 )
                 .toList()
@@ -238,7 +245,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     }
 
     private int getDiscountPrice(Room room) {
-        return couponService.getSortedTotalCouponInRoom(room)
+        return couponService.getSortedTotalCouponResponseInRoom(room)
             .stream()
             .findFirst()
             .map(coupon -> coupon.price())
