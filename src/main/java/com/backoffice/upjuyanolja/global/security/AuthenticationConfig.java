@@ -34,6 +34,7 @@ public class AuthenticationConfig {
     };
     private static final String[] PERMIT_OWNER_URL_ARRAY = {
         "/api/accommodations/backoffice",
+        "/api/coupons/backoffice",
         "/api/points/**",
         "/api/rooms/**"
     };
