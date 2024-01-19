@@ -9,11 +9,9 @@ import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,64 +41,46 @@ public class CouponService {
     }
 
     @Transactional(readOnly = true)
-    public List<CouponDetailResponse> getSortedCouponInAccommodation(
-        Long accommodationId, DiscountType discountType
+    public List<CouponDetailResponse> getSortedCouponInRoom(
+        Room room, List<Coupon> coupons, DiscountType discountType
     ) {
-        Map<Room, List<Coupon>> couponRoomMap = getDiscountTypeCouponInAccommodation(
-            accommodationId, discountType
-        );
+        List<CouponDetailResponse> responses = new ArrayList<>();
+        int roomPrice = room.getPrice().getOffWeekDaysMinFee();
+        List<Coupon> resultCoupons = getDiscountTypeCouponInRoom(coupons, discountType);
 
-        if (couponRoomMap.isEmpty()) {
+        if (resultCoupons.isEmpty()) {
             return new ArrayList<>();
         }
 
-        return sortCouponInRoom(couponRoomMap);
-    }
+        Collections.sort(coupons, Comparator.comparingInt(coupon -> DiscountType.getPaymentPrice(
+                coupon.getDiscountType(), roomPrice, coupon.getDiscount()
+            ))
+        );
 
-    private List<CouponDetailResponse> sortCouponInRoom(Map<Room, List<Coupon>> couponRoomMap) {
-        List<CouponDetailResponse> responses = new ArrayList<>();
-
-        for (Entry<Room, List<Coupon>> roomCouponEntry : couponRoomMap.entrySet()) {
-            Room room = roomCouponEntry.getKey();
-            int roomPrice = room.getPrice().getOffWeekDaysMinFee();
-
-            roomCouponEntry.getValue()
-                .sort(Comparator.comparingInt(coupon -> DiscountType.getPaymentPrice(
-                        coupon.getDiscountType(), roomPrice, coupon.getDiscount()
-                    ))
-                );
-
-            for (Coupon coupon : roomCouponEntry.getValue()) {
-                responses.add(CouponDetailResponse.of(
-                    coupon,
-                    DiscountType.getPaymentPrice(coupon.getDiscountType(), roomPrice,
-                        coupon.getDiscount()
-                    ))
-                );
-            }
+        for (Coupon coupon : coupons) {
+            responses.add(CouponDetailResponse.of(
+                coupon,
+                DiscountType.getPaymentPrice(coupon.getDiscountType(), roomPrice,
+                    coupon.getDiscount()
+                ))
+            );
         }
 
         return responses;
     }
 
-    private Map<Room, List<Coupon>> getDiscountTypeCouponInAccommodation(
-        Long accommodationId, DiscountType discountType
+    @Transactional(readOnly = true)
+    public List<Coupon> getCouponInRoom(Room room) {
+        return couponRepository.findByRoom(room);
+    }
+
+    private List<Coupon> getDiscountTypeCouponInRoom(
+        List<Coupon> coupons, DiscountType discountType
     ) {
-        List<Room> rooms = roomQueryUseCase.findByAccommodationId(accommodationId);
-        Map<Room, List<Coupon>> couponRoomMap = new HashMap<>();
-
-        for (Room room : rooms) {
-            List<Coupon> value =
-                couponRepository.findByRoomAndDiscountTypeOrderByDiscountDesc(room, discountType);
-
-            if (value.isEmpty()) {
-                continue;
-            }
-
-            couponRoomMap.put(room, value);
-        }
-
-        return couponRoomMap;
+        return coupons.stream()
+            .filter(coupon -> coupon.getDiscountType() == discountType)
+            .sorted(Comparator.comparingInt(Coupon::getDiscount).reversed())
+            .toList();
     }
 
     @Transactional(readOnly = true)

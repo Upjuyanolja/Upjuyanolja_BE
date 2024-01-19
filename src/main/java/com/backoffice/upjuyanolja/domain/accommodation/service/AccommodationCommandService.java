@@ -18,6 +18,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.Accommoda
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase.AccommodationSaveRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
+import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
@@ -25,6 +26,7 @@ import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
+import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     private final AccommodationQueryUseCase accommodationQueryUseCase;
     private final AccommodationRepository accommodationRepository;
     private final CouponService couponService;
+    private final RoomQueryService roomQueryService;
     private final RoomCommandUseCase roomCommandUseCase;
     private final MemberGetService memberGetService;
 
@@ -78,11 +81,17 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                     .filter(
                         accommodation -> !onlyHasCoupon || this.checkCouponAvailability(
                             accommodation))
-                    .map(accommodation -> AccommodationSummaryResponse.of(
-                        accommodation, getLowestPrice(accommodation.getId()),
-                        getDiscountPrice(accommodation.getId()),
-                        getCouponName(accommodation.getId())
-                    ))
+                    .map(accommodation -> {
+                        int lowestPrice = getLowestPrice(accommodation.getId());
+                        Optional<CouponDetailResponse> discountInfo = getDiscountInfo(
+                            accommodation.getId());
+                        return AccommodationSummaryResponse.of(
+                            accommodation, lowestPrice,
+                            discountInfo.map(response -> response.price()).orElse(lowestPrice),
+                            discountInfo.map(response -> response.name()).orElse("")
+
+                        );
+                    })
                     .toList(),
                 pageable,
                 accommodations.getTotalElements()
@@ -109,60 +118,59 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     }
 
     private int getLowestPrice(Long accommodationId) {
-        Accommodation accommodation = findAccommodationById(accommodationId);
+        List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
 
         PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
 
-        for (Room room : accommodation.getRooms()) {
+        for (Room room : rooms) {
             pq.offer(room.getPrice().getOffWeekDaysMinFee());
         }
 
         return pq.poll();
     }
 
-    private int getDiscountPrice(Long accommodationId) {
-        return getDiscountInfo(accommodationId)
-            .map(coupon -> coupon.price())
-            .orElse(getLowestPrice(accommodationId));
-    }
-
-    private String getCouponName(Long accommodationId) {
-        return getDiscountInfo(accommodationId)
-            .map(coupon -> coupon.name())
-            .orElse("");
-    }
-
     private Optional<CouponDetailResponse> getDiscountInfo(Long accommodationId) {
         List<CouponDetailResponse> responses = new ArrayList<>();
-        responses.addAll(
-            couponService.getSortedCouponInAccommodation(accommodationId, DiscountType.FLAT));
-        responses.addAll(
-            couponService.getSortedCouponInAccommodation(accommodationId, DiscountType.RATE));
+        List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
+        List<Coupon> coupons = new ArrayList<>();
+
+        for (Room room:rooms) {
+            coupons = couponService.getCouponInRoom(room);
+            responses.addAll(
+                couponService.getSortedCouponInRoom(room, coupons, DiscountType.FLAT));
+            responses.addAll(
+                couponService.getSortedCouponInRoom(room, coupons, DiscountType.RATE));
+        }
+
 
         return responses.stream()
             .min(Comparator.comparingInt(CouponDetailResponse::price));
     }
 
     private String getMainCouponName(Long accommodationId) {
-        Optional<CouponDetailResponse> flatResponse =
-            couponService.getSortedCouponInAccommodation(accommodationId, DiscountType.FLAT)
-                .stream()
-                .findFirst();
+        List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
+        List<Coupon> coupons = new ArrayList<>();
+        List<CouponDetailResponse> flatResponse = new ArrayList<>();
+        List<CouponDetailResponse> rateResponse = new ArrayList<>();
 
-        Optional<CouponDetailResponse> rateResponse =
-            couponService.getSortedCouponInAccommodation(accommodationId, DiscountType.RATE)
-                .stream()
-                .findFirst();
+        for (Room room:rooms) {
+            coupons = couponService.getCouponInRoom(room);
+            flatResponse.add(couponService.getSortedCouponInRoom(room, coupons, DiscountType.FLAT).get(0));
+            rateResponse.add(couponService.getSortedCouponInRoom(room, coupons, DiscountType.RATE).get(0));
+        }
+
+        flatResponse.sort(Comparator.comparingInt(CouponDetailResponse::price));
+        rateResponse.sort(Comparator.comparingInt(CouponDetailResponse::price));
 
         if (flatResponse.isEmpty() && rateResponse.isEmpty()) {
             return "";
         }
 
         if (!flatResponse.isEmpty() && !rateResponse.isEmpty()) {
-            return flatResponse.get().name() + " or " + rateResponse.get().name();
+            return flatResponse.get(0).name() + " or " + rateResponse.get(0).name();
         }
 
-        return flatResponse.orElse(rateResponse.get()).name();
+        return flatResponse.isEmpty()? rateResponse.get(0).name() : flatResponse.get(0).name();
 
     }
 
