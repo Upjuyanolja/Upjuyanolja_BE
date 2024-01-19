@@ -50,9 +50,27 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
         return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetch().size());
     }
 
+    @Override
+    public boolean existsRoomByName(String name) {
+        Integer fetchOne = queryFactory
+            .selectOne()
+            .from(room)
+            .where(createExistsSearchConditionsBuilder(name))
+            .fetchFirst();
+
+        return fetchOne != null;
+    }
+
     private BooleanBuilder createSearchConditionsBuilder(long accommodationId) {
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         booleanBuilder.and(room.accommodation.id.eq(accommodationId));
+        booleanBuilder.and(room.deletedAt.isNull());
+        return booleanBuilder;
+    }
+
+    private BooleanBuilder createExistsSearchConditionsBuilder(String name) {
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        booleanBuilder.and(room.name.eq(name));
         booleanBuilder.and(room.deletedAt.isNull());
         return booleanBuilder;
     }
