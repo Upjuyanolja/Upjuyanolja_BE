@@ -461,9 +461,11 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
                     resource.openStream().readAllBytes()
                 ))
                 .file(new MockMultipartFile(
-                    "image5"
-                    , new byte[0])
-                ))
+                    "image5",
+                    "image_sample.jpg",
+                    "images/png",
+                    resource.openStream().readAllBytes()
+                )))
             .andDo(restDoc.document(
                 requestParts(
                     partWithName("image1").description("저장할 이미지 1"),
