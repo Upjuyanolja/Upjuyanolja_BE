@@ -9,6 +9,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.request.Accommodation
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
@@ -16,6 +17,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwner
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
+import com.backoffice.upjuyanolja.domain.accommodation.service.S3UploadService;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase.AccommodationSaveRequest;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
@@ -32,6 +34,9 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URL;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +47,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Transactional
 @ExtendWith(MockitoExtension.class)
@@ -59,6 +66,9 @@ public class AccommodationCommandServiceTest {
 
     @Mock
     private RoomCommandService roomCommandService;
+
+    @Mock
+    private S3UploadService s3UploadService;
 
     @Nested
     @DisplayName("createAccommodation()은")
@@ -381,6 +391,64 @@ public class AccommodationCommandServiceTest {
             assertThat(result.accommodations().size()).isEqualTo(1);
             assertThat(result.accommodations().get(0).id()).isEqualTo(1L);
             assertThat(result.accommodations().get(0).name()).isEqualTo("그랜드 하얏트 제주");
+        }
+    }
+
+    @Nested
+    @DisplayName("saveImages()은")
+    class Context_saveImages {
+
+        @Test
+        @DisplayName("이미지를 저장할 수 있다.")
+        void _willSuccess() throws IOException {
+            // given
+            URL resource = getClass().getResource("/images/image_sample.jpg");
+            List<MultipartFile> imageFiles = new ArrayList<>();
+            imageFiles.add(new MockMultipartFile(
+                "image1",
+                "image_sample.jpg",
+                "images/png",
+                new FileInputStream(resource.getFile())
+            ));
+            imageFiles.add(new MockMultipartFile(
+                "image2",
+                "image_sample.jpg",
+                "images/png",
+                new FileInputStream(resource.getFile())
+            ));
+            imageFiles.add(new MockMultipartFile(
+                "image3",
+                "image_sample.jpg",
+                "images/png",
+                new FileInputStream(resource.getFile())
+            ));
+            imageFiles.add(new MockMultipartFile(
+                "image4",
+                "image_sample.jpg",
+                "images/png",
+                new FileInputStream(resource.getFile())
+            ));
+            imageFiles.add((new MockMultipartFile(
+                "image5"
+                , new byte[0])
+            ));
+
+            given(s3UploadService.saveFile(any(MockMultipartFile.class)))
+                .willReturn("https://aws/coupons/images/001");
+
+            // when
+            ImageResponse imageResponse = accommodationCommandService.saveImages(imageFiles);
+
+            assertThat(imageResponse.urls()).isNotEmpty();
+            assertThat(imageResponse.urls().get(0).url())
+                .isEqualTo("https://aws/coupons/images/001");
+            assertThat(imageResponse.urls().get(1).url())
+                .isEqualTo("https://aws/coupons/images/001");
+            assertThat(imageResponse.urls().get(2).url())
+                .isEqualTo("https://aws/coupons/images/001");
+            assertThat(imageResponse.urls().get(3).url())
+                .isEqualTo("https://aws/coupons/images/001");
+            assertThat(imageResponse.urls().get(4).url()).isNull();
         }
     }
 }
