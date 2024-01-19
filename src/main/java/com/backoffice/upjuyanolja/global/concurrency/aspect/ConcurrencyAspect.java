@@ -1,6 +1,6 @@
-package com.backoffice.upjuyanolja.global.aspect;
+package com.backoffice.upjuyanolja.global.concurrency.aspect;
 
-import com.backoffice.upjuyanolja.global.annotation.ConcurrencyControl;
+import com.backoffice.upjuyanolja.global.concurrency.annotation.ConcurrencyControl;
 import java.lang.reflect.Method;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +21,9 @@ import org.springframework.stereotype.Component;
 public class ConcurrencyAspect {
 
     private final RedissonClient redissonClient;
+    private final TransactionAspect transactionAspect;
 
-    @Around("@annotation(com.backoffice.upjuyanolja.global.annotation.ConcurrencyControl)&&args(targetId)")
+    @Around("@annotation(com.backoffice.upjuyanolja.global.concurrency.annotation.ConcurrencyControl)&&args(targetId)")
     public Object handleConcurrency(ProceedingJoinPoint joinPoint, Long targetId) throws Throwable {
         Object result;
 
@@ -38,17 +39,19 @@ public class ConcurrencyAspect {
                 annotation.timeUnit());
 
             if (!available) {
-                log.warn("{} - redisson getLock timeout", lockName);
+                log.warn("Redisson GetLock Timeout {}", lockName);
                 throw new IllegalArgumentException();
             }
 
             // Proceed with the original method execution
-            result = joinPoint.proceed();
+            return transactionAspect.proceed(joinPoint);
         } finally {
-            lock.unlock();
+            try {
+                lock.unlock();
+            } catch (IllegalMonitorStateException e) {
+                log.warn("Redisson Lock Already UnLock {}", lockName);
+            }
         }
-
-        return result;
     }
 
     private ConcurrencyControl getAnnotation(ProceedingJoinPoint joinPoint) {
@@ -60,6 +63,6 @@ public class ConcurrencyAspect {
     private String getLockName(Long targetId, ConcurrencyControl annotation) {
         String lockNameFormat = "lock:%s:%s";
         String relevantParameter = targetId.toString();
-        return String.format(lockNameFormat, annotation.targetName(), relevantParameter);
+        return String.format(lockNameFormat, annotation.lockName(), relevantParameter);
     }
 }

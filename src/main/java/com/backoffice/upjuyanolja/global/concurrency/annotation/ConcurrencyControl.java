@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.global.annotation;
+package com.backoffice.upjuyanolja.global.concurrency.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -17,20 +17,20 @@ public @interface ConcurrencyControl {
     /**
      * The name of the target resource to acquire a lock on.
      */
-    String targetName();
+    String lockName();
 
     /**
      * The maximum time to wait for the lock to be available, in the specified time unit.
      */
-    long waitTime();
+    long waitTime() default 3L;
 
     /**
      * The duration to hold the lock for, in the specified time unit.
      */
-    long leaseTime();
+    long leaseTime() default 2L;
 
     /**
      * The time unit for the waitTime and leaseTime values.
      */
-    TimeUnit timeUnit();
+    TimeUnit timeUnit() default TimeUnit.SECONDS;
 }

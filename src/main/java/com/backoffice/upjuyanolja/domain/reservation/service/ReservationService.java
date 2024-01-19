@@ -58,12 +58,16 @@ public class ReservationService {
         int discountAmount = 0;
         Coupon coupon = null;
 
-        /*
-         * 객실 재고 수정 및 예약 객실 생성
-         * */
         Room room = roomRepository.findById(request.getRoomId())
             .orElseThrow(InvalidReservationInfoException::new);
 
+        if (room.getStatus() != RoomStatus.SELLING) {
+            throw new InvalidReservationInfoException();
+        }
+
+        /*
+         * 객실 재고 수정 및 예약 객실 생성
+         * */
         decreaseRoomStock(room, request.getStartDate(), request.getEndDate());
 
         /*
@@ -75,8 +79,12 @@ public class ReservationService {
             coupon = couponRepository.findByIdAndRoom(request.getCouponId(), room)
                 .orElseThrow(InvalidCouponException::new);
 
+            if (coupon.getCouponStatus() != CouponStatus.ENABLE || coupon.getStock() < 1) {
+                throw new InvalidCouponException();
+            }
+
             // 쿠폰 재고 수정
-            decreaseCouponStock(coupon);
+            coupon = decreaseCouponStock(coupon);
 
             // 할인 금액 계산
             discountAmount = DiscountType.getPaymentPrice(coupon.getDiscountType(),
@@ -89,7 +97,7 @@ public class ReservationService {
         Reservation reservation = saveReservation(currentMember, request, room, discountAmount);
 
         // 쿠폰 사용 시 쿠폰 사용 내역 저장
-        if (reservation.getIsCouponUsed()) {
+        if (Boolean.TRUE.equals(reservation.getIsCouponUsed())) {
             couponRedeemRepository.save(CouponRedeem.builder()
                 .coupon(coupon)
                 .reservation(reservation)
@@ -98,16 +106,12 @@ public class ReservationService {
     }
 
     private void decreaseRoomStock(Room room, LocalDate startDate, LocalDate endDate) {
-        if (room.getStatus() != RoomStatus.SELLING) {
-            throw new InvalidReservationInfoException();
-        }
-
         // 객실 재고 검증 및 get
         List<RoomStock> roomStocks = getRoomStock(room, startDate, endDate);
 
         // 객실 락 획득 및 재고 수정
         for (RoomStock roomStock : roomStocks) {
-            stockService.decreaseRoomStock(roomStock.getId(), roomStock); //lock
+            stockService.decreaseRoomStock(roomStock.getId()); //lock
         }
     }
 
@@ -127,12 +131,11 @@ public class ReservationService {
         return roomStocks;
     }
 
-    private void decreaseCouponStock(Coupon coupon) {
-        if (coupon.getCouponStatus() != CouponStatus.ENABLE || coupon.getStock() < 1) {
+    private Coupon decreaseCouponStock(Coupon coupon) {
+        if (coupon.getStock() < 1) {
             throw new InvalidCouponException();
         }
-
-        stockService.decreaseCouponStock(coupon.getId(), coupon); //lock
+        return stockService.decreaseCouponStock(coupon.getId()); //lock
     }
 
     private Payment savePayment(Member member, CreateReservationRequest request, int roomPrice,
@@ -217,9 +220,9 @@ public class ReservationService {
     private void increaseCouponStock(Reservation reservation) {
         CouponRedeem couponRedeem = couponRedeemRepository.findByReservation(reservation)
             .orElseThrow(NoSuchReservationException::new);
-        Coupon coupon = couponRedeem.getCoupon();
 
-        stockService.increaseCouponStock(coupon.getId(), coupon);
+        Coupon coupon = couponRedeem.getCoupon();
+        stockService.increaseCouponStock(coupon.getId());
 
         couponRedeemRepository.delete(couponRedeem);
     }
@@ -238,7 +241,7 @@ public class ReservationService {
         }
 
         for (RoomStock roomStock : roomStocks) {
-            stockService.increaseRoomStock(roomStock.getId(), roomStock); //lock
+            stockService.increaseRoomStock(roomStock.getId()); //lock
         }
     }
 
