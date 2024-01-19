@@ -38,7 +38,7 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
             .leftJoin(room.images, roomImage).fetchJoin()
             .where(createSearchConditionsBuilder(accommodationId))
             .offset(pageable.getOffset())
-            .orderBy(getAllOrderSpecifiers(pageable).toArray(OrderSpecifier[]::new))
+            .orderBy(getAllOrderSpecifiers().toArray(OrderSpecifier[]::new))
             .limit(pageable.getPageSize());
         JPAQuery<Room> countQuery = queryFactory
             .select(room)
@@ -57,8 +57,10 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
         return booleanBuilder;
     }
 
-    private List<OrderSpecifier<?>> getAllOrderSpecifiers(Pageable pageable) {
+    private List<OrderSpecifier<?>> getAllOrderSpecifiers() {
         List<OrderSpecifier<?>> orders = new LinkedList<>();
+        orders.add(QueryDslUtil.getSortedColumn(Order.ASC, room, "status"));
+        orders.add(QueryDslUtil.getSortedColumn(Order.ASC, room.price, "offWeekDaysMinFee"));
         orders.add(QueryDslUtil.getSortedColumn(Order.ASC, room, "id"));
         return orders;
     }
