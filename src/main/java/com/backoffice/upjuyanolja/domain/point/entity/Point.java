@@ -57,10 +57,10 @@ public class Point extends BaseTime {
     }
 
     public void decreasePointBalance(long usedPoints) {
-        if (pointBalance - usedPoints < 0) {
+        if (totalPointBalance - usedPoints < 0) {
             throw new InsufficientPointsException();
         }
-        pointBalance -= usedPoints;
+        totalPointBalance -= usedPoints;
     }
 
 }
