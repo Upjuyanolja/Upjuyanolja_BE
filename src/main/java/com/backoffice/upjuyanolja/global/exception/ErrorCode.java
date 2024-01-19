@@ -50,8 +50,7 @@ public enum ErrorCode {
 
     // Coupon
     INVALID_COUPON_INFO(HttpStatus.BAD_REQUEST, 5000, "쿠폰 정보가 올바르지 않습니다."),
-    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, 5001, "쿠폰 정보를 찾을 수 없습니다."),
-    INSUFFICIENT_COUPON_STOCK(HttpStatus.BAD_REQUEST, 5002, "쿠폰의 재고가 부족합니다."),
+    INSUFFICIENT_COUPON_STOCK(HttpStatus.BAD_REQUEST, 5001, "쿠폰의 재고가 부족합니다."),
 
     // Point
     TOSS_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6000, "토스 API 요청에 실패 했습니다."),
