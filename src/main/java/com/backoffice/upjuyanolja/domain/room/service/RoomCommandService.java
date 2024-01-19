@@ -114,6 +114,9 @@ public class RoomCommandService implements RoomCommandUseCase {
         Member member = memberGetService.getMemberById(memberId);
         Room room = roomQueryUseCase.findRoomById(roomId);
 
+        if (!room.getName().equals(request.name())) {
+            validateRoomName(request.name());
+        }
         validateRoomStatus(request.status());
         checkOwnership(member, room.getAccommodation());
         updateRoom(room, request);
