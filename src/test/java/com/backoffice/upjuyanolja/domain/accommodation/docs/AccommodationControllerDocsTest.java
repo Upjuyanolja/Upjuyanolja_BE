@@ -33,7 +33,6 @@ import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomOptionResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
-import java.io.FileInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -410,6 +409,7 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
 
     @Test
     @DisplayName("이미지를 저장할 수 있다.")
+    @WithMockUser(roles = "ADMIN")
     void saveImages() throws Exception {
         // given
         URL resource = getClass().getResource("/images/image_sample.jpg");
@@ -462,9 +462,7 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
                 ))
                 .file(new MockMultipartFile(
                     "image5",
-                    "image_sample.jpg",
-                    "images/png",
-                    resource.openStream().readAllBytes()
+                    new byte[0]
                 )))
             .andDo(restDoc.document(
                 requestParts(
