@@ -46,7 +46,7 @@ class DiscountTypeTest {
 
     @DisplayName("객실 가격과 할인율을 넣으면 할인되는 금액을 보여준다.")
     @Test
-    public void convertPercentToFlatDiscount_Test() throws Exception {
+    public void convertRateToFlatDiscount_Test() throws Exception {
         // given
         int discount = 5; // 5%
         int price = 10000;

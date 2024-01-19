@@ -20,6 +20,8 @@ public interface RoomQueryUseCase {
 
     Page<Room> findAllByAccommodationId(long accommodationId, Pageable pageable);
 
+    List<Room> findByAccommodationId(long id);
+
     Room findRoomById(long id);
 
     boolean existsRoomByName(String name);
