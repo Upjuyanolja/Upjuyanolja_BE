@@ -180,7 +180,7 @@ class ReservationStockServiceTest {
             for (int i = 0; i < numberOfThreads; i++) {
                 executorService.submit(() -> {
                     try {
-                        stockService.decreaseRoomStock(roomStock.getId(), roomStock);
+                        stockService.decreaseRoomStock(roomStock.getId());
                     } catch (InvalidReservationInfoException e) {
                         log.info(e.getClass().getName());
                     } finally {
@@ -228,7 +228,7 @@ class ReservationStockServiceTest {
             for (int i = 0; i < numberOfThreads; i++) {
                 executorService.submit(() -> {
                     try {
-                        stockService.decreaseCouponStock(coupon.getId(), coupon);
+                        stockService.decreaseCouponStock(coupon.getId());
                     } catch (InvalidCouponException e) {
                         log.info(e.getClass().getName());
                     } finally {
