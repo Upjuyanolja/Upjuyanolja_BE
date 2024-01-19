@@ -437,25 +437,25 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
                     "image1",
                     "image_sample.jpg",
                     "images/png",
-                    new FileInputStream(resource.getFile())
+                    resource.openStream().readAllBytes()
                 ))
                 .file(new MockMultipartFile(
                     "image2",
                     "image_sample.jpg",
                     "images/png",
-                    new FileInputStream(resource.getFile())
+                    resource.openStream().readAllBytes()
                 ))
                 .file(new MockMultipartFile(
                     "image3",
                     "image_sample.jpg",
                     "images/png",
-                    new FileInputStream(resource.getFile())
+                    resource.openStream().readAllBytes()
                 ))
                 .file(new MockMultipartFile(
                     "image4",
                     "image_sample.jpg",
                     "images/png",
-                    new FileInputStream(resource.getFile())
+                    resource.openStream().readAllBytes()
                 ))
                 .file(new MockMultipartFile(
                     "image5"
