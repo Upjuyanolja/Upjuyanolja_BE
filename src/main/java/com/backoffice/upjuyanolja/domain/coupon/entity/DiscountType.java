@@ -27,18 +27,18 @@ public enum DiscountType {
             return sb.toString();
         },
         (listName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(listName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(listName);
             return sb.toString();
         },
         (shortName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(shortName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(shortName);
             return sb.toString();
         },
         (detailName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(detailName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(detailName);
             return sb.toString();
         },
         discount -> {
@@ -64,18 +64,18 @@ public enum DiscountType {
             return sb.toString();
         },
         (listName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(listName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(listName);
             return sb.toString();
         },
         (shortName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(shortName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(shortName);
             return sb.toString();
         },
         (detailName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(detailName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(detailName);
             return sb.toString();
         },
         discount -> {
@@ -136,11 +136,11 @@ public enum DiscountType {
     }
 
     public static String makeShortName(final DiscountType discountType, int discount) {
-        return discountType.makeShortFormat.apply(discountType.getTitleName(), discount);
+        return discountType.makeShortFormat.apply(discountType.getShortName(), discount);
     }
 
     public static String makeDetailName(final DiscountType discountType, int discount) {
-        return discountType.makeDetailFormat.apply(discountType.getListName(), discount);
+        return discountType.makeDetailFormat.apply(discountType.getDetailName(), discount);
     }
 
     public static Boolean isRightDiscount(final DiscountType discountType, final Integer discount) {

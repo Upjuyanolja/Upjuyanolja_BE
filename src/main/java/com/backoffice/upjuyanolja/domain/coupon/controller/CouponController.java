@@ -29,7 +29,7 @@ public class CouponController {
         log.info("GET /api/coupons/{accommodationId}");
 
         List<CouponAccommodationResponse> response =
-            couponService.findCouponInAccommodation(accommodationId);
+            couponService.findCouponResponseInAccommodation(accommodationId);
         return ApiResponse.success(
             HttpStatus.OK,
             SuccessResponse.<List<CouponAccommodationResponse>>builder()

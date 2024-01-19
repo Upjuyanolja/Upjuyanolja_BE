@@ -13,12 +13,10 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationR
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidCouponInfoException;
-import com.backoffice.upjuyanolja.domain.coupon.repository.CouponIssuanceRepository;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
@@ -76,8 +74,6 @@ class CouponRepositoryTest {
     @Autowired
     private AccommodationRepository accommodationRepository;
 
-    @Autowired
-    private CouponIssuanceRepository couponIssuanceRepository;
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -94,7 +90,6 @@ class CouponRepositoryTest {
     Room mockRoom;
     Coupon mockCoupon;
     Point mockPoint;
-    CouponIssuance mockCouponIssuance;
     List<Room> mockRooms;
 
     @BeforeEach
@@ -305,15 +300,6 @@ class CouponRepositoryTest {
         return point;
     }
 
-    private CouponIssuance saveCouponIssuance(Coupon coupon, Room room, Point point) {
-        CouponIssuance couponIssuance = CouponIssuance.builder()
-            .coupon(coupon)
-            .room(room)
-            .point(point)
-            .build();
-        couponIssuanceRepository.save(couponIssuance);
-        return couponIssuance;
-    }
 
     private void clearTable(String tableName) {
         entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY FALSE").executeUpdate();
