@@ -34,7 +34,7 @@ public class AuthenticationConfig {
     };
     private static final String[] PERMIT_OWNER_URL_ARRAY = {
         "/api/accommodations/backoffice",
-        "/api/coupons/**",
+        "/api/coupons/backoffice",
         "/api/points/**",
         "/api/rooms/**"
     };
@@ -50,7 +50,9 @@ public class AuthenticationConfig {
             .authorizeHttpRequests(request -> request
                 .requestMatchers(PERMIT_ALL_URL_ARRAY)
                 .permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/accommodations/")
+                .requestMatchers(HttpMethod.GET, "/api/accommodations/**")
+                .permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/coupons/**")
                 .permitAll()
                 .requestMatchers("/api/reservations/**")
                 .hasRole("USER")

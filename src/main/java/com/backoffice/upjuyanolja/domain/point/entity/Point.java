@@ -1,5 +1,8 @@
 package com.backoffice.upjuyanolja.domain.point.entity;
 
+import static com.backoffice.upjuyanolja.global.exception.ErrorCode.POINT_INSUFFICIENT;
+
+import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.point.util.YearMonthConverter;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
@@ -38,7 +41,6 @@ public class Point extends BaseTime {
     @Comment("회원 식별자")
     private Member member;
 
-
     @Builder
     public Point(
         Long id,
@@ -52,6 +54,13 @@ public class Point extends BaseTime {
 
     public void updatePoint(long totalPointBalance){
         this.totalPointBalance = totalPointBalance;
+    }
+
+    public void decreasePointBalance(long usedPoints) {
+        if (pointBalance - usedPoints < 0) {
+            throw new InsufficientPointsException();
+        }
+        pointBalance -= usedPoints;
     }
 
 }

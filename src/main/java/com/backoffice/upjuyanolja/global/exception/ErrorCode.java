@@ -26,6 +26,8 @@ public enum ErrorCode {
     ACCOMMODATION_NOT_FOUND(HttpStatus.NOT_FOUND, 2000, "숙소 정보를 찾을 수 없습니다."),
     RESERVATION_NOT_POSSIBLE(HttpStatus.BAD_REQUEST, 2001, "예약이 불가능한 방입니다."),
     WRONG_CATEGORY(HttpStatus.BAD_REQUEST, 2002, "알맞지 않은 카테고리입니다."),
+    ACCOMMODATION_IMAGE_NOT_EXISTS(HttpStatus.BAD_REQUEST, 2003, "숙소 이미지를 1개 이상 등록해야 합니다."),
+    FAILED_SAVE_IMAGE(HttpStatus.BAD_REQUEST, 2004, "이미지 저장에 실패했습니다."),
 
     // Room
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 3000, "객실 정보를 찾을 수 없습니다."),
@@ -34,6 +36,8 @@ public enum ErrorCode {
     INVALID_ROOM_STATUS(HttpStatus.BAD_REQUEST, 3003, "올바르지 않은 형식의 객실 상태입니다."),
     ROOM_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, 3004, "객실 재고 정보를 찾을 수 없습니다."),
     ROOM_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, 3005, "객실 이미지 정보를 찾을 수 없습니다."),
+    ROOM_NOT_EXITS(HttpStatus.BAD_REQUEST, 3006, "객실을 1개 이상 등록해야 합니다."),
+    ROOM_IMAGE_NOT_EXISTS(HttpStatus.BAD_REQUEST, 3007, "객실 이미지를 1개 이상 등록해야 합니다."),
 
     // Reservation
     RESERVATION_PAYMENT_FAILED(HttpStatus.BAD_REQUEST, 4000, "결제에 실패 했습니다."),
@@ -46,8 +50,7 @@ public enum ErrorCode {
 
     // Coupon
     INVALID_COUPON_INFO(HttpStatus.BAD_REQUEST, 5000, "쿠폰 정보가 올바르지 않습니다."),
-    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, 5001, "쿠폰 정보를 찾을 수 없습니다."),
-    INSUFFICIENT_COUPON_STOCK(HttpStatus.BAD_REQUEST, 5002, "쿠폰의 재고가 부족합니다."),
+    INSUFFICIENT_COUPON_STOCK(HttpStatus.BAD_REQUEST, 5001, "쿠폰의 재고가 부족합니다."),
 
     // Point
     TOSS_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 6000, "토스 API 요청에 실패 했습니다."),

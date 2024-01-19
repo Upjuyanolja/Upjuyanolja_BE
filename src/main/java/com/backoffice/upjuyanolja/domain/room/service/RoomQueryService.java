@@ -39,6 +39,12 @@ public class RoomQueryService implements RoomQueryUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Room> findByAccommodationId(long accommodationId) {
+        return roomRepository.findByAccommodationId(accommodationId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Page<Room> findAllByAccommodationId(long accommodationId, Pageable pageable) {
         return roomRepository.findAllByAccommodation(accommodationId, pageable);
     }

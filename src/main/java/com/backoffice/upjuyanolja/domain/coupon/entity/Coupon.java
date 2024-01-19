@@ -49,16 +49,16 @@ public class Coupon extends BaseTime {
 
     @Column(nullable = false, name = "coupon_type")
     @Enumerated(EnumType.STRING)
-    @Comment("쿠폰 유형") // 주중, 주말, 상시
+    @Comment("쿠폰 유형")
     private CouponType couponType;
 
     @Column(nullable = false, name = "discount_type")
     @Enumerated(EnumType.STRING)
-    @Comment("할인 유형") // 정액, 정률
+    @Comment("할인 유형")
     private DiscountType discountType;
 
     @Column(nullable = false, name = "coupon_status")
-    @Enumerated(EnumType.STRING) //발급중, 발급중지, 소진, 삭제
+    @Enumerated(EnumType.STRING)
     @Comment("쿠폰 상태")
     private CouponStatus couponStatus;
 
@@ -74,14 +74,10 @@ public class Coupon extends BaseTime {
     @Comment("일일 사용 한도")
     private int dayLimit;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "stock")
     @Comment("쿠폰 개수(재고)")
     private int stock;
 
-    //todo: 팀원과 협의 후 양방향 매핑 삭제
-    @OneToMany(mappedBy = "coupon",
-        cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<CouponIssuance> couponIssuances = new ArrayList<>();
 
     @Builder
     public Coupon(
@@ -93,8 +89,7 @@ public class Coupon extends BaseTime {
         int discount,
         LocalDate endDate,
         int dayLimit,
-        int stock,
-        List<CouponIssuance> couponIssuances
+        int stock
     ) {
         this.id = id;
         this.room = room;
@@ -105,7 +100,6 @@ public class Coupon extends BaseTime {
         this.endDate = endDate;
         this.dayLimit = dayLimit;
         this.stock = stock;
-        this.couponIssuances = couponIssuances;
     }
 
     public void increaseCouponStock(int quantity) {

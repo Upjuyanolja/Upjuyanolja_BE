@@ -76,8 +76,11 @@ dependencies {
     //Jasypt
     implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
 
-    //Email sender
+    // Email sender
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '3.0.5'
+
+    // Amazon Web Service Cloud
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test") {

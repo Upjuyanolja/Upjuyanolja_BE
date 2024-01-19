@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.room.entity;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase.RoomUpdate;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import com.backoffice.upjuyanolja.global.util.DateTimeParser;
@@ -88,10 +87,6 @@ public class Room extends BaseTime {
     @Comment("객실 재고 식별자")
     private List<RoomStock> stocks = new ArrayList<>();
 
-    @OneToMany(mappedBy = "room",
-        cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, orphanRemoval = true)
-    @Comment("쿠폰 객실 식별자")
-    private List<CouponIssuance> couponIssuances = new ArrayList<>();
 
     @Builder
     public Room(
@@ -107,8 +102,7 @@ public class Room extends BaseTime {
         RoomStatus status,
         RoomOption option,
         List<RoomImage> images,
-        List<RoomStock> stocks,
-        List<CouponIssuance> couponIssuances
+        List<RoomStock> stocks
     ) {
         this.id = id;
         this.accommodation = accommodation;
@@ -123,7 +117,6 @@ public class Room extends BaseTime {
         this.option = option;
         this.images = images;
         this.stocks = stocks;
-        this.couponIssuances = couponIssuances;
     }
 
     public void updateRoom(RoomUpdate request) {

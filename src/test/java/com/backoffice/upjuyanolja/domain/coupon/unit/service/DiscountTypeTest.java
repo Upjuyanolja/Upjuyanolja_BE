@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.domain.coupon.entity;
+package com.backoffice.upjuyanolja.domain.coupon.unit.service;
 
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.FLAT;
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.RATE;
@@ -7,6 +7,7 @@ import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.isRig
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidCouponInfoException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,4 +44,15 @@ class DiscountTypeTest {
         assertThat(price2).isEqualTo(95000);
     }
 
+    @DisplayName("객실 가격과 할인율을 넣으면 할인되는 금액을 보여준다.")
+    @Test
+    public void convertRateToFlatDiscount_Test() throws Exception {
+        // given
+        int discount = 5; // 5%
+        int price = 10000;
+        int result = DiscountType.percentToFlatDiscount(price, discount);
+
+        // when & Then
+        assertThat(result).isEqualTo(500);
+    }
 }

@@ -5,10 +5,10 @@ import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientCouponStoc
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidCouponException;
 import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidReservationInfoException;
+import com.backoffice.upjuyanolja.domain.reservation.exception.NoSuchReservationException;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
-import com.backoffice.upjuyanolja.global.annotation.ConcurrencyControl;
-import java.util.concurrent.TimeUnit;
+import com.backoffice.upjuyanolja.global.concurrency.annotation.ConcurrencyControl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,37 +19,41 @@ public class ReservationStockService {
     private final RoomStockRepository roomStockRepository;
     private final CouponRepository couponRepository;
 
-    @ConcurrencyControl(targetName = "roomStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
-    public void increaseRoomStock(Long id, RoomStock roomStock) {
+    @ConcurrencyControl(lockName = "roomStock")
+    public RoomStock increaseRoomStock(Long id) {
+        RoomStock roomStock = roomStockRepository.findById(id)
+            .orElseThrow(NoSuchReservationException::new);
         roomStock.increase(1);
-        roomStockRepository.save(roomStock);
+        return roomStockRepository.save(roomStock);
     }
 
-    @ConcurrencyControl(targetName = "roomStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
-    public void decreaseRoomStock(Long id, RoomStock roomStock) {
+    @ConcurrencyControl(lockName = "roomStock")
+    public RoomStock decreaseRoomStock(Long id) {
         try {
+            RoomStock roomStock = roomStockRepository.findById(id)
+                .orElseThrow(InvalidReservationInfoException::new);
             roomStock.decrease(1);
+            return roomStockRepository.save(roomStock);
         } catch (IllegalArgumentException e) {
             throw new InvalidReservationInfoException();
         }
-
-        roomStockRepository.save(roomStock);
     }
 
-    @ConcurrencyControl(targetName = "couponStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
-    public void increaseCouponStock(Long id, Coupon coupon) {
+    @ConcurrencyControl(lockName = "couponStock")
+    public Coupon increaseCouponStock(Long id) {
+        Coupon coupon = couponRepository.findById(id).orElseThrow(NoSuchReservationException::new);
         coupon.increaseCouponStock(1);
-        couponRepository.save(coupon);
+        return couponRepository.save(coupon);
     }
 
-    @ConcurrencyControl(targetName = "couponStock", waitTime = 2, leaseTime = 1, timeUnit = TimeUnit.SECONDS)
-    public void decreaseCouponStock(Long id, Coupon coupon) {
+    @ConcurrencyControl(lockName = "couponStock")
+    public Coupon decreaseCouponStock(Long id) {
         try {
+            Coupon coupon = couponRepository.findById(id).orElseThrow(InvalidCouponException::new);
             coupon.decreaseCouponStock(1);
+            return couponRepository.save(coupon);
         } catch (InsufficientCouponStockException e) {
             throw new InvalidCouponException();
         }
-
-        couponRepository.save(coupon);
     }
 }
