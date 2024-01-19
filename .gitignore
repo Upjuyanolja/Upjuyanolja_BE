@@ -44,3 +44,6 @@ out/
 
 ### QueryDSL ###
 /src/main/generated/
+
+### Docker
+Dockerfile

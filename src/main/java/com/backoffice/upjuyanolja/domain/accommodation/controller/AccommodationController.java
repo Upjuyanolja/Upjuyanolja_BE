@@ -5,12 +5,14 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Length;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -112,6 +115,29 @@ public class AccommodationController {
                 .message("성공적으로 보유 숙소 목록을 조회했습니다.")
                 .data(accommodationCommandUseCase
                     .getAccommodationOwnership(securityUtil.getCurrentMemberId()))
+                .build()
+        );
+    }
+
+    @PostMapping("/images")
+    public ResponseEntity<SuccessResponse<ImageResponse>> saveImages(
+        @RequestParam(value = "image1") MultipartFile imageFile1,
+        @RequestParam(value = "image2") MultipartFile imageFile2,
+        @RequestParam(value = "image3") MultipartFile imageFile3,
+        @RequestParam(value = "image4") MultipartFile imageFile4,
+        @RequestParam(value = "image5") MultipartFile imageFile5
+    ) {
+        log.info("GET /api/accommodations/urls");
+
+        return ApiResponse.success(HttpStatus.CREATED,
+            SuccessResponse.<ImageResponse>builder()
+                .message("성공적으로 이미지를 저장했습니다.")
+                .data(accommodationCommandUseCase.saveImages(List.of(
+                    imageFile1,
+                    imageFile2,
+                    imageFile3,
+                    imageFile4,
+                    imageFile5)))
                 .build()
         );
     }
