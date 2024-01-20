@@ -3,6 +3,7 @@ package com.backoffice.upjuyanolja.domain.member.service;
 import static com.backoffice.upjuyanolja.domain.member.entity.Authority.ROLE_ADMIN;
 
 import com.backoffice.upjuyanolja.domain.member.dto.request.OwnerEmailRequest;
+import com.backoffice.upjuyanolja.domain.member.dto.request.OwnerSignupRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.OwnerEmailResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.OwnerSignupResponse;
@@ -14,6 +15,7 @@ import com.backoffice.upjuyanolja.domain.member.exception.CreateVerificationCode
 import com.backoffice.upjuyanolja.domain.member.exception.IncorrectPasswordException;
 import com.backoffice.upjuyanolja.domain.member.exception.IncorrectVerificationCodeException;
 import com.backoffice.upjuyanolja.domain.member.exception.InvalidRoleException;
+import com.backoffice.upjuyanolja.domain.member.exception.InvalidSignupProcessException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberEmailDuplicationException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
 import com.backoffice.upjuyanolja.domain.member.exception.NotRegisteredEmailException;
@@ -39,7 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Transactional
 public class OwnerAuthService implements
-    AuthServiceProvider<OwnerSignupResponse, OwnerEmailRequest> {
+    AuthServiceProvider<OwnerSignupResponse, OwnerSignupRequest> {
 
     private static final String AUTH_CODE_PREFIX = "AuthCode ";
 
@@ -53,6 +55,8 @@ public class OwnerAuthService implements
 
     @Value("${spring.mail.auth-code-expiration-millis}")
     private long authCodeExpirationMillis;
+
+    private final String EMAIL_VERIFY_DONE_FLAG = "_isVerified";
 
     public OwnerEmailResponse sendVerificationCodeToEmail(OwnerEmailRequest request) {
 
@@ -75,10 +79,6 @@ public class OwnerAuthService implements
         // 이메일 인증 요청 시 인증 번호 Redis에 저장 ( key = "AuthCode " + Email / value = AuthCode )
         redisService.setValues(AUTH_CODE_PREFIX + request.getEmail(),
             verificationCode, Duration.ofMillis(this.authCodeExpirationMillis));
-        String values = redisService.getValues(AUTH_CODE_PREFIX + request.getEmail());
-
-        log.info("생성된 인증코드: {}", verificationCode);
-        log.info("redis에 저장 된 비밀번호: {}", values);
 
         return OwnerEmailResponse.builder()
             .verificationCode(verificationCode)
@@ -106,11 +106,15 @@ public class OwnerAuthService implements
         if (!values.equals(authCode)) {
             throw new IncorrectVerificationCodeException();
         }
+
+        //이메일 인증을 마치면, key: 이메일, value: authCode를 레디스에 저장
+        redisService.setValues(email+EMAIL_VERIFY_DONE_FLAG, "true");
+
         return "SUCCESS";
     }
 
     @Override
-    public OwnerSignupResponse signup(OwnerEmailRequest request) {
+    public OwnerSignupResponse signup(OwnerSignupRequest request) {
         Owner ownerInfo = ownerRepository.findByEmail(request.getEmail()).orElseThrow(
             MemberNotFoundException::new
         );
@@ -122,6 +126,11 @@ public class OwnerAuthService implements
             .password(encoder.encode(request.getPassword()))
             .authority(ROLE_ADMIN)
             .build());
+
+        if (!redisService.getValues(request.getEmail()+EMAIL_VERIFY_DONE_FLAG).equals("true")){
+            throw new InvalidSignupProcessException();
+        }
+        redisService.deleteValues(request.getEmail()+EMAIL_VERIFY_DONE_FLAG);
 
         return OwnerSignupResponse.fromEntity(member);
     }
