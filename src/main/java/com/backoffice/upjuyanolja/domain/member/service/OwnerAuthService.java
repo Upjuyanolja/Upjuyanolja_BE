@@ -115,6 +115,14 @@ public class OwnerAuthService implements
 
     @Override
     public OwnerSignupResponse signup(OwnerSignupRequest request) {
+
+        //redis에서 이메일 인증이 완료된 상태인지 검증. 완료되지 않았다면 예외 발생
+        if (!redisService.getValues(request.getEmail()+EMAIL_VERIFY_DONE_FLAG).equals("true")){
+            throw new InvalidSignupProcessException();
+        }
+        redisService.deleteValues(request.getEmail()+EMAIL_VERIFY_DONE_FLAG);
+
+        //입점
         Owner ownerInfo = ownerRepository.findByEmail(request.getEmail()).orElseThrow(
             MemberNotFoundException::new
         );
@@ -127,10 +135,6 @@ public class OwnerAuthService implements
             .authority(ROLE_ADMIN)
             .build());
 
-        if (!redisService.getValues(request.getEmail()+EMAIL_VERIFY_DONE_FLAG).equals("true")){
-            throw new InvalidSignupProcessException();
-        }
-        redisService.deleteValues(request.getEmail()+EMAIL_VERIFY_DONE_FLAG);
 
         return OwnerSignupResponse.fromEntity(member);
     }
