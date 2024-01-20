@@ -6,6 +6,6 @@ import com.backoffice.upjuyanolja.global.exception.ErrorCode;
 public class RoomStockNotFoundException extends ApplicationException {
 
     public RoomStockNotFoundException() {
-        super(ErrorCode.ROOM_NOT_FOUND);
+        super(ErrorCode.ROOM_STOCK_NOT_FOUND);
     }
 }

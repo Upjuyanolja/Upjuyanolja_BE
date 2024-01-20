@@ -164,9 +164,18 @@ public class RoomCommandService implements RoomCommandUseCase {
     }
 
     private void updateRoom(Room room, RoomUpdateRequest request) {
+        if (room.getAmount() != request.amount()) {
+            updateRoomStock(room, request.amount() - room.getAmount());
+        }
         room.updateRoom(request.toRoomUpdateDto());
         addRoomImages(room, request.addImages());
         roomQueryUseCase.deleteRoomImages(getRoomImages(request.deleteImages()));
+    }
+
+    private void updateRoomStock(Room room, int quantity) {
+        List<RoomStock> stocks = roomQueryUseCase
+            .findStocksByRoomAndDateAfter(room, LocalDate.now().minusDays(1));
+        stocks.forEach(stock -> stock.update(quantity));
     }
 
     private void addRoomImages(Room room, List<RoomImageAddRequest> requests) {
