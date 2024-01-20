@@ -13,7 +13,7 @@ public enum ErrorCode {
     INCORRECT_EMAIL(HttpStatus.BAD_REQUEST, 1003, "이메일이 일치하지 않습니다."),
     INCORRECT_PASSWORD(HttpStatus.BAD_REQUEST, 1004, "비밀번호가 일치하지 않습니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, 1005, "회원 정보를 찾을 수 없습니다."),
-    AUTHORIZE_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, 1006, "인증 정보를 찾을 수 없습니다"),
+    AUTHORIZE_INFO_NOT_FOUND(HttpStatus.UNAUTHORIZED, 1006, "인증 정보를 찾을 수 없습니다."),
     EMAIL_SEND_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 1007, "이메일 인증코드 발송 중 오류가 발생했습니다"),
     CREATE_VERIFICATION_CODE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 1008,
         "이메일 인증코드 생성 중 오류가 발생했습니다"),
