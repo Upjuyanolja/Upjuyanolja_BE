@@ -1,17 +1,23 @@
 package com.backoffice.upjuyanolja.domain.coupon.service;
 
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.isRightDiscount;
+import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.mapping;
 
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMakeRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponRoomsRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponInfo;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageQueryDto;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageRooms;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
+import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidCouponInfoException;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
 import com.backoffice.upjuyanolja.domain.point.exception.PointNotFoundException;
@@ -35,16 +41,16 @@ public class CouponBackofficeService {
     private final CouponRepository couponRepository;
     private final RoomRepository roomRepository;
     private final PointRepository pointRepository;
-    private final MemberGetService memberGetService;
 
     public CouponMakeViewResponse getRoomsByAccommodation(Long accommodationId) {
-        return couponRepository.findRoomsIdByAccommodationId(accommodationId);
+        return couponRepository.findRoomsByAccommodationId(accommodationId);
     }
 
     public void createCoupon(
         final CouponMakeRequest couponMakeRequest, final Member currentMember
     ) {
         final long totalPoints = couponMakeRequest.totalPoints();
+        final long memberId = currentMember.getId();
         Point point = validationPoint(currentMember, totalPoints);
 
         List<CouponRoomsRequest> couponRooms = couponMakeRequest.rooms();
@@ -71,12 +77,12 @@ public class CouponBackofficeService {
                 // 3. roomId와 discount로 발행된 쿠폰이 있으면 보유 재고의 개수를 업데이트한다.
                 coupon = updateCouponStock(resultCoupon.get(), quantity);
                 coupons.add(coupon);
-                log.info("보유한 쿠폰의 수량 증가: {}", quantity);
+                log.info("보유한 쿠폰의 수량 증가: {} memberId: {}", quantity, memberId);
             } else {
                 // 4. 위의 경우가 아니라면 새로운 id로 쿠폰을 발행한다.
                 coupon = CouponMakeRequest.toEntity(couponRoom, room);
                 coupons.add(coupon);
-                log.info("신규 쿠폰 발급: {}", quantity);
+                log.info("신규 쿠폰 발급: {}, memberId: {}", quantity, memberId);
             }
 
 
@@ -92,7 +98,6 @@ public class CouponBackofficeService {
         // Todo: 포인트 사용 내역 Point 도메인에 전달하기
         log.info("쿠폰 발급 성공");
     }
-
 
     private Point validationPoint(Member member, long requestPoint) {
         // 업주의 보유 포인트 검증
@@ -110,10 +115,9 @@ public class CouponBackofficeService {
 
     // 업주의 회원 id와 등록된 숙소 id가 매치되는지 검증
     @Transactional(readOnly = true)
-    public boolean validateCouponRequest(
-        CouponMakeRequest couponMakeRequest, long currentMemberId
+    public boolean validateAccommodationOwnership(
+        final long accommodationId, final long currentMemberId
     ) {
-        long accommodationId = couponMakeRequest.accommodationId();
 
         if (!couponRepository.existsAccommodationIdByMemberId(
             accommodationId, currentMemberId)) {
@@ -131,5 +135,52 @@ public class CouponBackofficeService {
     // 발행 이력이 없다면 새로 쿠폰을 생성한다.
     private Coupon createCoupon(CouponRoomsRequest request, Room room) {
         return CouponMakeRequest.toEntity(request, room);
+    }
+
+    public CouponManageResponse manageCoupon(Long accommodationId) {
+        List<CouponManageQueryDto> queryResult = couponRepository.findCouponsByAccommodationId(
+            accommodationId);
+
+        List<CouponManageRooms> collected = queryResult.stream()
+            .collect(groupingBy(o -> createManageRoom(o),
+                    mapping(o -> createCouponInfo(o), toList())
+                )
+            ).entrySet().stream()
+            .map(e -> new CouponManageRooms(e.getKey().roomId(), e.getKey().roomName(),
+                e.getKey().roomPrice(), e.getValue()
+            ))
+            .collect(toList());
+
+        return CouponManageResponse.builder()
+            .accommodationId(accommodationId)
+            .accommodationName(queryResult.get(0).accommodationName())
+            .expiry(queryResult.get(0).endDate())
+            .rooms(collected)
+            .build();
+    }
+
+    private CouponInfo createCouponInfo(CouponManageQueryDto dto) {
+        int discount = dto.discount();
+        DiscountType discountType = dto.discountType();
+        return CouponInfo.builder()
+            .couponId(dto.couponId())
+            .status(dto.couponStatus())
+            .couponName(DiscountType.makeListName(dto.discountType(), discount))
+            .appliedPrice(DiscountType.makePaymentPrice(
+                discountType, dto.roomPrice(), discount))
+            .discountType(discountType)
+            .discount(discount)
+            .dayLimit(dto.dayLimit())
+            .quantity(dto.stock())
+            .couponType(dto.couponType())
+            .build();
+    }
+
+    private CouponManageRooms createManageRoom(CouponManageQueryDto dto) {
+        return CouponManageRooms.builder()
+            .roomId(dto.roomId())
+            .roomName(dto.roomName())
+            .roomPrice(dto.roomPrice())
+            .build();
     }
 }

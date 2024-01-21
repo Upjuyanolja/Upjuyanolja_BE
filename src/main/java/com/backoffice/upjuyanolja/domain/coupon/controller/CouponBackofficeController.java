@@ -1,15 +1,15 @@
 package com.backoffice.upjuyanolja.domain.coupon.controller;
 
-import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMakeRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ public class CouponBackofficeController {
     private final MemberGetService memberGetService;
 
     @GetMapping("/buy/{accommodationId}")
-    public ResponseEntity<SuccessResponse<CouponMakeViewResponse>> responseRoomsByAccommodationId(
+    public ResponseEntity<SuccessResponse<CouponMakeViewResponse>> responseRoomsView(
         @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
     ) {
         //Todo: Id validation 검증 로직 보완
@@ -52,14 +52,15 @@ public class CouponBackofficeController {
     }
 
     @PostMapping("/buy")
-    public ResponseEntity<SuccessResponse<Object>> createCouponsByRooms(
+    public ResponseEntity<SuccessResponse<Object>> createCoupons(
         @Valid @RequestBody CouponMakeRequest couponMakeRequest
     ) {
         log.info("POST /api/coupons/backoffice/buy");
 
         Member currentMember = getCurrentMember();
 
-        couponService.validateCouponRequest(couponMakeRequest, currentMember.getId());
+        couponService.validateAccommodationOwnership(
+            couponMakeRequest.accommodationId(), currentMember.getId());
         couponService.createCoupon(couponMakeRequest, currentMember);
 
         return ApiResponse.success(
@@ -71,9 +72,26 @@ public class CouponBackofficeController {
         );
     }
 
+    @GetMapping("/manage/{accommodationId}")
+    public ResponseEntity<SuccessResponse<CouponManageResponse>> couponManageView(
+        @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
+    ) throws JsonProcessingException {
+        log.info("GET /api/coupons/backoffice/manage/{accommodationId}");
+
+        long currentMemberId = securityUtil.getCurrentMemberId();
+        couponService.validateAccommodationOwnership(
+            accommodationId, currentMemberId);
+        return ApiResponse.success(
+            HttpStatus.OK,
+            SuccessResponse.<CouponManageResponse>builder()
+                .message("쿠폰 조회에 성공하였습니다.")
+                .data(couponService.manageCoupon(accommodationId))
+                .build()
+        );
+    }
+
     private Member getCurrentMember() {
         Long memberId = securityUtil.getCurrentMemberId();
         return memberGetService.getMemberById(memberId);
     }
-
 }
