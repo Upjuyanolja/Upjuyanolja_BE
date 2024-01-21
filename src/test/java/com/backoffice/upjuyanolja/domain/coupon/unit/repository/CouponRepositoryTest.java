@@ -12,6 +12,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationO
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageQueryDto;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
@@ -22,13 +23,11 @@ import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
-import com.backoffice.upjuyanolja.domain.point.entity.PointType;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.global.config.QueryDslConfig;
 import jakarta.persistence.EntityManager;
@@ -47,8 +46,6 @@ import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
 //@ActiveProfiles("test")
@@ -73,7 +70,6 @@ class CouponRepositoryTest {
 
     @Autowired
     private AccommodationRepository accommodationRepository;
-
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -100,9 +96,22 @@ class CouponRepositoryTest {
         clearTable("coupon");
         clearTable("point");
 
-        mockMember = saveMember(1L);
-        mockAccommodation = saveAccommodation(1L);
-        mockPoint = savePoint(1L, mockMember);
+        mockMember = createMember(1L);
+        mockAccommodation = createAccommodation(1L);
+
+        List<Long> roomIdSet = List.of(1L, 2L, 3L);
+        List<String> roomNameSet = List.of("스탠다드", "디럭스", "스위트");
+        mockRooms = createRooms(mockAccommodation, roomIdSet, roomNameSet);
+
+        List<Long> couponIds1 = List.of(1L, 2L, 3L, 4L);
+        List<Long> couponIds2 = List.of(5L, 6L, 7L, 8L);
+        List<Long> couponIds3 = List.of(9L, 10L, 11L, 12L);
+        createCoupons(couponIds1, mockRooms.get(0));
+        createCoupons(couponIds2, mockRooms.get(1));
+        createCoupons(couponIds3, mockRooms.get(2));
+
+        createPoint(1L, mockMember, 50000L);
+        mockPoint = createPoint(1L, mockMember, 50000L);
     }
 
     @Nested
@@ -113,13 +122,10 @@ class CouponRepositoryTest {
         @DisplayName("View에 응답해줄 데이터를 테스트한다.")
         public void makeCouponTest() throws Exception {
             // given
-            mockRooms = saveRooms();
-
-            // when
             CouponMakeViewResponse response = couponRepository
-                .findRoomsIdByAccommodationId(1L);
+                .findRoomsByAccommodationId(1L);
 
-            // & Then
+            // when& Then
             assertThat(response.accommodationName()).isEqualTo("그랜드 하얏트 제주");
             assertThat(response.rooms().size()).isEqualTo(3);
             response.rooms().forEach(room -> {
@@ -135,7 +141,7 @@ class CouponRepositoryTest {
             // given
             Long accommodationId = mockAccommodation.getId();
             Long memberId = mockMember.getId();
-            mockOwnership = saveAccommodationOwnership();
+            mockOwnership = createAccommodationOwnership();
 
             // when & Then
             boolean result = couponRepository.existsAccommodationIdByMemberId(
@@ -152,7 +158,7 @@ class CouponRepositoryTest {
         @Test
         public void findCouponsByRoomIdAndDiscountAndDiscountType_Test() throws Exception {
             // given
-            mockRoom = saveRoom(1L, "막가는 호텔");
+            mockRoom = saveRoom(1L, "막가는 호텔", mockAccommodation);
             mockCoupon = saveCoupon(1L, mockRoom, DiscountType.FLAT, CouponStatus.ENABLE, 1000, 10);
 
             // when & Then
@@ -166,7 +172,28 @@ class CouponRepositoryTest {
         }
     }
 
-    private Member saveMember(Long id) {
+    @Nested
+    @DisplayName("쿠폰 관리 테스트 ")
+    class ManageCoupon {
+
+        @DisplayName("쿠폰 관리를 위한 화면 데이터를 테스트한다.")
+        @Test
+        public void couponManageResponseQuery_test() throws Exception {
+            // given
+            Long accommodationId = mockAccommodation.getId();
+            List<CouponManageQueryDto> result = couponRepository.findCouponsByAccommodationId(
+                accommodationId);
+
+            // when & Then
+            assertThat(result).isNotEmpty();
+            assertThat(result.get(0).accommodationId()).isEqualTo(accommodationId);
+            assertThat(result.size()).isEqualTo(9);
+            result.stream().forEach(System.out::println);
+        }
+
+    }
+
+    private Member createMember(Long id) {
         Member member = Member.builder()
             .id(id)
             .email("test@mail.com")
@@ -181,7 +208,7 @@ class CouponRepositoryTest {
         return member;
     }
 
-    private Accommodation saveAccommodation(Long accommodationId) {
+    private Accommodation createAccommodation(Long accommodationId) {
         Accommodation accommodation = Accommodation.builder()
             .id(accommodationId)
             .name("그랜드 하얏트 제주")
@@ -190,7 +217,7 @@ class CouponRepositoryTest {
                          .detailAddress("")
                          .zipCode("63082")
                          .build())
-            .category(saveCategory())
+            .category(createCategory())
             .description(
                 "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
             .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
@@ -205,7 +232,7 @@ class CouponRepositoryTest {
         return accommodation;
     }
 
-    private Category saveCategory() {
+    private Category createCategory() {
         Category category = Category.builder()
             .id(5L)
             .name("TOURIST_HOTEL")
@@ -214,7 +241,7 @@ class CouponRepositoryTest {
         return category;
     }
 
-    private AccommodationOwnership saveAccommodationOwnership() {
+    private AccommodationOwnership createAccommodationOwnership() {
         AccommodationOwnership ownership = AccommodationOwnership.builder()
             .id(1L)
             .accommodation(mockAccommodation)
@@ -224,17 +251,17 @@ class CouponRepositoryTest {
         return ownership;
     }
 
-    private List<Room> saveRooms () {
+    private List<Room> createRooms(Accommodation mockAccommodation, List<Long> roomIds, List<String> roomNames) {
         List<Room> rooms = List.of(
-            createRoom(1L, "스탠다드"),
-            createRoom(2L, "디럭스"),
-            createRoom(3L, "스위트")
+            createRoom(roomIds.get(0), roomNames.get(0), mockAccommodation),
+            createRoom(roomIds.get(1), roomNames.get(1), mockAccommodation),
+            createRoom(roomIds.get(2), roomNames.get(2), mockAccommodation)
         );
         roomRepository.saveAll(rooms);
         return rooms;
     }
 
-    private Room createRoom(Long roomId, String roomName) {
+    private Room createRoom(Long roomId, String roomName, Accommodation mockAccommodation) {
         return Room.builder()
             .id(roomId)
             .accommodation(mockAccommodation)
@@ -260,10 +287,42 @@ class CouponRepositoryTest {
             .build();
     }
 
-    private Room saveRoom(Long roomId, String roomName) {
-        Room room = createRoom(roomId, roomName);
+    private Room saveRoom(Long roomId, String roomName, Accommodation mockAccommodation) {
+        Room room = createRoom(roomId, roomName, mockAccommodation);
         roomRepository.save(room);
         return room;
+    }
+
+    private List<Coupon> createCoupons(List<Long> couponIds, Room room) {
+        List<Coupon> coupons = List.of(
+            createCoupon(
+                couponIds.get(0), room, DiscountType.FLAT, CouponStatus.ENABLE, 5000, 20),
+            createCoupon(
+                couponIds.get(1), room, DiscountType.RATE, CouponStatus.ENABLE, 10, 20),
+            createCoupon(
+                couponIds.get(2), room, DiscountType.FLAT, CouponStatus.SOLD_OUT, 1000, 0),
+            createCoupon(
+                couponIds.get(3), room, DiscountType.RATE, CouponStatus.DELETED, 30, 0)
+        );
+        couponRepository.saveAll(coupons);
+        return coupons;
+    }
+
+    private Coupon createCoupon(
+        long couponId, Room room, DiscountType discountType, CouponStatus status, int discount,
+        int stock
+    ) {
+        return Coupon.builder()
+            .id(couponId)
+            .room(room)
+            .couponType(CouponType.ALL_DAYS)
+            .discountType(discountType)
+            .couponStatus(status)
+            .discount(discount)
+            .endDate(LocalDate.now().plusMonths(1))
+            .dayLimit(-1)
+            .stock(stock)
+            .build();
     }
 
     private Coupon saveCoupon(
@@ -289,11 +348,11 @@ class CouponRepositoryTest {
         return coupon;
     }
 
-    private Point savePoint(Long pointId, Member member) {
+    private Point createPoint(Long pointId, Member member, long amount) {
         Point point = Point.builder()
             .id(pointId)
             .member(member)
-            .pointBalance(100000)
+            .pointBalance(amount)
             .standardDate(YearMonth.of(2024,01))
             .build();
         pointRepository.save(point);
