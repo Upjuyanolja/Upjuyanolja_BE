@@ -19,6 +19,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.exception.DuplicateRoomNameException;
 import com.backoffice.upjuyanolja.domain.room.exception.InvalidRoomStatusException;
+import com.backoffice.upjuyanolja.domain.room.exception.RoomImageNotExistsException;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
@@ -59,6 +60,9 @@ public class RoomCommandService implements RoomCommandUseCase {
     @Override
     public RoomInfoResponse saveRoom(Accommodation accommodation, RoomRegisterRequest request) {
         validateRoomName(request.name());
+        if (request.images().isEmpty()) {
+            throw new RoomImageNotExistsException();
+        }
 
         Room room = roomQueryUseCase.saveRoom(accommodation, Room.builder()
             .name(request.name())
@@ -114,6 +118,9 @@ public class RoomCommandService implements RoomCommandUseCase {
         Member member = memberGetService.getMemberById(memberId);
         Room room = roomQueryUseCase.findRoomById(roomId);
 
+        if (!room.getName().equals(request.name())) {
+            validateRoomName(request.name());
+        }
         validateRoomStatus(request.status());
         checkOwnership(member, room.getAccommodation());
         updateRoom(room, request);
@@ -157,9 +164,18 @@ public class RoomCommandService implements RoomCommandUseCase {
     }
 
     private void updateRoom(Room room, RoomUpdateRequest request) {
+        if (room.getAmount() != request.amount()) {
+            updateRoomStock(room, request.amount() - room.getAmount());
+        }
         room.updateRoom(request.toRoomUpdateDto());
         addRoomImages(room, request.addImages());
         roomQueryUseCase.deleteRoomImages(getRoomImages(request.deleteImages()));
+    }
+
+    private void updateRoomStock(Room room, int quantity) {
+        List<RoomStock> stocks = roomQueryUseCase
+            .findStocksByRoomAndDateAfter(room, LocalDate.now().minusDays(1));
+        stocks.forEach(stock -> stock.update(quantity));
     }
 
     private void addRoomImages(Room room, List<RoomImageAddRequest> requests) {
