@@ -39,5 +39,20 @@ include::{snippets}/coupon-backoffice-controller-docs-test/create-coupon/request
 include::{snippets}/coupon-backoffice-controller-docs-test/create-coupon/http-response.adoc[]
 include::{snippets}/coupon-backoffice-controller-docs-test/create-coupon/response-fields.adoc[]
 
+[[Manage-Coupon]]
+
+== 쿠폰 관리 화면(View Data)
+
+쿠폰 관리에 필요한 화면 데이터를 응답한다.
+
+=== HttpRequest
+
+include::{snippets}/coupon-backoffice-controller-docs-test/coupon-manage-response-test/http-request.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/coupon-backoffice-controller-docs-test/coupon-manage-response-test/http-response.adoc[]
+include::{snippets}/coupon-backoffice-controller-docs-test/coupon-manage-response-test/response-fields.adoc[]
+
 
 
