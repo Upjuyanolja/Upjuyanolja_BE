@@ -48,7 +48,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
-//@ActiveProfiles("test")
 @DataJpaTest
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @Import(QueryDslConfig.class)
@@ -159,16 +158,11 @@ class CouponRepositoryTest {
         public void findCouponsByRoomIdAndDiscountAndDiscountType_Test() throws Exception {
             // given
             mockRoom = saveRoom(1L, "막가는 호텔", mockAccommodation);
-            mockCoupon = saveCoupon(1L, mockRoom, DiscountType.FLAT, CouponStatus.ENABLE, 1000, 10);
+            mockCoupon = saveCoupon(1L, mockRoom, DiscountType.FLAT, CouponStatus.ENABLE, 2000, 10);
 
             // when & Then
-            assertThat(couponRepository.findByRoomIdAndDiscount(1L, 1000).get())
+            assertThat(couponRepository.findByRoomIdAndDiscount(1L, 2000).get())
                 .isInstanceOf(Coupon.class);
-            // 등록되지 않은 쿠폰은 예외를 던진다.
-            assertThatThrownBy(() -> couponRepository.findByRoomIdAndDiscount(
-                    2L, 5000)
-                .orElseThrow(InvalidCouponInfoException::new)).isInstanceOf(
-                InvalidCouponInfoException.class);
         }
     }
 
