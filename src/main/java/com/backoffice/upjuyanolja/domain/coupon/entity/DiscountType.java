@@ -27,8 +27,10 @@ public enum DiscountType {
             return sb.toString();
         },
         (listName, discount) -> {
-            StringBuilder sb = new StringBuilder();
-            sb.append(discount).append(listName);
+            DecimalFormat decimalFormat = new DecimalFormat("#,###");
+            String formattedNumber = decimalFormat.format(discount);
+            StringBuilder sb = new StringBuilder(formattedNumber);
+            sb.append(listName);
             return sb.toString();
         },
         (shortName, discount) -> {
@@ -57,9 +59,7 @@ public enum DiscountType {
         "%",
         "% 할인",
         (titleName, discount) -> {
-            DecimalFormat decimalFormat = new DecimalFormat("#,###");
-            String formattedNumber = decimalFormat.format(discount);
-            StringBuilder sb = new StringBuilder(formattedNumber);
+            StringBuilder sb = new StringBuilder(discount);
             sb.append(titleName);
             return sb.toString();
         },
@@ -147,7 +147,7 @@ public enum DiscountType {
         return discountType.discountValidate.test(discount);
     }
 
-    public static int getPaymentPrice(
+    public static int makePaymentPrice(
         final DiscountType discountType,
         final Integer price,
         final Integer discount

@@ -5,13 +5,11 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.QAccommodationOwne
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.AccommodationResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageQueryDto;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponRoomsResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.QCoupon;
 import com.backoffice.upjuyanolja.domain.room.entity.QRoom;
 import com.backoffice.upjuyanolja.domain.room.entity.QRoomPrice;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;

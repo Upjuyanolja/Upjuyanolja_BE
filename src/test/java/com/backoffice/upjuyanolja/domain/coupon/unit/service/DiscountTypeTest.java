@@ -2,7 +2,7 @@ package com.backoffice.upjuyanolja.domain.coupon.unit.service;
 
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.FLAT;
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.RATE;
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.getPaymentPrice;
+import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.makePaymentPrice;
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.isRightDiscount;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -36,8 +36,8 @@ class DiscountTypeTest {
     @Test
     public void flatDiscountAmountTest() throws Exception {
         // given
-        int price1 = getPaymentPrice(FLAT, 100000, 20000);
-        int price2 = getPaymentPrice(RATE, 100000, 5);
+        int price1 = makePaymentPrice(FLAT, 100000, 20000);
+        int price2 = makePaymentPrice(RATE, 100000, 5);
 
         // when & then
         assertThat(price1).isEqualTo(80000);

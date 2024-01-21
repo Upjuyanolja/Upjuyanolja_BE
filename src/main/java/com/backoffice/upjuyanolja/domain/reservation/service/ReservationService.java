@@ -87,7 +87,7 @@ public class ReservationService {
             coupon = decreaseCouponStock(coupon);
 
             // 할인 금액 계산
-            discountAmount = DiscountType.getPaymentPrice(coupon.getDiscountType(),
+            discountAmount = DiscountType.makePaymentPrice(coupon.getDiscountType(),
                 room.getPrice().getOffWeekDaysMinFee(), coupon.getDiscount());
         }
 
