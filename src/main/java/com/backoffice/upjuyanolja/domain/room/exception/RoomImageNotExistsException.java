@@ -3,9 +3,9 @@ package com.backoffice.upjuyanolja.domain.room.exception;
 import com.backoffice.upjuyanolja.global.exception.ApplicationException;
 import com.backoffice.upjuyanolja.global.exception.ErrorCode;
 
-public class RoomStockNotFoundException extends ApplicationException {
+public class RoomImageNotExistsException extends ApplicationException {
 
-    public RoomStockNotFoundException() {
-        super(ErrorCode.ROOM_STOCK_NOT_FOUND);
+    public RoomImageNotExistsException() {
+        super(ErrorCode.ROOM_IMAGE_NOT_EXISTS);
     }
 }

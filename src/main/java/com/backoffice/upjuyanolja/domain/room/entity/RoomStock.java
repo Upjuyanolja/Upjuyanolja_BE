@@ -61,4 +61,12 @@ public class RoomStock {
 
         this.count -= quantity;
     }
+
+    public void update(int quantity) {
+        if (this.count < quantity) {
+            this.count = this.count + quantity;
+        } else {
+            this.count = Math.max(this.count - quantity, 0);
+        }
+    }
 }
