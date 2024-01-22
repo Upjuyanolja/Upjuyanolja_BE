@@ -14,6 +14,7 @@ import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.exception.IncorrectPasswordException;
 import com.backoffice.upjuyanolja.domain.member.exception.InvalidRefreshTokenException;
 import com.backoffice.upjuyanolja.domain.member.exception.InvalidRoleException;
+import com.backoffice.upjuyanolja.domain.member.exception.LoggedOutMemberException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberEmailDuplicationException;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
@@ -112,11 +113,11 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
         return memberRepository.existsByEmail(email);
     }
 
-    public RefreshTokenResponse refresh(TokenRequest request) {
+    public TokenResponse refresh(TokenRequest request) {
 
         // 1. Refresh Token 검증
         if (!jwtTokenProvider.validateToken(request.getRefreshToken())) {
-            throw new RuntimeException("Refresh Token 이 유효하지 않습니다.");
+            throw new InvalidRefreshTokenException();
         }
 
         // 2. Access Token 에서 Member ID 가져오기
@@ -126,6 +127,9 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
 
         // 3. 저장소에서 Member ID 를 기반으로 Refresh Token 값 가져옴
         String refreshToken = redisService.getValues(authentication.getName());
+        if (refreshToken.equals("false")){
+            throw new LoggedOutMemberException();
+        }
 
         // 4. Refresh Token 일치하는지 검사
         if (!refreshToken.equals(request.getRefreshToken())) {
@@ -140,6 +144,6 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
         // 6. 저장소 정보 업데이트
         redisService.setValues(authentication.getName(), newToken.getRefreshToken());
 
-        return new RefreshTokenResponse(newToken.getRefreshToken());
+        return newToken;
     }
 }
