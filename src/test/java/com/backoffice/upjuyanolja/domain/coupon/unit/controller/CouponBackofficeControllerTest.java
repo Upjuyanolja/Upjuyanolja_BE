@@ -6,9 +6,11 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -18,6 +20,9 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOptio
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.coupon.controller.CouponBackofficeController;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddInfos;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRooms;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMakeRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponRoomsRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponInfo;
@@ -61,6 +66,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @ActiveProfiles("test")
 @WebMvcTest(value = CouponBackofficeController.class,
@@ -159,6 +167,7 @@ class CouponBackofficeControllerTest {
     @DisplayName("쿠폰 관리 테스트")
     class Context_couponManage {
 
+        @DisplayName("쿠폰 관리 화면에 필요한 데이터의 응답을 테스트한다.")
         @Test
         public void couponManageViewResponse_test() throws Exception {
             // given
@@ -222,6 +231,46 @@ class CouponBackofficeControllerTest {
                 .andDo(print());
 
             verify(couponBackofficeService, times(1)).manageCoupon(any(Long.TYPE));
+        }
+
+
+        @DisplayName("쿠폰 추가 구매 테스트")
+        @Test
+        public void addonCouponTest() throws Exception {
+            // given
+            when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+
+            List<CouponAddInfos> coupons1 = List.of(
+                new CouponAddInfos(1L, CouponStatus.ENABLE, DiscountType.FLAT, 50000, 20, 50, CouponType.ALL_DAYS, 1000),
+                new CouponAddInfos(2L, CouponStatus.ENABLE, DiscountType.RATE, 10, 20, 50, CouponType.ALL_DAYS, 1000)
+            );
+            List<CouponAddInfos> coupons2 = List.of(
+                new CouponAddInfos(3L, CouponStatus.ENABLE, DiscountType.FLAT, 10000, 20, 50, CouponType.ALL_DAYS, 1000),
+                new CouponAddInfos(4L, CouponStatus.ENABLE, DiscountType.RATE, 20, 20, 50, CouponType.ALL_DAYS, 1000)
+            );
+            List<CouponAddInfos> coupons3 = List.of(
+                new CouponAddInfos(5L, CouponStatus.ENABLE, DiscountType.FLAT, 30000, 20, 50, CouponType.ALL_DAYS, 1000),
+                new CouponAddInfos(6L, CouponStatus.ENABLE, DiscountType.RATE, 50, 20, 50, CouponType.ALL_DAYS, 1000)
+            );
+            List<CouponAddRooms> rooms = List.of(
+                new CouponAddRooms(1L, coupons1),
+                new CouponAddRooms(2L, coupons2),
+                new CouponAddRooms(3L, coupons3)
+            );
+
+            CouponAddRequest couponAddRequest = new CouponAddRequest(1L, 150000, LocalDate.of(2024,02,25), rooms);
+
+            ResultActions resultActions = mockMvc.perform(
+                patch("/api/coupons/backoffice/manage/buy")
+                    .content(objectMapper.writeValueAsString(couponAddRequest))
+                    .contentType(MediaType.APPLICATION_JSON))
+//            String requestBody = resultActions.andReturn().getRequest().getContentAsString();
+
+            // when & Then
+                .andExpect(status().is(HttpStatus.OK.value()))
+                .andExpect(jsonPath("$.message").value("쿠폰 추가 구매에 성공하였습니다."))
+                .andDo(print());
         }
 
     }
