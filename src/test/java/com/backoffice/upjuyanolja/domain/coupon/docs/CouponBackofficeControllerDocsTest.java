@@ -11,6 +11,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.requestF
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.restdocs.snippet.Attributes.key;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -20,6 +21,9 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddInfos;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRooms;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMakeRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponRoomsRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponInfo;
@@ -56,6 +60,7 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @ActiveProfiles("test")
 class CouponBackofficeControllerDocsTest extends RestDocsSupport {
@@ -72,13 +77,15 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     private final ConstraintDescriptions createCouponRequestDescriptions =
         new ConstraintDescriptions(CouponMakeRequest.class);
 
+    private final ConstraintDescriptions couponAddonRequestDescriptions =
+        new ConstraintDescriptions(CouponAddRequest.class);
+
     Member mockMember;
 
     @BeforeEach
     public void initTest() {
         mockMember = createMember();
     }
-
 
     @Test
     @DisplayName("업주님의 숙소와 쿠폰을 등록할 객실 목록을 조회할 수 있다.")
@@ -271,7 +278,106 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
             ));
 
         verify(couponBackofficeService, times(1)).manageCoupon(any(Long.TYPE));
+    }
 
+    @DisplayName("쿠폰 추가 구매 테스트")
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void couponAddonRequestTest() throws Exception {
+        // given
+        when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+
+        List<CouponAddInfos> coupons1 = List.of(
+            new CouponAddInfos(1L, CouponStatus.ENABLE, DiscountType.FLAT, 50000, 20, 50, CouponType.ALL_DAYS, 1000),
+            new CouponAddInfos(2L, CouponStatus.ENABLE, DiscountType.RATE, 10, 20, 50, CouponType.ALL_DAYS, 1000)
+        );
+        List<CouponAddInfos> coupons2 = List.of(
+            new CouponAddInfos(3L, CouponStatus.ENABLE, DiscountType.FLAT, 10000, 20, 50, CouponType.ALL_DAYS, 1000),
+            new CouponAddInfos(4L, CouponStatus.ENABLE, DiscountType.RATE, 20, 20, 50, CouponType.ALL_DAYS, 1000)
+        );
+        List<CouponAddInfos> coupons3 = List.of(
+            new CouponAddInfos(5L, CouponStatus.ENABLE, DiscountType.FLAT, 30000, 20, 50, CouponType.ALL_DAYS, 1000),
+            new CouponAddInfos(6L, CouponStatus.ENABLE, DiscountType.RATE, 50, 20, 50, CouponType.ALL_DAYS, 1000)
+        );
+        List<CouponAddRooms> rooms = List.of(
+            new CouponAddRooms(1L, coupons1),
+            new CouponAddRooms(2L, coupons2),
+            new CouponAddRooms(3L, coupons3)
+        );
+
+        CouponAddRequest mockCouponAddRequest = new CouponAddRequest(1L, 150000, LocalDate.of(2024,02,25), rooms);
+
+        doNothing().when(couponBackofficeService).addonCoupon(
+            any(CouponAddRequest.class), any(Long.TYPE));
+
+        // when & Then
+        mockMvc.perform(patch("/api/coupons/backoffice/manage/buy")
+                .content(objectMapper.writeValueAsString(mockCouponAddRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andDo(restDoc.document(
+                requestFields(
+                    fieldWithPath("accommodationId").description("숙소 식별자")
+                        .attributes(key("constraints")
+                            .value(createCouponRequestDescriptions.descriptionsForProperty(
+                                "accommodationId"))),
+                    fieldWithPath("totalPoints").description("쿠폰 구입 합계 포인트")
+                        .attributes(key("constraints")
+                            .value(createCouponRequestDescriptions.descriptionsForProperty(
+                                "totalPoints"))),
+                    fieldWithPath("expiry").description("쿠폰 노출 만료 일자")
+                        .attributes(key("constraints")
+                            .value(createCouponRequestDescriptions.descriptionsForProperty(
+                                "expiry"))),
+                    fieldWithPath("rooms[]").description("객실 정보 배열").attributes(
+                        key("constraints")
+                            .value(createCouponRequestDescriptions.descriptionsForProperty(
+                                "rooms[]"))),
+                    fieldWithPath("rooms[].roomId").description("객실 식별 번호").attributes(
+                        key("constraints").value(
+                            createCouponRequestDescriptions.descriptionsForProperty(
+                                "rooms[].roomId"))),
+                    fieldWithPath("rooms[].coupons[]").description("객식별 쿠폰 배열").attributes(
+                        key("constraints").value(
+                            createCouponRequestDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[]"))),
+                    fieldWithPath("rooms[].coupons[].couponId").description("쿠폰 식별 번호").attributes(
+                        key("constraints").value(
+                            createCouponRequestDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[],couponId"))),
+                    fieldWithPath("rooms[].coupons[].status").description("쿠폰 상태").attributes(
+                        key("constraints").value(
+                            createCouponRequestDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[].status"))),
+                    fieldWithPath("rooms[].coupons[].discountType").description("쿠폰 할인 유형").attributes(
+                        key("constraints").value(
+                            createCouponRequestDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[].discountType"))),
+                    fieldWithPath("rooms[].coupons[].discount").description("할인가/할인율").attributes(
+                        key("constraints").value(
+                            createCouponRequestDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[].discount"))),
+                    fieldWithPath("rooms[].coupons[].dayLimit").description("일일 사용 한도").attributes(
+                        key("constraints").value(
+                            createCouponRequestDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[].dayLimit"))),
+                    fieldWithPath("rooms[].coupons[].buyQuantity").description("쿠폰 추가 구매 수량").attributes(
+                        key("constraints").value(
+                            createCouponRequestDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[].buyQuantity"))),
+                    fieldWithPath("rooms[].coupons[].couponType").description("쿠폰 유형").attributes(
+                        key("constraints").value(
+                            createCouponRequestDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[].couponType"))),
+                    fieldWithPath("rooms[].coupons[].eachPoint").description("쿠폰 별 구입 포인트").attributes(
+                        key("constraints").value(
+                            createCouponRequestDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[].eachPoint")))
+                    ),
+                responseFields(successResponseCommon()).and(
+                    fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터"))
+            ));
     }
 
     private CouponManageRooms createManageRoom(
@@ -390,7 +496,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
             .phone("010-1234-1234")
             .imageUrl(
                 "https://fastly.picsum.photos/id/866/200/300.jpg?hmac=rcadCENKh4rD6MAp6V_ma-AyWv641M4iiOpe1RyFHeI")
-            .authority(Authority.ROLE_USER)
+            .authority(Authority.ROLE_ADMIN)
             .build();
     }
 
