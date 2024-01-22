@@ -46,7 +46,7 @@ public class AccommodationCustomRepositoryImpl implements AccommodationCustomRep
 
         JPAQuery<Long> countQuery = getCountQuery(category, type, keyword);
 
-        return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchOne());
+        return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchFirst());
     }
 
     private JPAQuery<Long> getCountQuery(
