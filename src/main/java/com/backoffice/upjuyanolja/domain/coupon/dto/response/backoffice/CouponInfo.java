@@ -8,7 +8,6 @@ import lombok.Builder;
 
 @Builder
 public record CouponInfo(
-
     Long couponId,
     CouponStatus status,
     String couponName,

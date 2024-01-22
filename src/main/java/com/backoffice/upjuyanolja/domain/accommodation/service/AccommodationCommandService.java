@@ -14,6 +14,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationImageNotExistsException;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.FailedSaveImageException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
@@ -29,6 +30,7 @@ import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
+import com.backoffice.upjuyanolja.domain.room.exception.RoomNotExistsException;
 import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import java.io.IOException;
@@ -296,6 +298,12 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                 .thumbnail(request.thumbnail())
                 .build());
 
+        if (request.images().isEmpty()) {
+            throw new AccommodationImageNotExistsException();
+        }
+        if (request.rooms().isEmpty()) {
+            throw new RoomNotExistsException();
+        }
         accommodationQueryUseCase.saveAllImages(AccommodationImageRequest
             .toEntity(accommodation, request.images()));
 

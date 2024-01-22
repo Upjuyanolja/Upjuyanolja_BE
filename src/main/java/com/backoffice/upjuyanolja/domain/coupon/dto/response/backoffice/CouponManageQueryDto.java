@@ -8,7 +8,6 @@ import lombok.Builder;
 
 @Builder
 public record CouponManageQueryDto(
-
     Long accommodationId,
     String accommodationName,
     LocalDate endDate,

@@ -10,7 +10,6 @@ public record CouponManageRooms(
     String roomName,
     int roomPrice,
     List<CouponInfo> coupons
-
 ) {
 
     @Override

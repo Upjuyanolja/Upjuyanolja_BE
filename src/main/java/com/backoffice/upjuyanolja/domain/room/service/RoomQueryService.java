@@ -11,6 +11,7 @@ import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -76,6 +77,11 @@ public class RoomQueryService implements RoomQueryUseCase {
     @Override
     public List<RoomStock> findStockByRoom(Room room) {
         return roomStockRepository.findByRoom(room)
-            .orElseThrow(() -> new RoomStockNotFoundException());
+            .orElseThrow(RoomStockNotFoundException::new);
+    }
+
+    @Override
+    public List<RoomStock> findStocksByRoomAndDateAfter(Room room, LocalDate date) {
+        return roomStockRepository.findAllByRoomAndDateAfter(room, date);
     }
 }
