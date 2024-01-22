@@ -7,6 +7,6 @@ import org.springframework.data.domain.Pageable;
 public interface AccommodationCustomRepository {
 
     Page<Accommodation> searchPageByCategoryWithTypeAndName(
-        String category, String type, String keyword, Pageable pageable
+        String category, String keyword, Pageable pageable
     );
 }
