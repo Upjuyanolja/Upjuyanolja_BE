@@ -1,9 +1,6 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.getMaxPrice;
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.getMaxRate;
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.getMinPrice;
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.getMinRate;
+import static com.backoffice.upjuyanolja.domain.coupon.config.CouponProperties.*;
 
 import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidCouponInfoException;
 import java.text.DecimalFormat;
@@ -59,8 +56,8 @@ public enum DiscountType {
         "%",
         "% 할인",
         (titleName, discount) -> {
-            StringBuilder sb = new StringBuilder(discount);
-            sb.append(titleName);
+            StringBuilder sb = new StringBuilder();
+            sb.append(discount).append(titleName);
             return sb.toString();
         },
         (listName, discount) -> {
@@ -135,11 +132,11 @@ public enum DiscountType {
         return discountType.makeListFormat.apply(discountType.getListName(), discount);
     }
 
-    public static String makeShortName(final DiscountType discountType, int discount) {
+    public static String makeShortName(final DiscountType discountType, final int discount) {
         return discountType.makeShortFormat.apply(discountType.getShortName(), discount);
     }
 
-    public static String makeDetailName(final DiscountType discountType, int discount) {
+    public static String makeDetailName(final DiscountType discountType, final int discount) {
         return discountType.makeDetailFormat.apply(discountType.getDetailName(), discount);
     }
 
@@ -147,6 +144,7 @@ public enum DiscountType {
         return discountType.discountValidate.test(discount);
     }
 
+    // 쿠폰 할인이 적용된 객실 가격을 반환한다.
     public static int makePaymentPrice(
         final DiscountType discountType,
         final Integer price,
@@ -155,8 +153,8 @@ public enum DiscountType {
         return discountType.calcAmount.apply(price, discount);
     }
 
-    // X% 할인되는 금액
-    public static int percentToFlatDiscount(int price, int discount) {
+    // X% 할인율을 정액으로 얼마 할인되는지 보여준다.
+    public static int percentToFlatDiscount(final int price, final int discount) {
         double decimal = discount / 100.0;
         return (int) (price * decimal);
     }
