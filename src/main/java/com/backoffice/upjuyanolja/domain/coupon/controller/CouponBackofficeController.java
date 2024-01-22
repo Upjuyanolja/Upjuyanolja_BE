@@ -1,5 +1,7 @@
 package com.backoffice.upjuyanolja.domain.coupon.controller;
 
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRooms;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMakeRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageResponse;
@@ -18,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -75,7 +78,7 @@ public class CouponBackofficeController {
     @GetMapping("/manage/{accommodationId}")
     public ResponseEntity<SuccessResponse<CouponManageResponse>> couponManageView(
         @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
-    ) throws JsonProcessingException {
+    ) {
         log.info("GET /api/coupons/backoffice/manage/{accommodationId}");
 
         long currentMemberId = securityUtil.getCurrentMemberId();
@@ -89,6 +92,30 @@ public class CouponBackofficeController {
                 .build()
         );
     }
+
+    @PatchMapping("/manage/buy")
+    public ResponseEntity<SuccessResponse<Object>> couponAddon(
+        @Valid @RequestBody CouponAddRequest request
+    ) {
+        log.info("/api/coupons/backoffice/manage/buy");
+
+        Long accommodationId = request.accommodationId();
+        long currentMemberId = securityUtil.getCurrentMemberId();
+        couponService.validateAccommodationOwnership(
+            accommodationId, currentMemberId);
+
+        couponService.addonCoupon(request,currentMemberId);
+
+        return ApiResponse.success(
+            HttpStatus.OK,
+            SuccessResponse.builder()
+                .message("쿠폰 추가 구매에 성공하였습니다.")
+                .data(null)
+                .build()
+        );
+    }
+
+
 
     private Member getCurrentMember() {
         Long memberId = securityUtil.getCurrentMemberId();

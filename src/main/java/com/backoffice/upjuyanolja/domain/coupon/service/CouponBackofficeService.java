@@ -1,10 +1,13 @@
 package com.backoffice.upjuyanolja.domain.coupon.service;
 
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.isRightDiscount;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddInfos;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMakeRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponRoomsRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponInfo;
@@ -72,7 +75,6 @@ public class CouponBackofficeService {
                 InvalidCouponInfoException::new);
 
             int quantity = couponRoom.quantity();
-            // Todo: 개발 완료 후 확인용 log 삭제할 것.
             if (resultCoupon.isPresent()) {
                 // 3. roomId와 discount로 발행된 쿠폰이 있으면 보유 재고의 개수를 업데이트한다.
                 coupon = updateCouponStock(resultCoupon.get(), quantity);
@@ -84,8 +86,6 @@ public class CouponBackofficeService {
                 coupons.add(coupon);
                 log.info("신규 쿠폰 발급: {}, memberId: {}", quantity, memberId);
             }
-
-
         }
         couponRepository.saveAll(coupons);
 
@@ -96,9 +96,89 @@ public class CouponBackofficeService {
 
         // 7. 포인트 사용 이력 전달
         // Todo: 포인트 사용 내역 Point 도메인에 전달하기
-        log.info("쿠폰 발급 성공");
+        log.info("쿠폰 발급 성공. 금액: {}", totalPoints);
     }
 
+    public CouponManageResponse manageCoupon(Long accommodationId) {
+        List<CouponManageQueryDto> queryResult = couponRepository.findCouponsByAccommodationId(
+            accommodationId);
+
+        List<CouponManageRooms> collected = queryResult.stream()
+            .collect(groupingBy(
+                    this::createManageRoom,
+                    mapping(this::createCouponInfo, toList())
+                )
+            ).entrySet().stream()
+            .map(e -> new CouponManageRooms(e.getKey().roomId(), e.getKey().roomName(),
+                e.getKey().roomPrice(), e.getValue()
+            ))
+            .collect(toList());
+
+        return CouponManageResponse.builder()
+            .accommodationId(accommodationId)
+            .accommodationName(queryResult.get(0).accommodationName())
+            .expiry(queryResult.get(0).endDate())
+            .rooms(collected)
+            .build();
+    }
+
+    public void addonCoupon(CouponAddRequest couponAddRequest, long memberId) {
+        // 1. 업주의 보유 포인트 검증
+        Optional<Point> resultPoint = pointRepository.findByMemberId(memberId);
+        Point point = resultPoint.orElseThrow(PointNotFoundException::new);
+        final long ownerPoint = point.getPointBalance();
+        final int totalPoints = couponAddRequest.totalPoints();
+
+        List<Coupon> addCoupons = new ArrayList<>();
+        for (var rooms : couponAddRequest.rooms()) {
+            for (var coupons : rooms.coupons()) {
+                long couponId = coupons.couponId();
+                addCoupons.add(getCoupon(coupons, couponId));
+            }
+        }
+        couponRepository.saveAll(addCoupons);
+
+        // 2. 업주의 보유 포인트 차감
+        point.decreasePointBalance(totalPoints);
+        pointRepository.save(point);
+
+        // Todo: 포인트 사용 내역 Point 도메인에 전달하기
+        log.info("쿠폰 추가 발급 성공. 금액: {}", totalPoints);
+    }
+
+    private Coupon getCoupon(CouponAddInfos coupons, long couponId) {
+        Coupon coupon = couponRepository.findById(couponId).orElseThrow(
+            InvalidCouponInfoException::new);
+        coupon.increaseCouponStock(coupons.buyQuantity());
+        return coupon;
+    }
+
+    private CouponInfo createCouponInfo(CouponManageQueryDto dto) {
+        int discount = dto.discount();
+        DiscountType discountType = dto.discountType();
+        return CouponInfo.builder()
+            .couponId(dto.couponId())
+            .status(dto.couponStatus())
+            .couponName(DiscountType.makeListName(dto.discountType(), discount))
+            .appliedPrice(DiscountType.makePaymentPrice(
+                discountType, dto.roomPrice(), discount))
+            .discountType(discountType)
+            .discount(discount)
+            .dayLimit(dto.dayLimit())
+            .quantity(dto.stock())
+            .couponType(dto.couponType())
+            .build();
+    }
+
+    private CouponManageRooms createManageRoom(CouponManageQueryDto dto) {
+        return CouponManageRooms.builder()
+            .roomId(dto.roomId())
+            .roomName(dto.roomName())
+            .roomPrice(dto.roomPrice())
+            .build();
+    }
+
+    @Transactional(readOnly = true)
     private Point validationPoint(Member member, long requestPoint) {
         // 업주의 보유 포인트 검증
         Optional<Point> resultPoint = pointRepository.findByMember(member);
@@ -137,50 +217,4 @@ public class CouponBackofficeService {
         return CouponMakeRequest.toEntity(request, room);
     }
 
-    public CouponManageResponse manageCoupon(Long accommodationId) {
-        List<CouponManageQueryDto> queryResult = couponRepository.findCouponsByAccommodationId(
-            accommodationId);
-
-        List<CouponManageRooms> collected = queryResult.stream()
-            .collect(groupingBy(o -> createManageRoom(o),
-                    mapping(o -> createCouponInfo(o), toList())
-                )
-            ).entrySet().stream()
-            .map(e -> new CouponManageRooms(e.getKey().roomId(), e.getKey().roomName(),
-                e.getKey().roomPrice(), e.getValue()
-            ))
-            .collect(toList());
-
-        return CouponManageResponse.builder()
-            .accommodationId(accommodationId)
-            .accommodationName(queryResult.get(0).accommodationName())
-            .expiry(queryResult.get(0).endDate())
-            .rooms(collected)
-            .build();
-    }
-
-    private CouponInfo createCouponInfo(CouponManageQueryDto dto) {
-        int discount = dto.discount();
-        DiscountType discountType = dto.discountType();
-        return CouponInfo.builder()
-            .couponId(dto.couponId())
-            .status(dto.couponStatus())
-            .couponName(DiscountType.makeListName(dto.discountType(), discount))
-            .appliedPrice(DiscountType.makePaymentPrice(
-                discountType, dto.roomPrice(), discount))
-            .discountType(discountType)
-            .discount(discount)
-            .dayLimit(dto.dayLimit())
-            .quantity(dto.stock())
-            .couponType(dto.couponType())
-            .build();
-    }
-
-    private CouponManageRooms createManageRoom(CouponManageQueryDto dto) {
-        return CouponManageRooms.builder()
-            .roomId(dto.roomId())
-            .roomName(dto.roomName())
-            .roomPrice(dto.roomPrice())
-            .build();
-    }
 }

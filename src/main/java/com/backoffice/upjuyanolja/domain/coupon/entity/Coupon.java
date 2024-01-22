@@ -4,7 +4,6 @@ package com.backoffice.upjuyanolja.domain.coupon.entity;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientCouponStockException;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,12 +14,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -78,7 +75,6 @@ public class Coupon extends BaseTime {
     @Comment("쿠폰 개수(재고)")
     private int stock;
 
-
     @Builder
     public Coupon(
         Long id,
@@ -102,14 +98,33 @@ public class Coupon extends BaseTime {
         this.stock = stock;
     }
 
-    public void increaseCouponStock(int quantity) {
+    public Coupon increaseCouponStock(int quantity) {
         this.stock += quantity;
+        return this;
     }
 
-    public void decreaseCouponStock(int quantity) {
+    public Coupon decreaseCouponStock(int quantity) {
         if (this.stock - quantity < 0) {
             throw new InsufficientCouponStockException();
         }
         this.stock -= quantity;
+        return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Coupon coupon = (Coupon) o;
+        return Objects.equals(getId(), coupon.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }

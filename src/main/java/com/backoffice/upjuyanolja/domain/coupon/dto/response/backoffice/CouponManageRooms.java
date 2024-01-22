@@ -11,7 +11,6 @@ public record CouponManageRooms(
     int roomPrice,
     List<CouponInfo> coupons
 ) {
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
