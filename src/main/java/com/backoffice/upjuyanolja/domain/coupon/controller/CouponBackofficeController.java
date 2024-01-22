@@ -1,8 +1,9 @@
 package com.backoffice.upjuyanolja.domain.coupon.controller;
 
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
-import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRooms;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponDeleteRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMakeRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
@@ -11,7 +12,6 @@ import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -76,7 +77,7 @@ public class CouponBackofficeController {
     }
 
     @GetMapping("/manage/{accommodationId}")
-    public ResponseEntity<SuccessResponse<CouponManageResponse>> couponManageView(
+    public ResponseEntity<SuccessResponse<CouponManageResponse>> manageCouponView(
         @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
     ) {
         log.info("GET /api/coupons/backoffice/manage/{accommodationId}");
@@ -94,10 +95,10 @@ public class CouponBackofficeController {
     }
 
     @PatchMapping("/manage/buy")
-    public ResponseEntity<SuccessResponse<Object>> couponAddon(
+    public ResponseEntity<SuccessResponse<Object>> addonCoupon(
         @Valid @RequestBody CouponAddRequest request
     ) {
-        log.info("/api/coupons/backoffice/manage/buy");
+        log.info("PATCH /api/coupons/backoffice/manage/buy");
 
         Long accommodationId = request.accommodationId();
         long currentMemberId = securityUtil.getCurrentMemberId();
@@ -115,6 +116,49 @@ public class CouponBackofficeController {
         );
     }
 
+    @PatchMapping("/manage")
+    public ResponseEntity<SuccessResponse<Object>> modifyCoupon(
+        @Valid @RequestBody CouponModifyRequest request
+    ) {
+        log.info("PATCH /api/coupons/backoffice/manage");
+
+        Long accommodationId = request.accommodationId();
+        long currentMemberId = securityUtil.getCurrentMemberId();
+        couponService.validateAccommodationOwnership(
+            accommodationId, currentMemberId);
+
+        couponService.modifyCoupon(request);
+
+        return ApiResponse.success(
+            HttpStatus.OK,
+            SuccessResponse.builder()
+                .message("쿠폰 수정에 성공하였습니다.")
+                .data(null)
+                .build()
+        );
+    }
+
+    @DeleteMapping("/manage")
+    public ResponseEntity<SuccessResponse<Object>> deleteCoupon(
+        @Valid @RequestBody CouponDeleteRequest request
+    ) {
+        log.info("PATCH /api/coupons/backoffice/manage");
+
+        Long accommodationId = request.accommodationId();
+        long currentMemberId = securityUtil.getCurrentMemberId();
+        couponService.validateAccommodationOwnership(
+            accommodationId, currentMemberId);
+
+        couponService.deleteCoupon(request);
+
+        return ApiResponse.success(
+            HttpStatus.OK,
+            SuccessResponse.builder()
+                .message("쿠폰 삭제에 성공하였습니다.")
+                .data(null)
+                .build()
+        );
+    }
 
 
     private Member getCurrentMember() {

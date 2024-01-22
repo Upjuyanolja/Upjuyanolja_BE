@@ -108,9 +108,40 @@ public class Coupon extends BaseTime {
             throw new InsufficientCouponStockException();
         }
         this.stock -= quantity;
+
+        if (stock == 0) {
+            setupDeleted();
+        }
         return this;
     }
 
+    public Coupon modifyCoupon(
+        CouponStatus couponStatus,
+        DiscountType discountType,
+        int discount,
+        int dayLimit,
+        LocalDate endDate,
+        CouponType couponType
+    ) {
+        this.couponStatus = couponStatus;
+        this.discountType = discountType;
+        this.discount = discount;
+        this.dayLimit = dayLimit;
+        this.endDate = endDate;
+        this.couponType = couponType;
+        return this;
+    }
+
+    public Coupon setupDeleted() {
+        this.couponStatus = CouponStatus.DELETED;
+        return this;
+    }
+
+    /**
+     * Grouping을 위한 hashCode & equals override. id로 같은 객체인지 비교.
+     * @param o
+     * @return
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
