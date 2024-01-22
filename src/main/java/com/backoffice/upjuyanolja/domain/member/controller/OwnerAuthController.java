@@ -61,7 +61,7 @@ public class OwnerAuthController {
     }
 
     @PostMapping("owners/signin")
-    public ResponseEntity<SuccessResponse<SignInResponse>> ownerSignup(
+    public ResponseEntity<SuccessResponse<SignInResponse>> ownerSignIn(
         @Valid @RequestBody SignInRequest request
     ) {
         return ApiResponse.success(HttpStatus.OK,
