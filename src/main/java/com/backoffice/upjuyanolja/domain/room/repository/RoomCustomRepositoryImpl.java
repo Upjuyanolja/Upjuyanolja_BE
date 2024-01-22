@@ -38,7 +38,7 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
             .leftJoin(room.images, roomImage).fetchJoin()
             .where(createSearchConditionsBuilder(accommodationId))
             .offset(pageable.getOffset())
-            .orderBy(getAllOrderSpecifiers(pageable).toArray(OrderSpecifier[]::new))
+            .orderBy(getAllOrderSpecifiers().toArray(OrderSpecifier[]::new))
             .limit(pageable.getPageSize());
         JPAQuery<Room> countQuery = queryFactory
             .select(room)
@@ -50,6 +50,17 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
         return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetch().size());
     }
 
+    @Override
+    public boolean existsRoomByName(String name) {
+        Integer fetchOne = queryFactory
+            .selectOne()
+            .from(room)
+            .where(createExistsSearchConditionsBuilder(name))
+            .fetchFirst();
+
+        return fetchOne != null;
+    }
+
     private BooleanBuilder createSearchConditionsBuilder(long accommodationId) {
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         booleanBuilder.and(room.accommodation.id.eq(accommodationId));
@@ -57,8 +68,17 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
         return booleanBuilder;
     }
 
-    private List<OrderSpecifier<?>> getAllOrderSpecifiers(Pageable pageable) {
+    private BooleanBuilder createExistsSearchConditionsBuilder(String name) {
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        booleanBuilder.and(room.name.eq(name));
+        booleanBuilder.and(room.deletedAt.isNull());
+        return booleanBuilder;
+    }
+
+    private List<OrderSpecifier<?>> getAllOrderSpecifiers() {
         List<OrderSpecifier<?>> orders = new LinkedList<>();
+        orders.add(QueryDslUtil.getSortedColumn(Order.ASC, room, "status"));
+        orders.add(QueryDslUtil.getSortedColumn(Order.ASC, room.price, "offWeekDaysMinFee"));
         orders.add(QueryDslUtil.getSortedColumn(Order.ASC, room, "id"));
         return orders;
     }

@@ -7,4 +7,6 @@ import org.springframework.data.domain.Pageable;
 public interface RoomCustomRepository {
 
     Page<Room> findAllByAccommodation(long accommodationId, Pageable pageable);
+
+    boolean existsRoomByName(String name);
 }
