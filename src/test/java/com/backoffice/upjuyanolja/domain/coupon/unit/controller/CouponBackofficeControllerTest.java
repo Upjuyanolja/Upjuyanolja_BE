@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,7 +22,13 @@ import com.backoffice.upjuyanolja.domain.coupon.controller.CouponBackofficeContr
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddInfos;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRooms;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponDeleteInfos;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponDeleteRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponDeleteRooms;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMakeRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyInfos;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyRooms;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponRoomsRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponInfo;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
@@ -67,8 +72,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @ActiveProfiles("test")
 @WebMvcTest(value = CouponBackofficeController.class,
@@ -162,7 +165,6 @@ class CouponBackofficeControllerTest {
         }
     }
 
-
     @Nested
     @DisplayName("쿠폰 관리 테스트")
     class Context_couponManage {
@@ -191,9 +193,12 @@ class CouponBackofficeControllerTest {
             List<CouponInfo> couponInfos3 = createCouponInfos(coupons3, priceList);
 
             List<CouponManageRooms> manageRooms = List.of(
-                createManageRoom(roomIdSet.get(0), roomNameSet.get(0), priceList.get(0), couponInfos1),
-                createManageRoom(roomIdSet.get(1), roomNameSet.get(1), priceList.get(1), couponInfos2),
-                createManageRoom(roomIdSet.get(2), roomNameSet.get(2), priceList.get(2), couponInfos3)
+                createManageRoom(
+                    roomIdSet.get(0), roomNameSet.get(0), priceList.get(0), couponInfos1),
+                createManageRoom(
+                    roomIdSet.get(1), roomNameSet.get(1), priceList.get(1), couponInfos2),
+                createManageRoom(
+                    roomIdSet.get(2), roomNameSet.get(2), priceList.get(2), couponInfos3)
             );
 
             CouponManageResponse couponManageResponse = CouponManageResponse.builder()
@@ -241,38 +246,149 @@ class CouponBackofficeControllerTest {
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
             when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
 
-            List<CouponAddInfos> coupons1 = List.of(
-                new CouponAddInfos(1L, CouponStatus.ENABLE, DiscountType.FLAT, 50000, 20, 50, CouponType.ALL_DAYS, 1000),
-                new CouponAddInfos(2L, CouponStatus.ENABLE, DiscountType.RATE, 10, 20, 50, CouponType.ALL_DAYS, 1000)
-            );
-            List<CouponAddInfos> coupons2 = List.of(
-                new CouponAddInfos(3L, CouponStatus.ENABLE, DiscountType.FLAT, 10000, 20, 50, CouponType.ALL_DAYS, 1000),
-                new CouponAddInfos(4L, CouponStatus.ENABLE, DiscountType.RATE, 20, 20, 50, CouponType.ALL_DAYS, 1000)
-            );
-            List<CouponAddInfos> coupons3 = List.of(
-                new CouponAddInfos(5L, CouponStatus.ENABLE, DiscountType.FLAT, 30000, 20, 50, CouponType.ALL_DAYS, 1000),
-                new CouponAddInfos(6L, CouponStatus.ENABLE, DiscountType.RATE, 50, 20, 50, CouponType.ALL_DAYS, 1000)
-            );
-            List<CouponAddRooms> rooms = List.of(
-                new CouponAddRooms(1L, coupons1),
-                new CouponAddRooms(2L, coupons2),
-                new CouponAddRooms(3L, coupons3)
-            );
-
-            CouponAddRequest couponAddRequest = new CouponAddRequest(1L, 150000, LocalDate.of(2024,02,25), rooms);
-
-            ResultActions resultActions = mockMvc.perform(
-                patch("/api/coupons/backoffice/manage/buy")
-                    .content(objectMapper.writeValueAsString(couponAddRequest))
-                    .contentType(MediaType.APPLICATION_JSON))
-//            String requestBody = resultActions.andReturn().getRequest().getContentAsString();
+            List<CouponAddRooms> rooms = createMockAddCoupons();
+            CouponAddRequest couponAddRequest = new CouponAddRequest(
+                1L, 150000, LocalDate.of(2024, 02, 25), rooms);
 
             // when & Then
+            ResultActions resultActions = mockMvc.perform(
+                    patch("/api/coupons/backoffice/manage/buy")
+                        .content(objectMapper.writeValueAsString(couponAddRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(HttpStatus.OK.value()))
                 .andExpect(jsonPath("$.message").value("쿠폰 추가 구매에 성공하였습니다."))
                 .andDo(print());
         }
 
+        @DisplayName("쿠폰 수정 테스트")
+        @Test
+        public void couponModifyTest() throws Exception {
+            // given
+            when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+
+            List<CouponModifyRooms> rooms = createModifyCouponMock();
+            CouponModifyRequest couponModifyRequest = new CouponModifyRequest(
+                1L, LocalDate.of(2024, 02, 25), rooms);
+
+            // when & Then
+            mockMvc.perform(
+                    patch("/api/coupons/backoffice/manage")
+                        .content(objectMapper.writeValueAsString(couponModifyRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(HttpStatus.OK.value()))
+                .andExpect(jsonPath("$.message").value("쿠폰 수정에 성공하였습니다."))
+                .andDo(print());
+        }
+
+        @DisplayName("쿠폰 삭제 테스트")
+        @Test
+        public void couponDeleteTest() throws Exception {
+            // given
+            when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+
+            List<CouponDeleteRooms> rooms = createMockDeleteRooms();
+            CouponDeleteRequest mockDeleteRequest = new CouponDeleteRequest(
+                1L, rooms);
+
+            // when & Then
+            mockMvc.perform(
+                    delete("/api/coupons/backoffice/manage")
+                        .content(objectMapper.writeValueAsString(mockDeleteRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(HttpStatus.OK.value()))
+                .andExpect(jsonPath("$.message").value("쿠폰 삭제에 성공하였습니다."))
+                .andDo(print());
+        }
+
+    }
+
+    private List<CouponDeleteRooms> createMockDeleteRooms() {
+        List<CouponDeleteInfos> deleteInfos1 = List.of(
+            new CouponDeleteInfos(1L),
+            new CouponDeleteInfos(2L)
+        );
+        List<CouponDeleteInfos> deleteInfos2 = List.of(
+            new CouponDeleteInfos(5L),
+            new CouponDeleteInfos(6L)
+        );
+        List<CouponDeleteInfos> deleteInfos3 = List.of(
+            new CouponDeleteInfos(9L),
+            new CouponDeleteInfos(10L)
+        );
+        List<CouponDeleteRooms> deleteRooms = List.of(
+            new CouponDeleteRooms(1L, deleteInfos1),
+            new CouponDeleteRooms(1L, deleteInfos2),
+            new CouponDeleteRooms(1L, deleteInfos3)
+        );
+        return deleteRooms;
+    }
+
+    private static List<CouponAddRooms> createMockAddCoupons() {
+        List<CouponAddInfos> coupons1 = List.of(
+            new CouponAddInfos(
+                1L, CouponStatus.ENABLE, DiscountType.FLAT, 50000, 20, 50, CouponType.ALL_DAYS,
+                1000
+            ),
+            new CouponAddInfos(
+                2L, CouponStatus.ENABLE, DiscountType.RATE, 10, 20, 50, CouponType.ALL_DAYS,
+                1000
+            )
+        );
+        List<CouponAddInfos> coupons2 = List.of(
+            new CouponAddInfos(
+                5L, CouponStatus.ENABLE, DiscountType.FLAT, 10000, 20, 50, CouponType.ALL_DAYS,
+                1000
+            ),
+            new CouponAddInfos(
+                6L, CouponStatus.ENABLE, DiscountType.RATE, 20, 20, 50, CouponType.ALL_DAYS,
+                1000
+            )
+        );
+        List<CouponAddInfos> coupons3 = List.of(
+            new CouponAddInfos(
+                9L, CouponStatus.ENABLE, DiscountType.FLAT, 30000, 20, 50, CouponType.ALL_DAYS,
+                1000
+            ),
+            new CouponAddInfos(
+                10L, CouponStatus.ENABLE, DiscountType.RATE, 50, 20, 50, CouponType.ALL_DAYS,
+                1000
+            )
+        );
+        List<CouponAddRooms> rooms = List.of(
+            new CouponAddRooms(1L, coupons1),
+            new CouponAddRooms(2L, coupons2),
+            new CouponAddRooms(3L, coupons3)
+        );
+        return rooms;
+    }
+
+    private List<CouponModifyRooms> createModifyCouponMock() {
+        List<CouponModifyInfos> coupons1 = List.of(
+            new CouponModifyInfos(
+                1L, CouponStatus.ENABLE, DiscountType.FLAT, 50000, 20, CouponType.ALL_DAYS),
+            new CouponModifyInfos(
+                2L, CouponStatus.ENABLE, DiscountType.RATE, 10, 20, CouponType.ALL_DAYS)
+        );
+        List<CouponModifyInfos> coupons2 = List.of(
+            new CouponModifyInfos(
+                5L, CouponStatus.ENABLE, DiscountType.FLAT, 10000, 20, CouponType.ALL_DAYS),
+            new CouponModifyInfos(
+                6L, CouponStatus.ENABLE, DiscountType.RATE, 20, 20, CouponType.ALL_DAYS)
+        );
+        List<CouponModifyInfos> coupons3 = List.of(
+            new CouponModifyInfos(
+                9L, CouponStatus.ENABLE, DiscountType.FLAT, 30000, 20, CouponType.ALL_DAYS),
+            new CouponModifyInfos(
+                10L, CouponStatus.ENABLE, DiscountType.RATE, 50, 20, CouponType.ALL_DAYS)
+        );
+        List<CouponModifyRooms> rooms = List.of(
+            new CouponModifyRooms(1L, coupons1),
+            new CouponModifyRooms(2L, coupons2),
+            new CouponModifyRooms(3L, coupons3)
+        );
+        return rooms;
     }
 
     private CouponManageRooms createManageRoom(
@@ -291,11 +407,12 @@ class CouponBackofficeControllerTest {
 
     private List<CouponInfo> createCouponInfos(List<Coupon> coupons, List<Integer> priceList) {
         return List.of(
-            CouponInfo.from(coupons.get(0),  priceList.get(0)),
-            CouponInfo.from(coupons.get(1),  priceList.get(1)),
-            CouponInfo.from(coupons.get(2),  priceList.get(2))
+            CouponInfo.from(coupons.get(0), priceList.get(0)),
+            CouponInfo.from(coupons.get(1), priceList.get(1)),
+            CouponInfo.from(coupons.get(2), priceList.get(2))
         );
     }
+
     private List<Room> createRooms(
         Accommodation accommodation, List<Long> roomIds, List<String> roomNames
     ) {

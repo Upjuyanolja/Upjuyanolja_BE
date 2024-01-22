@@ -11,6 +11,12 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddInfos;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRooms;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyInfos;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyRooms;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageQueryDto;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
@@ -170,9 +176,9 @@ class CouponRepositoryTest {
     @DisplayName("쿠폰 관리 테스트 ")
     class ManageCoupon {
 
-        @DisplayName("쿠폰 관리를 위한 화면 데이터를 테스트한다.")
+        @DisplayName("쿠폰 관리를 위한 화면 데이터 응답을 테스트한다.")
         @Test
-        public void couponManageResponseQuery_test() throws Exception {
+        public void couponManageResponseQueryTest() throws Exception {
             // given
             Long accommodationId = mockAccommodation.getId();
             List<CouponManageQueryDto> result = couponRepository.findCouponsByAccommodationId(
@@ -184,7 +190,6 @@ class CouponRepositoryTest {
             assertThat(result.size()).isEqualTo(9);
             result.stream().forEach(System.out::println);
         }
-
     }
 
     private Member createMember(Long id) {
