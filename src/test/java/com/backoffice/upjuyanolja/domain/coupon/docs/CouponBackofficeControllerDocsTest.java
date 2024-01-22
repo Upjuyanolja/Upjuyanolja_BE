@@ -24,7 +24,13 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddInfos;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRooms;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponDeleteInfos;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponDeleteRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponDeleteRooms;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMakeRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyInfos;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyRooms;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponRoomsRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponInfo;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
@@ -60,7 +66,6 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @ActiveProfiles("test")
 class CouponBackofficeControllerDocsTest extends RestDocsSupport {
@@ -80,6 +85,12 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     private final ConstraintDescriptions couponAddonRequestDescriptions =
         new ConstraintDescriptions(CouponAddRequest.class);
 
+    private final ConstraintDescriptions couponModifyDescriptions =
+        new ConstraintDescriptions(CouponModifyRequest.class);
+
+    private final ConstraintDescriptions couponDeleteDescriptions =
+        new ConstraintDescriptions(CouponDeleteRequest.class);
+
     Member mockMember;
 
     @BeforeEach
@@ -90,7 +101,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     @Test
     @DisplayName("업주님의 숙소와 쿠폰을 등록할 객실 목록을 조회할 수 있다.")
     @WithMockUser(roles = "ADMIN")
-    public void roomsResponseByAccommodation() throws Exception {
+    public void createCouponResponseTest() throws Exception {
         // given
         Long accommodationId = 1L;
         given(couponBackofficeService.getRoomsByAccommodation(accommodationId))
@@ -128,7 +139,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     @DisplayName("쿠폰 만들기 테스트")
     @Test
     @WithMockUser(roles = "ADMIN")
-    public void createCoupon() throws Exception {
+    public void createCouponRequestTest() throws Exception {
         // given
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
         when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
@@ -195,7 +206,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     @DisplayName("쿠폰 관리 View 응답 테스트")
     @Test
     @WithMockUser(roles = "ADMIN")
-    public void couponManageResponseTest() throws Exception {
+    public void manageCouponResponseTest() throws Exception {
         // given
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
         when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
@@ -283,30 +294,14 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     @DisplayName("쿠폰 추가 구매 테스트")
     @Test
     @WithMockUser(roles = "ADMIN")
-    public void couponAddonRequestTest() throws Exception {
+    public void addonCouponRequestTest() throws Exception {
         // given
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
         when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
 
-        List<CouponAddInfos> coupons1 = List.of(
-            new CouponAddInfos(1L, CouponStatus.ENABLE, DiscountType.FLAT, 50000, 20, 50, CouponType.ALL_DAYS, 1000),
-            new CouponAddInfos(2L, CouponStatus.ENABLE, DiscountType.RATE, 10, 20, 50, CouponType.ALL_DAYS, 1000)
-        );
-        List<CouponAddInfos> coupons2 = List.of(
-            new CouponAddInfos(3L, CouponStatus.ENABLE, DiscountType.FLAT, 10000, 20, 50, CouponType.ALL_DAYS, 1000),
-            new CouponAddInfos(4L, CouponStatus.ENABLE, DiscountType.RATE, 20, 20, 50, CouponType.ALL_DAYS, 1000)
-        );
-        List<CouponAddInfos> coupons3 = List.of(
-            new CouponAddInfos(5L, CouponStatus.ENABLE, DiscountType.FLAT, 30000, 20, 50, CouponType.ALL_DAYS, 1000),
-            new CouponAddInfos(6L, CouponStatus.ENABLE, DiscountType.RATE, 50, 20, 50, CouponType.ALL_DAYS, 1000)
-        );
-        List<CouponAddRooms> rooms = List.of(
-            new CouponAddRooms(1L, coupons1),
-            new CouponAddRooms(2L, coupons2),
-            new CouponAddRooms(3L, coupons3)
-        );
-
-        CouponAddRequest mockCouponAddRequest = new CouponAddRequest(1L, 150000, LocalDate.of(2024,02,25), rooms);
+        List<CouponAddRooms> rooms = createMockAddCoupons();
+        CouponAddRequest mockCouponAddRequest = new CouponAddRequest(
+            1L, 150000, LocalDate.of(2024,02,25), rooms);
 
         doNothing().when(couponBackofficeService).addonCoupon(
             any(CouponAddRequest.class), any(Long.TYPE));
@@ -320,65 +315,256 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
                 requestFields(
                     fieldWithPath("accommodationId").description("숙소 식별자")
                         .attributes(key("constraints")
-                            .value(createCouponRequestDescriptions.descriptionsForProperty(
+                            .value(couponAddonRequestDescriptions.descriptionsForProperty(
                                 "accommodationId"))),
                     fieldWithPath("totalPoints").description("쿠폰 구입 합계 포인트")
                         .attributes(key("constraints")
-                            .value(createCouponRequestDescriptions.descriptionsForProperty(
+                            .value(couponAddonRequestDescriptions.descriptionsForProperty(
                                 "totalPoints"))),
                     fieldWithPath("expiry").description("쿠폰 노출 만료 일자")
                         .attributes(key("constraints")
-                            .value(createCouponRequestDescriptions.descriptionsForProperty(
+                            .value(couponAddonRequestDescriptions.descriptionsForProperty(
                                 "expiry"))),
                     fieldWithPath("rooms[]").description("객실 정보 배열").attributes(
                         key("constraints")
-                            .value(createCouponRequestDescriptions.descriptionsForProperty(
+                            .value(couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[]"))),
                     fieldWithPath("rooms[].roomId").description("객실 식별 번호").attributes(
                         key("constraints").value(
-                            createCouponRequestDescriptions.descriptionsForProperty(
+                            couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].roomId"))),
                     fieldWithPath("rooms[].coupons[]").description("객식별 쿠폰 배열").attributes(
                         key("constraints").value(
-                            createCouponRequestDescriptions.descriptionsForProperty(
+                            couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[]"))),
                     fieldWithPath("rooms[].coupons[].couponId").description("쿠폰 식별 번호").attributes(
                         key("constraints").value(
-                            createCouponRequestDescriptions.descriptionsForProperty(
+                            couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[],couponId"))),
                     fieldWithPath("rooms[].coupons[].status").description("쿠폰 상태").attributes(
                         key("constraints").value(
-                            createCouponRequestDescriptions.descriptionsForProperty(
+                            couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[].status"))),
                     fieldWithPath("rooms[].coupons[].discountType").description("쿠폰 할인 유형").attributes(
                         key("constraints").value(
-                            createCouponRequestDescriptions.descriptionsForProperty(
+                            couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[].discountType"))),
                     fieldWithPath("rooms[].coupons[].discount").description("할인가/할인율").attributes(
                         key("constraints").value(
-                            createCouponRequestDescriptions.descriptionsForProperty(
+                            couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[].discount"))),
                     fieldWithPath("rooms[].coupons[].dayLimit").description("일일 사용 한도").attributes(
                         key("constraints").value(
-                            createCouponRequestDescriptions.descriptionsForProperty(
+                            couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[].dayLimit"))),
                     fieldWithPath("rooms[].coupons[].buyQuantity").description("쿠폰 추가 구매 수량").attributes(
                         key("constraints").value(
-                            createCouponRequestDescriptions.descriptionsForProperty(
+                            couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[].buyQuantity"))),
                     fieldWithPath("rooms[].coupons[].couponType").description("쿠폰 유형").attributes(
                         key("constraints").value(
-                            createCouponRequestDescriptions.descriptionsForProperty(
+                            couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[].couponType"))),
                     fieldWithPath("rooms[].coupons[].eachPoint").description("쿠폰 별 구입 포인트").attributes(
                         key("constraints").value(
-                            createCouponRequestDescriptions.descriptionsForProperty(
+                            couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[].eachPoint")))
                     ),
                 responseFields(successResponseCommon()).and(
                     fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터"))
             ));
     }
+
+
+    @DisplayName("쿠폰 수정 테스트")
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void modifyCouponRequestTest() throws Exception {
+        // given
+        when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+
+        List<CouponModifyRooms> rooms = createMockModifyCoupons();
+        CouponModifyRequest mockCouponModifyRequest = new CouponModifyRequest(
+            1L, LocalDate.of(2024, 02, 25), rooms);
+
+        doNothing().when(couponBackofficeService).modifyCoupon(
+            any(CouponModifyRequest.class));
+
+        // when & Then
+        mockMvc.perform(patch("/api/coupons/backoffice/manage")
+                .content(objectMapper.writeValueAsString(mockCouponModifyRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andDo(restDoc.document(
+                requestFields(
+                    fieldWithPath("accommodationId").description("숙소 식별자")
+                        .attributes(key("constraints")
+                            .value(couponModifyDescriptions.descriptionsForProperty(
+                                "accommodationId"))),
+                    fieldWithPath("expiry").description("쿠폰 노출 만료 일자")
+                        .attributes(key("constraints")
+                            .value(couponModifyDescriptions.descriptionsForProperty(
+                                "expiry"))),
+                    fieldWithPath("rooms[]").description("객실 정보 배열").attributes(
+                        key("constraints")
+                            .value(couponModifyDescriptions.descriptionsForProperty(
+                                "rooms[]"))),
+                    fieldWithPath("rooms[].roomId").description("객실 식별 번호").attributes(
+                        key("constraints").value(
+                            couponModifyDescriptions.descriptionsForProperty(
+                                "rooms[].roomId"))),
+                    fieldWithPath("rooms[].coupons[]").description("객식별 쿠폰 배열").attributes(
+                        key("constraints").value(
+                            couponModifyDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[]"))),
+                    fieldWithPath("rooms[].coupons[].couponId").description("쿠폰 식별 번호").attributes(
+                        key("constraints").value(
+                            couponModifyDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[],couponId"))),
+                    fieldWithPath("rooms[].coupons[].status").description("쿠폰 상태").attributes(
+                        key("constraints").value(
+                            couponModifyDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[].status"))),
+                    fieldWithPath("rooms[].coupons[].discountType").description("쿠폰 할인 유형").attributes(
+                        key("constraints").value(
+                            couponModifyDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[].discountType"))),
+                    fieldWithPath("rooms[].coupons[].discount").description("할인가/할인율").attributes(
+                        key("constraints").value(
+                            couponModifyDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[].discount"))),
+                    fieldWithPath("rooms[].coupons[].dayLimit").description("일일 사용 한도").attributes(
+                        key("constraints").value(
+                            couponModifyDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[].dayLimit"))),
+                    fieldWithPath("rooms[].coupons[].couponType").description("쿠폰 유형").attributes(
+                        key("constraints").value(
+                            couponModifyDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[].couponType")))
+                ),
+                responseFields(successResponseCommon()).and(
+                    fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터"))
+            ));
+    }
+
+    @DisplayName("쿠폰 삭제 테스트")
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void deleteCouponRequestTest() throws Exception {
+        // given
+        when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+
+        List<CouponDeleteRooms> rooms = createMockDeleteCoupons();
+        CouponDeleteRequest mockDeleteRequest = new CouponDeleteRequest(
+            1L, rooms);
+
+        doNothing().when(couponBackofficeService).deleteCoupon(
+            any(CouponDeleteRequest.class));
+
+        // when & Then
+        mockMvc.perform(delete("/api/coupons/backoffice/manage")
+                .content(objectMapper.writeValueAsString(mockDeleteRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andDo(restDoc.document(
+                requestFields(
+                    fieldWithPath("accommodationId").description("숙소 식별자")
+                        .attributes(key("constraints")
+                            .value(couponDeleteDescriptions.descriptionsForProperty(
+                                "accommodationId"))),
+                    fieldWithPath("rooms[]").description("객실 정보 배열").attributes(
+                        key("constraints")
+                            .value(couponDeleteDescriptions.descriptionsForProperty(
+                                "rooms[]"))),
+                    fieldWithPath("rooms[].roomId").description("객실 식별 번호").attributes(
+                        key("constraints").value(
+                            couponDeleteDescriptions.descriptionsForProperty(
+                                "rooms[].roomId"))),
+                    fieldWithPath("rooms[].coupons[]").description("객식별 쿠폰 배열").attributes(
+                        key("constraints").value(
+                            couponDeleteDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[]"))),
+                    fieldWithPath("rooms[].coupons[].couponId").description("쿠폰 식별 번호").attributes(
+                        key("constraints").value(
+                            couponDeleteDescriptions.descriptionsForProperty(
+                                "rooms[].coupons[],couponId")))
+                ),
+                responseFields(successResponseCommon()).and(
+                    fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터"))
+            ));
+    }
+
+    private List<CouponDeleteRooms> createMockDeleteCoupons() {
+        List<CouponDeleteInfos> deleteInfos1 = List.of(
+            new CouponDeleteInfos(1L),
+            new CouponDeleteInfos(2L)
+        );
+        List<CouponDeleteInfos> deleteInfos2 = List.of(
+            new CouponDeleteInfos(5L),
+            new CouponDeleteInfos(6L)
+        );
+        List<CouponDeleteInfos> deleteInfos3 = List.of(
+            new CouponDeleteInfos(9L),
+            new CouponDeleteInfos(10L)
+        );
+        List<CouponDeleteRooms> deleteRooms = List.of(
+            new CouponDeleteRooms(1L, deleteInfos1),
+            new CouponDeleteRooms(1L, deleteInfos2),
+            new CouponDeleteRooms(1L, deleteInfos3)
+        );
+        return deleteRooms;
+    }
+
+    private List<CouponAddRooms> createMockAddCoupons() {
+        List<CouponAddInfos> coupons1 = List.of(
+            new CouponAddInfos(1L, CouponStatus.ENABLE, DiscountType.FLAT, 50000, 20, 50, CouponType.ALL_DAYS, 1000),
+            new CouponAddInfos(2L, CouponStatus.ENABLE, DiscountType.RATE, 10, 20, 50, CouponType.ALL_DAYS, 1000)
+        );
+        List<CouponAddInfos> coupons2 = List.of(
+            new CouponAddInfos(5L, CouponStatus.ENABLE, DiscountType.FLAT, 10000, 20, 50, CouponType.ALL_DAYS, 1000),
+            new CouponAddInfos(6L, CouponStatus.ENABLE, DiscountType.RATE, 20, 20, 50, CouponType.ALL_DAYS, 1000)
+        );
+        List<CouponAddInfos> coupons3 = List.of(
+            new CouponAddInfos(9L, CouponStatus.ENABLE, DiscountType.FLAT, 30000, 20, 50, CouponType.ALL_DAYS, 1000),
+            new CouponAddInfos(10L, CouponStatus.ENABLE, DiscountType.RATE, 50, 20, 50, CouponType.ALL_DAYS, 1000)
+        );
+        List<CouponAddRooms> rooms = List.of(
+            new CouponAddRooms(1L, coupons1),
+            new CouponAddRooms(2L, coupons2),
+            new CouponAddRooms(3L, coupons3)
+        );
+        return rooms;
+    }
+
+    private List<CouponModifyRooms> createMockModifyCoupons() {
+        List<CouponModifyInfos> coupons1 = List.of(
+            new CouponModifyInfos(
+                1L, CouponStatus.ENABLE, DiscountType.FLAT, 50000, 20, CouponType.ALL_DAYS),
+            new CouponModifyInfos(
+                2L, CouponStatus.ENABLE, DiscountType.RATE, 10, 20, CouponType.ALL_DAYS)
+        );
+        List<CouponModifyInfos> coupons2 = List.of(
+            new CouponModifyInfos(
+                5L, CouponStatus.ENABLE, DiscountType.FLAT, 10000, 20, CouponType.ALL_DAYS),
+            new CouponModifyInfos(
+                6L, CouponStatus.ENABLE, DiscountType.RATE, 20, 20, CouponType.ALL_DAYS)
+        );
+        List<CouponModifyInfos> coupons3 = List.of(
+            new CouponModifyInfos(
+                9L, CouponStatus.ENABLE, DiscountType.FLAT, 30000, 20, CouponType.ALL_DAYS),
+            new CouponModifyInfos(
+                10L, CouponStatus.ENABLE, DiscountType.RATE, 50, 20, CouponType.ALL_DAYS)
+        );
+        List<CouponModifyRooms> rooms = List.of(
+            new CouponModifyRooms(1L, coupons1),
+            new CouponModifyRooms(2L, coupons2),
+            new CouponModifyRooms(3L, coupons3)
+        );
+        return rooms;
+    }
+
 
     private CouponManageRooms createManageRoom(
         Long roomId,
