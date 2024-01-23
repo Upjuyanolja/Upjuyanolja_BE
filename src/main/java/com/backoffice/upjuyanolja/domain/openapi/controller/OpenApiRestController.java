@@ -1,8 +1,6 @@
 package com.backoffice.upjuyanolja.domain.openapi.controller;
 
 import com.backoffice.upjuyanolja.domain.openapi.service.OpenApiService;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,14 +17,11 @@ public class OpenApiRestController {
     private final OpenApiService openApiService;
 
     @PostMapping
-    public ResponseEntity<SuccessResponse<Void>> getDataFromOpenApi(
+    public ResponseEntity<Void> getDataFromOpenApi(
         @RequestParam int pageSize,
         @RequestParam int pageNum
     ) {
         openApiService.getData(pageSize, pageNum);
-        return ApiResponse.success(HttpStatus.OK, SuccessResponse.<Void>builder()
-            .message("성공적으로 오픈 API에서 데이터를 수집하고 저장했습니다.")
-            .build()
-        );
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 }

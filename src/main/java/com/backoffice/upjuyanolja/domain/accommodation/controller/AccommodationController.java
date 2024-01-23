@@ -7,8 +7,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
@@ -43,23 +41,18 @@ public class AccommodationController {
     private final SecurityUtil securityUtil;
 
     @PostMapping
-    public ResponseEntity<SuccessResponse<AccommodationInfoResponse>> registerAccommodation(
+    public ResponseEntity<AccommodationInfoResponse> registerAccommodation(
         @Valid @RequestBody AccommodationRegisterRequest accommodationRegisterRequest
     ) {
         log.info("POST /api/accommodations");
 
-        return ApiResponse.success(HttpStatus.CREATED,
-            SuccessResponse.<AccommodationInfoResponse>builder()
-                .message("성공적으로 숙소를 등록했습니다.")
-                .data(accommodationCommandUseCase.createAccommodation
-                    (securityUtil.getCurrentMemberId(), accommodationRegisterRequest)
-                )
-                .build()
-        );
+        AccommodationInfoResponse response = accommodationCommandUseCase
+            .createAccommodation(securityUtil.getCurrentMemberId(), accommodationRegisterRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
-    public ResponseEntity<SuccessResponse<AccommodationPageResponse>> getAccommodations(
+    public ResponseEntity<AccommodationPageResponse> getAccommodations(
         @RequestParam(defaultValue = "ALL", required = false) String category,
         @RequestParam(defaultValue = "false", required = false) boolean onlyHasCoupon,
         @Valid @RequestParam(required = false)
@@ -69,20 +62,14 @@ public class AccommodationController {
     ) {
         log.info("GET /api/accommodations");
 
-        AccommodationPageResponse response = accommodationCommandUseCase.findAccommodations(
-            category, onlyHasCoupon, keyword, pageable
-        );
-        return ApiResponse.success(
-            HttpStatus.OK,
-            SuccessResponse.<AccommodationPageResponse>builder()
-                .message("숙소 목록 조회에 성공 했습니다.")
-                .data(response)
-                .build()
-        );
+        AccommodationPageResponse response = accommodationCommandUseCase
+            .findAccommodations(category, onlyHasCoupon, keyword, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/{accommodationId}")
-    public ResponseEntity<SuccessResponse<AccommodationDetailResponse>> getAccommodationWithRooms(
+    public ResponseEntity<AccommodationDetailResponse> getAccommodationWithRooms(
         @PathVariable Long accommodationId,
         @RequestParam(defaultValue = "#{T(java.time.LocalDateTime).now()}", required = false)
         @DateTimeFormat(iso = ISO.DATE)
@@ -93,33 +80,22 @@ public class AccommodationController {
     ) {
         log.info("GET /api/accommodations/{accommodationId}");
 
-        AccommodationDetailResponse response = accommodationCommandUseCase.findAccommodationWithRooms(
-            accommodationId, startDate, endDate
-        );
-        return ApiResponse.success(
-            HttpStatus.OK,
-            SuccessResponse.<AccommodationDetailResponse>builder()
-                .message("숙소 상세 목록 조회에 성공 했습니다.")
-                .data(response)
-                .build()
-        );
+        AccommodationDetailResponse response = accommodationCommandUseCase
+            .findAccommodationWithRooms(accommodationId, startDate, endDate);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/backoffice")
-    public ResponseEntity<SuccessResponse<AccommodationOwnershipResponse>> getAccommodationOwnership() {
+    public ResponseEntity<AccommodationOwnershipResponse> getAccommodationOwnership() {
         log.info("GET /api/accommodations/backoffice");
 
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<AccommodationOwnershipResponse>builder()
-                .message("성공적으로 보유 숙소 목록을 조회했습니다.")
-                .data(accommodationCommandUseCase
-                    .getAccommodationOwnership(securityUtil.getCurrentMemberId()))
-                .build()
-        );
+        AccommodationOwnershipResponse response = accommodationCommandUseCase
+            .getAccommodationOwnership(securityUtil.getCurrentMemberId());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/images")
-    public ResponseEntity<SuccessResponse<ImageResponse>> saveImages(
+    public ResponseEntity<ImageResponse> saveImages(
         @RequestParam(value = "image1") MultipartFile imageFile1,
         @RequestParam(value = "image2") MultipartFile imageFile2,
         @RequestParam(value = "image3") MultipartFile imageFile3,
@@ -128,16 +104,8 @@ public class AccommodationController {
     ) {
         log.info("GET /api/accommodations/urls");
 
-        return ApiResponse.success(HttpStatus.CREATED,
-            SuccessResponse.<ImageResponse>builder()
-                .message("성공적으로 이미지를 저장했습니다.")
-                .data(accommodationCommandUseCase.saveImages(List.of(
-                    imageFile1,
-                    imageFile2,
-                    imageFile3,
-                    imageFile4,
-                    imageFile5)))
-                .build()
-        );
+        ImageResponse response = accommodationCommandUseCase
+            .saveImages(List.of(imageFile1, imageFile2, imageFile3, imageFile4, imageFile5));
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

@@ -3,13 +3,9 @@ package com.backoffice.upjuyanolja.domain.reservation.controller;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.reservation.dto.request.CreateReservationRequest;
-import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetCanceledResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservationResponse;
-import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
 import com.backoffice.upjuyanolja.domain.reservation.service.ReservationService;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.backoffice.upjuyanolja.global.validator.ValidId;
 import jakarta.validation.Valid;
@@ -37,66 +33,41 @@ public class ReservationController {
     private final ReservationService reservationService;
 
     @PostMapping()
-    public ResponseEntity<SuccessResponse<Object>> create(
+    public ResponseEntity<Object> create(
         @Valid @RequestBody CreateReservationRequest request
     ) {
         Member currentMember = getCurrentMember();
         reservationService.create(currentMember, request);
 
-        return ApiResponse.success(HttpStatus.CREATED,
-            SuccessResponse.builder()
-                .message("예약이 완료되었습니다.")
-                .data(null)
-                .build());
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
     @DeleteMapping("/{reservationId}")
-    public ResponseEntity<SuccessResponse<Object>> cancel(
+    public ResponseEntity<Object> cancel(
         @ValidId @PathVariable(name = "reservationId") Long reservationId
     ) {
         Member currentMember = getCurrentMember();
         reservationService.cancel(currentMember, reservationId);
 
-        return ApiResponse.success(HttpStatus.NO_CONTENT,
-            SuccessResponse.builder()
-                .message("성공적으로 예약을 취소했습니다.")
-                .data(null)
-                .build());
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
     }
 
     @GetMapping()
-    public ResponseEntity<SuccessResponse<GetReservationResponse>> getReserved(
+    public ResponseEntity<GetReservationResponse> getReserved(
         @RequestParam(name = "status", defaultValue = "RESERVED") ReservationStatus status,
         @PageableDefault(size = 3) Pageable pageable
     ) {
         Member currentMember = getCurrentMember();
 
-        ResponseEntity<SuccessResponse<GetReservationResponse>> success;
+        GetReservationResponse response;
         switch (status) {
-            case RESERVED, SERVICED -> {
-                GetReservedResponse response = reservationService.getReserved(currentMember,
-                    pageable);
-
-                success = ApiResponse.success(HttpStatus.OK,
-                    SuccessResponse.<GetReservationResponse>builder()
-                        .message("예약 조회에 성공하였습니다.")
-                        .data(response)
-                        .build());
-            }
-            case CANCELLED -> {
-                GetCanceledResponse response = reservationService.getCanceled(currentMember,
-                    pageable);
-
-                success = ApiResponse.success(HttpStatus.OK,
-                    SuccessResponse.<GetReservationResponse>builder()
-                        .message("예약 취소 조회에 성공하였습니다.")
-                        .data(response)
-                        .build());
-            }
+            case RESERVED, SERVICED ->
+                response = reservationService.getReserved(currentMember, pageable);
+            case CANCELLED -> response = reservationService.getCanceled(currentMember, pageable);
             default -> throw new IllegalStateException("Unexpected value: " + status);
         }
 
-        return success;
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     private Member getCurrentMember() {

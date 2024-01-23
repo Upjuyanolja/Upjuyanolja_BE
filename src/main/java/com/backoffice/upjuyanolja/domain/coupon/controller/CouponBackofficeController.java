@@ -9,8 +9,6 @@ import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMa
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -42,7 +40,7 @@ public class CouponBackofficeController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/buy/{accommodationId}")
-    public ResponseEntity<SuccessResponse<CouponMakeViewResponse>> responseRoomsView(
+    public ResponseEntity<CouponMakeViewResponse> responseRoomsView(
         @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
     ) {
         //Todo: Id validation 검증 로직 보완
@@ -51,18 +49,13 @@ public class CouponBackofficeController {
         couponService.validateAccommodationRequest(
             accommodationId, currentMemberId);
 
-        return ApiResponse.success(
-            HttpStatus.OK,
-            SuccessResponse.<CouponMakeViewResponse>builder()
-                .message("쿠폰 조회에 성공했습니다.")
-                .data(couponService.getRoomsByAccommodation(accommodationId))
-                .build()
-        );
+        CouponMakeViewResponse response = couponService.getRoomsByAccommodation(accommodationId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/buy")
-    public ResponseEntity<SuccessResponse<Object>> createCoupons(
+    public ResponseEntity<Object> createCoupons(
         @Valid @RequestBody CouponMakeRequest couponMakeRequest
     ) {
         log.info("POST /api/coupons/backoffice/buy");
@@ -73,18 +66,12 @@ public class CouponBackofficeController {
             couponMakeRequest.accommodationId(), currentMember.getId());
         couponService.createCoupon(couponMakeRequest, currentMember);
 
-        return ApiResponse.success(
-            HttpStatus.CREATED,
-            SuccessResponse.builder()
-                .message("성공적으로 쿠폰이 발급되었습니다.")
-                .data(null)
-                .build()
-        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/manage/{accommodationId}")
-    public ResponseEntity<SuccessResponse<CouponManageResponse>> manageCouponView(
+    public ResponseEntity<CouponManageResponse> manageCouponView(
         @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
     ) {
         log.info("GET /api/coupons/backoffice/manage/{accommodationId}");
@@ -92,18 +79,13 @@ public class CouponBackofficeController {
         long currentMemberId = securityUtil.getCurrentMemberId();
         couponService.validateAccommodationRequest(
             accommodationId, currentMemberId);
-        return ApiResponse.success(
-            HttpStatus.OK,
-            SuccessResponse.<CouponManageResponse>builder()
-                .message("쿠폰 조회에 성공하였습니다.")
-                .data(couponService.manageCoupon(accommodationId))
-                .build()
-        );
+        CouponManageResponse response = couponService.manageCoupon(accommodationId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/manage/buy")
-    public ResponseEntity<SuccessResponse<Object>> addonCoupon(
+    public ResponseEntity<Object> addonCoupon(
         @Valid @RequestBody CouponAddRequest request
     ) {
         log.info("PATCH /api/coupons/backoffice/manage/buy");
@@ -113,61 +95,45 @@ public class CouponBackofficeController {
         couponService.validateAccommodationRequest(
             accommodationId, currentMemberId);
 
-        couponService.addonCoupon(request,currentMemberId);
+        couponService.addonCoupon(request, currentMemberId);
 
-        return ApiResponse.success(
-            HttpStatus.OK,
-            SuccessResponse.builder()
-                .message("쿠폰 추가 구매에 성공하였습니다.")
-                .data(null)
-                .build()
-        );
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/manage")
-    public ResponseEntity<SuccessResponse<Object>> modifyCoupon(
+    public ResponseEntity<Object> modifyCoupon(
         @Valid @RequestBody CouponModifyRequest request
     ) {
         log.info("PATCH /api/coupons/backoffice/manage");
 
         Long accommodationId = request.accommodationId();
         long currentMemberId = securityUtil.getCurrentMemberId();
+
         couponService.validateAccommodationRequest(
             accommodationId, currentMemberId);
 
         couponService.modifyCoupon(request);
 
-        return ApiResponse.success(
-            HttpStatus.OK,
-            SuccessResponse.builder()
-                .message("쿠폰 수정에 성공하였습니다.")
-                .data(null)
-                .build()
-        );
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/manage")
-    public ResponseEntity<SuccessResponse<Object>> deleteCoupon(
+    public ResponseEntity<Object> deleteCoupon(
         @Valid @RequestBody CouponDeleteRequest request
     ) {
         log.info("PATCH /api/coupons/backoffice/manage");
 
         Long accommodationId = request.accommodationId();
         long currentMemberId = securityUtil.getCurrentMemberId();
+
         couponService.validateAccommodationRequest(
             accommodationId, currentMemberId);
 
         couponService.deleteCoupon(request);
 
-        return ApiResponse.success(
-            HttpStatus.OK,
-            SuccessResponse.builder()
-                .message("쿠폰 삭제에 성공하였습니다.")
-                .data(null)
-                .build()
-        );
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     private Member getCurrentMember() {
