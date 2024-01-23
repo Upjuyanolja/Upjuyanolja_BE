@@ -5,14 +5,11 @@ import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.TokenRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
-import com.backoffice.upjuyanolja.domain.member.dto.response.RefreshTokenResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,51 +32,41 @@ public class MemberAuthController {
     private final SecurityUtil securityUtill;
 
     @PostMapping("members/signup")
-    public ResponseEntity<SuccessResponse<SignUpResponse>> signup(
-        @Valid @RequestBody SignUpRequest request) {
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<SignUpResponse>builder()
-                .message("회원가입이 성공적으로 완료되었습니다.")
-                .data(memberAuthService.signup(request))
-                .build());
+    public ResponseEntity<SignUpResponse> signup(
+        @Valid @RequestBody SignUpRequest request
+    ) {
+        SignUpResponse response = memberAuthService.signup(request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("members/email")
-    public ResponseEntity<SuccessResponse<CheckEmailDuplicateResponse>> checkEmailDuplicate(
+    public ResponseEntity<CheckEmailDuplicateResponse> checkEmailDuplicate(
         @RequestParam(name = "email") String email
     ) {
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<CheckEmailDuplicateResponse>builder()
-                .message("성공적으로 이메일 중복 여부를 검사했습니다.")
-                .data(memberAuthService.checkEmailDuplicate(email))
-                .build());
+        CheckEmailDuplicateResponse response = memberAuthService.checkEmailDuplicate(email);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("members/signin")
-    public ResponseEntity<SuccessResponse<SignInResponse>> signin(
-        @Valid @RequestBody SignInRequest request) {
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<SignInResponse>builder()
-                .message("로그인이 성공적으로 완료되었습니다.")
-                .data(memberAuthService.signin(request))
-                .build());
+    public ResponseEntity<SignInResponse> signin(
+        @Valid @RequestBody SignInRequest request
+    ) {
+        SignInResponse response = memberAuthService.signin(request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("members")
-    public ResponseEntity<SuccessResponse<MemberInfoResponse>> getMember() {
-        return ApiResponse.success(HttpStatus.OK, SuccessResponse.<MemberInfoResponse>builder()
-            .message("성공적으로 회원 정보를 조회했습니다.")
-            .data(memberGetService.getMember(securityUtill.getCurrentMemberId()))
-            .build());
+    public ResponseEntity<MemberInfoResponse> getMember() {
+        MemberInfoResponse response = memberGetService.getMember(
+            securityUtill.getCurrentMemberId());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<SuccessResponse<TokenResponse>> refresh(
-        @Valid @RequestBody TokenRequest request) {
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<TokenResponse>builder()
-                .message("리프레쉬 토큰 재발급이 성공적으로 완료되었습니다.")
-                .data(memberAuthService.refresh(request))
-                .build());
+    public ResponseEntity<TokenResponse> refresh(
+        @Valid @RequestBody TokenRequest request
+    ) {
+        TokenResponse response = memberAuthService.refresh(request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

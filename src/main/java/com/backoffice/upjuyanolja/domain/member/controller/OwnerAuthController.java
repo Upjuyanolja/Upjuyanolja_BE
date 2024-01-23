@@ -7,8 +7,6 @@ import com.backoffice.upjuyanolja.domain.member.dto.response.OwnerEmailResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.OwnerSignupResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.service.OwnerAuthService;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,46 +26,35 @@ public class OwnerAuthController {
     private final OwnerAuthService ownerAuthService;
 
     @PostMapping("owners/request-email")
-    public ResponseEntity<SuccessResponse<OwnerEmailResponse>> sendMessage(
-        @Valid @RequestBody OwnerEmailRequest request) {
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<OwnerEmailResponse>builder()
-                .message("이메일 인증요청이 성공적으로 완료되었습니다")
-                .data(ownerAuthService.sendVerificationCodeToEmail(request))
-                .build());
+    public ResponseEntity<OwnerEmailResponse> sendMessage(
+        @Valid @RequestBody OwnerEmailRequest request
+    ) {
+        OwnerEmailResponse response = ownerAuthService.sendVerificationCodeToEmail(request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("owners/verify")
-    public ResponseEntity<SuccessResponse<String>> verifyMessage(
+    public ResponseEntity<String> verifyMessage(
         @Valid @RequestParam(name = "email") String email,
         @RequestParam(name = "verification-code") String authCode
     ) {
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<String>builder()
-                .message("이메일 인증이 성공적으로 완료되었습니다.")
-                .data(ownerAuthService.verifyCode(email, authCode))
-                .build());
+        String response = ownerAuthService.verifyCode(email, authCode);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("owners/signup")
-    public ResponseEntity<SuccessResponse<OwnerSignupResponse>> ownerSignup(
+    public ResponseEntity<OwnerSignupResponse> ownerSignup(
         @Valid @RequestBody OwnerSignupRequest request
     ) {
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<OwnerSignupResponse>builder()
-                .message("업주 회원가입이 성공적으로 완료되었습니다.")
-                .data(ownerAuthService.signup(request))
-                .build());
+        OwnerSignupResponse response = ownerAuthService.signup(request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("owners/signin")
-    public ResponseEntity<SuccessResponse<SignInResponse>> ownerSignIn(
+    public ResponseEntity<SignInResponse> ownerSignIn(
         @Valid @RequestBody SignInRequest request
     ) {
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<SignInResponse>builder()
-                .message("업주 로그인이 성공적으로 완료되었습니다.")
-                .data(ownerAuthService.signin(request))
-                .build());
+        SignInResponse response = ownerAuthService.signin(request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

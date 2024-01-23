@@ -2,8 +2,6 @@ package com.backoffice.upjuyanolja.domain.coupon.controller;
 
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponAccommodationResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
-import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,19 +21,13 @@ public class CouponController {
     private final CouponService couponService;
 
     @GetMapping("/{accommodationId}")
-    public ResponseEntity<SuccessResponse<List<CouponAccommodationResponse>>> getCouponInAccommodation(
+    public ResponseEntity<List<CouponAccommodationResponse>> getCouponInAccommodation(
         @PathVariable Long accommodationId
     ) {
         log.info("GET /api/coupons/{accommodationId}");
 
         List<CouponAccommodationResponse> response =
             couponService.findCouponResponseInAccommodation(accommodationId);
-        return ApiResponse.success(
-            HttpStatus.OK,
-            SuccessResponse.<List<CouponAccommodationResponse>>builder()
-                .message("성공적으로 숙소 쿠폰 목록을 조회 했습니다.")
-                .data(response)
-                .build()
-        );
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
