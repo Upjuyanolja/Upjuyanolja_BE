@@ -66,6 +66,7 @@ public class RoomCommandService implements RoomCommandUseCase {
 
         Room room = roomQueryUseCase.saveRoom(accommodation, Room.builder()
             .name(request.name())
+            .status(RoomStatus.SELLING)
             .price(RoomPrice.builder()
                 .offWeekDaysMinFee(request.price())
                 .offWeekendMinFee(request.price())
