@@ -1,12 +1,12 @@
 package com.backoffice.upjuyanolja.domain.coupon.controller;
 
-import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMakeRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import com.backoffice.upjuyanolja.domain.member.entity.Owner;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.domain.point.entity.Point;
+import com.backoffice.upjuyanolja.domain.member.service.OwnerGetService;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
@@ -34,6 +34,7 @@ public class CouponBackofficeController {
     private final CouponBackofficeService couponService;
     private final SecurityUtil securityUtil;
     private final MemberGetService memberGetService;
+    private final OwnerGetService ownerGetService;
 
     @GetMapping("/buy/{accommodationId}")
     public ResponseEntity<SuccessResponse<CouponMakeViewResponse>> responseRoomsByAccommodationId(
@@ -57,10 +58,10 @@ public class CouponBackofficeController {
     ) {
         log.info("POST /api/coupons/backoffice/buy");
 
-        Member currentMember = getCurrentMember();
+        Owner currentOwner = getCurrentOwner();
 
-        couponService.validateCouponRequest(couponMakeRequest, currentMember.getId());
-        couponService.createCoupon(couponMakeRequest, currentMember);
+        couponService.validateCouponRequest(couponMakeRequest, currentOwner.getId());
+        couponService.createCoupon(couponMakeRequest, currentOwner);
 
         return ApiResponse.success(
             HttpStatus.CREATED,
@@ -71,9 +72,9 @@ public class CouponBackofficeController {
         );
     }
 
-    private Member getCurrentMember() {
-        Long memberId = securityUtil.getCurrentMemberId();
-        return memberGetService.getMemberById(memberId);
+    private Owner getCurrentOwner() {
+        Long ownerId = securityUtil.getCurrentOwnerId();
+        return ownerGetService.getOwnerById(ownerId);
     }
 
 }

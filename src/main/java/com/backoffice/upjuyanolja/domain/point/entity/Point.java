@@ -1,13 +1,10 @@
 package com.backoffice.upjuyanolja.domain.point.entity;
 
-import static com.backoffice.upjuyanolja.global.exception.ErrorCode.POINT_INSUFFICIENT;
-
 import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.point.util.YearMonthConverter;
+import com.backoffice.upjuyanolja.domain.member.entity.Owner;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -15,7 +12,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.time.YearMonth;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,22 +33,22 @@ public class Point extends BaseTime {
     private long totalPointBalance;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "owner_id")
     @Comment("회원 식별자")
-    private Member member;
+    private Owner owner;
 
     @Builder
     public Point(
         Long id,
         long totalPointBalance,
-        Member member
+        Owner owner
     ) {
         this.id = id;
         this.totalPointBalance = totalPointBalance;
-        this.member = member;
+        this.owner = owner;
     }
 
-    public void updatePoint(long totalPointBalance){
+    public void updatePoint(long totalPointBalance) {
         this.totalPointBalance = totalPointBalance;
     }
 

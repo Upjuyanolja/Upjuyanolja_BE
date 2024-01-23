@@ -11,7 +11,9 @@ import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsExce
 import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidCouponInfoException;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import com.backoffice.upjuyanolja.domain.member.entity.Owner;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.OwnerGetService;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
 import com.backoffice.upjuyanolja.domain.point.exception.PointNotFoundException;
@@ -35,17 +37,17 @@ public class CouponBackofficeService {
     private final CouponRepository couponRepository;
     private final RoomRepository roomRepository;
     private final PointRepository pointRepository;
-    private final MemberGetService memberGetService;
+    private final OwnerGetService ownerGetService;
 
     public CouponMakeViewResponse getRoomsByAccommodation(Long accommodationId) {
         return couponRepository.findRoomsIdByAccommodationId(accommodationId);
     }
 
     public void createCoupon(
-        final CouponMakeRequest couponMakeRequest, final Member currentMember
+        final CouponMakeRequest couponMakeRequest, final Owner currentOwner
     ) {
         final long totalPoints = couponMakeRequest.totalPoints();
-        Point point = validationPoint(currentMember, totalPoints);
+        Point point = validationPoint(currentOwner, totalPoints);
 
         List<CouponRoomsRequest> couponRooms = couponMakeRequest.rooms();
         List<Coupon> coupons = new ArrayList<>();
@@ -94,9 +96,9 @@ public class CouponBackofficeService {
     }
 
 
-    private Point validationPoint(Member member, long requestPoint) {
+    private Point validationPoint(Owner owner, long requestPoint) {
         // 업주의 보유 포인트 검증
-        Optional<Point> resultPoint = pointRepository.findByMember(member);
+        Optional<Point> resultPoint = pointRepository.findByOwner(owner);
         Point point = resultPoint.orElseThrow(PointNotFoundException::new);
         final long ownerPoint = point.getTotalPointBalance();
 
@@ -111,12 +113,12 @@ public class CouponBackofficeService {
     // 업주의 회원 id와 등록된 숙소 id가 매치되는지 검증
     @Transactional(readOnly = true)
     public boolean validateCouponRequest(
-        CouponMakeRequest couponMakeRequest, long currentMemberId
+        CouponMakeRequest couponMakeRequest, long currentOwnerId
     ) {
         long accommodationId = couponMakeRequest.accommodationId();
 
         if (!couponRepository.existsAccommodationIdByMemberId(
-            accommodationId, currentMemberId)) {
+            accommodationId, currentOwnerId)) {
             throw new AccommodationNotFoundException();
         }
         return true;

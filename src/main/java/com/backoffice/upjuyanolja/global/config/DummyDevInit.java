@@ -15,10 +15,12 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import com.backoffice.upjuyanolja.domain.member.entity.Owner;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
+import com.backoffice.upjuyanolja.domain.member.repository.OwnerRepository;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.OwnerGetService;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
-import com.backoffice.upjuyanolja.domain.point.entity.PointType;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
@@ -27,7 +29,6 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DummyDevInit {
 
     private final MemberRepository memberRepository;
+    private final OwnerRepository ownerRepository;
     private final AccommodationRepository accommodationRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
     private final CouponRepository couponRepository;
@@ -53,6 +55,7 @@ public class DummyDevInit {
     private final PointRepository pointRepository;
     private final BCryptPasswordEncoder encoder;
     private final MemberGetService memberGetService;
+    private final OwnerGetService ownerGetService;
 
     @Profile("dev")
     @Bean
@@ -61,15 +64,26 @@ public class DummyDevInit {
             @Override
             public void run(ApplicationArguments args) throws Exception {
                 createMember(1L);
+                createOwner(1L);
                 Member member = memberGetService.getMemberById(1L);
+                Owner owner = ownerGetService.getOwnerById(1L);
                 Accommodation accommodation = createAccommodation(1L);
                 createAccommodationOwnership(accommodation, member);
                 createRooms(accommodation);
-                createPoint(1L, member, 50000L);
+                createPoint(1L, owner, 50000L);
             }
         };
     }
 
+    private void createOwner(Long id) {
+        Owner owner = Owner.builder()
+            .id(id)
+            .email("test1@tester.com")
+            .name("test")
+            .phone("010-1234-1234")
+            .build();
+        ownerRepository.save(owner);
+    }
     private void createMember(Long id) {
         Member member = Member.builder()
             .id(id)
@@ -193,10 +207,10 @@ public class DummyDevInit {
         return coupon;
     }
 
-    private Point createPoint(Long pointId, Member member, long balance) {
+    private Point createPoint(Long pointId, Owner owner, long balance) {
         Point point = Point.builder()
             .id(pointId)
-            .member(member)
+            .owner(owner)
             .totalPointBalance(balance)
             .build();
         pointRepository.save(point);
