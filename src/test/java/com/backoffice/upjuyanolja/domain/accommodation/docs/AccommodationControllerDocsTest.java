@@ -287,78 +287,76 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
                             .value(roomOptionRequestDescriptions.descriptionsForProperty(
                                 "internet")))
                 ),
-                responseFields(successResponseCommon()).and(
-                    fieldWithPath("data").type(JsonFieldType.OBJECT)
-                        .description("응답 데이터"),
-                    fieldWithPath("data.accommodationId").type(JsonFieldType.NUMBER)
+                responseFields(
+                    fieldWithPath("accommodationId").type(JsonFieldType.NUMBER)
                         .description("숙소 식별자"),
-                    fieldWithPath("data.name").type(JsonFieldType.STRING)
+                    fieldWithPath("name").type(JsonFieldType.STRING)
                         .description("숙소 이름"),
-                    fieldWithPath("data.category").type(JsonFieldType.STRING)
+                    fieldWithPath("category").type(JsonFieldType.STRING)
                         .description("숙소 유형"),
-                    fieldWithPath("data.address").type(JsonFieldType.STRING)
+                    fieldWithPath("address").type(JsonFieldType.STRING)
                         .description("숙소 주소"),
-                    fieldWithPath("data.description").type(JsonFieldType.STRING)
+                    fieldWithPath("description").type(JsonFieldType.STRING)
                         .description("숙소 설명"),
-                    fieldWithPath("data.images").type(JsonFieldType.ARRAY)
+                    fieldWithPath("images").type(JsonFieldType.ARRAY)
                         .description("숙소 이미지 배열"),
-                    fieldWithPath("data.images[].id").type(JsonFieldType.NUMBER)
+                    fieldWithPath("images[].id").type(JsonFieldType.NUMBER)
                         .description("숙소 이미지 식별자"),
-                    fieldWithPath("data.images[].url").type(JsonFieldType.STRING)
+                    fieldWithPath("images[].url").type(JsonFieldType.STRING)
                         .description("숙소 이미지 URL"),
-                    fieldWithPath("data.option").type(JsonFieldType.OBJECT)
+                    fieldWithPath("option").type(JsonFieldType.OBJECT)
                         .description("숙소 옵션"),
-                    fieldWithPath("data.option.cooking").type(JsonFieldType.BOOLEAN)
+                    fieldWithPath("option.cooking").type(JsonFieldType.BOOLEAN)
                         .description("객실 내 취사 여부"),
-                    fieldWithPath("data.option.parking").type(JsonFieldType.BOOLEAN)
+                    fieldWithPath("option.parking").type(JsonFieldType.BOOLEAN)
                         .description("주차 시설 여부"),
-                    fieldWithPath("data.option.pickup").type(JsonFieldType.BOOLEAN)
+                    fieldWithPath("option.pickup").type(JsonFieldType.BOOLEAN)
                         .description("픽업 여부"),
-                    fieldWithPath("data.option.barbecue").type(JsonFieldType.BOOLEAN)
+                    fieldWithPath("option.barbecue").type(JsonFieldType.BOOLEAN)
                         .description("바베큐 여부"),
-                    fieldWithPath("data.option.fitness").type(JsonFieldType.BOOLEAN)
+                    fieldWithPath("option.fitness").type(JsonFieldType.BOOLEAN)
                         .description("피트니스 센터 여부"),
-                    fieldWithPath("data.option.karaoke").type(JsonFieldType.BOOLEAN)
+                    fieldWithPath("option.karaoke").type(JsonFieldType.BOOLEAN)
                         .description("노래방 여부"),
-                    fieldWithPath("data.option.sauna").type(JsonFieldType.BOOLEAN)
+                    fieldWithPath("option.sauna").type(JsonFieldType.BOOLEAN)
                         .description("사우나 여부"),
-                    fieldWithPath("data.option.sports").type(JsonFieldType.BOOLEAN)
+                    fieldWithPath("option.sports").type(JsonFieldType.BOOLEAN)
                         .description("스포츠 시설 여부"),
-                    fieldWithPath("data.option.seminar").type(JsonFieldType.BOOLEAN)
+                    fieldWithPath("option.seminar").type(JsonFieldType.BOOLEAN)
                         .description("세미나실 여부"),
-                    fieldWithPath("data.rooms").type(JsonFieldType.ARRAY)
+                    fieldWithPath("rooms").type(JsonFieldType.ARRAY)
                         .description("객실 배열"),
-                    fieldWithPath("data.rooms[].id").type(JsonFieldType.NUMBER)
+                    fieldWithPath("rooms[].id").type(JsonFieldType.NUMBER)
                         .description("객실 식별자"),
-                    fieldWithPath("data.rooms[].name").type(JsonFieldType.STRING)
+                    fieldWithPath("rooms[].name").type(JsonFieldType.STRING)
                         .description("객실 이름"),
-                    fieldWithPath("data.rooms[].defaultCapacity").type(JsonFieldType.NUMBER)
+                    fieldWithPath("rooms[].defaultCapacity").type(JsonFieldType.NUMBER)
                         .description("객실 기본 인원"),
-                    fieldWithPath("data.rooms[].maxCapacity").type(JsonFieldType.NUMBER)
+                    fieldWithPath("rooms[].maxCapacity").type(JsonFieldType.NUMBER)
                         .description("객실 최대 인원"),
-                    fieldWithPath("data.rooms[].checkInTime").type(JsonFieldType.STRING)
+                    fieldWithPath("rooms[].checkInTime").type(JsonFieldType.STRING)
                         .description("객실 체크인 시간"),
-                    fieldWithPath("data.rooms[].checkOutTime").type(JsonFieldType.STRING)
+                    fieldWithPath("rooms[].checkOutTime").type(JsonFieldType.STRING)
                         .description("객실 체크아웃 시간"),
-                    fieldWithPath("data.rooms[].price").type(JsonFieldType.NUMBER)
+                    fieldWithPath("rooms[].price").type(JsonFieldType.NUMBER)
                         .description("객실 가격"),
-                    fieldWithPath("data.rooms[].amount").type(JsonFieldType.NUMBER)
+                    fieldWithPath("rooms[].amount").type(JsonFieldType.NUMBER)
                         .description("객실 개수"),
-                    fieldWithPath("data.rooms[].status").type(JsonFieldType.STRING)
+                    fieldWithPath("rooms[].status").type(JsonFieldType.STRING)
                         .description("객실 상태"),
-                    fieldWithPath("data.rooms[].images").type(JsonFieldType.ARRAY)
+                    fieldWithPath("rooms[].images").type(JsonFieldType.ARRAY)
                         .description("객실 이미지 배열"),
-                    fieldWithPath("data.rooms[].images[].id").type(JsonFieldType.NUMBER)
+                    fieldWithPath("rooms[].images[].id").type(JsonFieldType.NUMBER)
                         .description("객실 이미지 식별자"),
-                    fieldWithPath("data.rooms[].images[].url").type(JsonFieldType.STRING)
+                    fieldWithPath("rooms[].images[].url").type(JsonFieldType.STRING)
                         .description("객실 이미지 URL"),
-                    fieldWithPath("data.rooms[].option").type(JsonFieldType.OBJECT)
+                    fieldWithPath("rooms[].option").type(JsonFieldType.OBJECT)
                         .description("객실 옵션"),
-                    fieldWithPath("data.rooms[].option.airCondition").type(JsonFieldType.BOOLEAN)
+                    fieldWithPath("rooms[].option.airCondition").type(JsonFieldType.BOOLEAN)
                         .description("에어컨 여부"),
-                    fieldWithPath("data.rooms[].option.tv").type(JsonFieldType.BOOLEAN)
+                    fieldWithPath("rooms[].option.tv").type(JsonFieldType.BOOLEAN)
                         .description("TV 여부"),
-                    fieldWithPath("data.rooms[].option.internet").type(JsonFieldType.BOOLEAN)
+                    fieldWithPath("rooms[].option.internet").type(JsonFieldType.BOOLEAN)
                         .description("인터넷 여부")
                 )
             ));
@@ -392,14 +390,12 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
         // when then
         mockMvc.perform(get("/api/accommodations/backoffice"))
             .andDo(restDoc.document(
-                responseFields(successResponseCommon()).and(
-                    fieldWithPath("data").type(JsonFieldType.OBJECT)
-                        .description("응답 데이터"),
-                    fieldWithPath("data.accommodations").type(JsonFieldType.ARRAY)
+                responseFields().and(
+                    fieldWithPath("accommodations").type(JsonFieldType.ARRAY)
                         .description("보유 숙소 배열"),
-                    fieldWithPath("data.accommodations[].id").type(JsonFieldType.NUMBER)
+                    fieldWithPath("accommodations[].id").type(JsonFieldType.NUMBER)
                         .description("숙소 식별자"),
-                    fieldWithPath("data.accommodations[].name").type(JsonFieldType.STRING)
+                    fieldWithPath("accommodations[].name").type(JsonFieldType.STRING)
                         .description("숙소 이름")
                 )
             ));
@@ -472,12 +468,10 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
                     partWithName("image4").description("저장할 이미지 4"),
                     partWithName("image5").description("저장할 이미지 5")
                 ),
-                responseFields(successResponseCommon()).and(
-                    fieldWithPath("data").type(JsonFieldType.OBJECT)
-                        .description("응답 데이터"),
-                    fieldWithPath("data.urls").type(JsonFieldType.ARRAY)
+                responseFields().and(
+                    fieldWithPath("urls").type(JsonFieldType.ARRAY)
                         .description("이미지 URL 배열"),
-                    fieldWithPath("data.urls[].url").type(JsonFieldType.STRING).optional()
+                    fieldWithPath("urls[].url").type(JsonFieldType.STRING).optional()
                         .description("이미지 URL")
                 )
             ));

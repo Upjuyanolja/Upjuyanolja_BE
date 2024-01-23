@@ -6,8 +6,9 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -128,13 +129,12 @@ class CouponBackofficeControllerTest {
             mockMvc.perform(get("/api/coupons/backoffice/buy/{accommodationId}", accommodationId))
                 .andExpect(status().is(HttpStatus.OK.value()))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.data.accommodationId").isNumber())
-                .andExpect(jsonPath("$.data.accommodationName").isString())
-                .andExpect(jsonPath("$.data.rooms").isArray())
-                .andExpect(jsonPath("$.data.rooms[0].roomId").isNumber())
-                .andExpect(jsonPath("$.data.rooms[0].roomName").isString())
-                .andExpect(jsonPath("$.data.rooms[0].roomPrice").isNumber())
+                .andExpect(jsonPath("$.accommodationId").isNumber())
+                .andExpect(jsonPath("$.accommodationName").isString())
+                .andExpect(jsonPath("$.rooms").isArray())
+                .andExpect(jsonPath("$.rooms[0].roomId").isNumber())
+                .andExpect(jsonPath("$.rooms[0].roomName").isString())
+                .andExpect(jsonPath("$.rooms[0].roomPrice").isNumber())
                 .andDo(print());
 
             verify(couponBackofficeService, times(1)).getRoomsByAccommodation(any(Long.TYPE));
@@ -160,7 +160,6 @@ class CouponBackofficeControllerTest {
                     .content(objectMapper.writeValueAsString(mockCouponMakeRequest))
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.message").isString())
                 .andDo(print());
         }
     }
@@ -215,24 +214,23 @@ class CouponBackofficeControllerTest {
             mockMvc.perform(get("/api/coupons/backoffice/manage/1"))
                 .andExpect(status().is(HttpStatus.OK.value()))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.data.accommodationId").isNumber())
-                .andExpect(jsonPath("$.data.accommodationName").isString())
-                .andExpect(jsonPath("$.data.expiry").exists())
-                .andExpect(jsonPath("$.data.rooms").isArray())
-                .andExpect(jsonPath("$.data.rooms[0].roomId").isNumber())
-                .andExpect(jsonPath("$.data.rooms[0].roomName").isString())
-                .andExpect(jsonPath("$.data.rooms[0].roomPrice").isNumber())
-                .andExpect(jsonPath("$.data.rooms[0].coupons").isArray())
-                .andExpect(jsonPath("$.data.rooms[0].coupons[0].couponId").isNumber())
-                .andExpect(jsonPath("$.data.rooms[0].coupons[0].status").isString())
-                .andExpect(jsonPath("$.data.rooms[0].coupons[0].couponName").isString())
-                .andExpect(jsonPath("$.data.rooms[0].coupons[0].appliedPrice").isNumber())
-                .andExpect(jsonPath("$.data.rooms[0].coupons[0].discountType").isString())
-                .andExpect(jsonPath("$.data.rooms[0].coupons[0].discount").isNumber())
-                .andExpect(jsonPath("$.data.rooms[0].coupons[0].dayLimit").isNumber())
-                .andExpect(jsonPath("$.data.rooms[0].coupons[0].quantity").isNumber())
-                .andExpect(jsonPath("$.data.rooms[0].coupons[0].couponType").isString())
+                .andExpect(jsonPath("$.accommodationId").isNumber())
+                .andExpect(jsonPath("$.accommodationName").isString())
+                .andExpect(jsonPath("$.expiry").exists())
+                .andExpect(jsonPath("$.rooms").isArray())
+                .andExpect(jsonPath("$.rooms[0].roomId").isNumber())
+                .andExpect(jsonPath("$.rooms[0].roomName").isString())
+                .andExpect(jsonPath("$.rooms[0].roomPrice").isNumber())
+                .andExpect(jsonPath("$.rooms[0].coupons").isArray())
+                .andExpect(jsonPath("$.rooms[0].coupons[0].couponId").isNumber())
+                .andExpect(jsonPath("$.rooms[0].coupons[0].status").isString())
+                .andExpect(jsonPath("$.rooms[0].coupons[0].couponName").isString())
+                .andExpect(jsonPath("$.rooms[0].coupons[0].appliedPrice").isNumber())
+                .andExpect(jsonPath("$.rooms[0].coupons[0].discountType").isString())
+                .andExpect(jsonPath("$.rooms[0].coupons[0].discount").isNumber())
+                .andExpect(jsonPath("$.rooms[0].coupons[0].dayLimit").isNumber())
+                .andExpect(jsonPath("$.rooms[0].coupons[0].quantity").isNumber())
+                .andExpect(jsonPath("$.rooms[0].coupons[0].couponType").isString())
                 .andDo(print());
 
             verify(couponBackofficeService, times(1)).manageCoupon(any(Long.TYPE));
@@ -256,7 +254,6 @@ class CouponBackofficeControllerTest {
                         .content(objectMapper.writeValueAsString(couponAddRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(HttpStatus.OK.value()))
-                .andExpect(jsonPath("$.message").value("쿠폰 추가 구매에 성공하였습니다."))
                 .andDo(print());
         }
 
@@ -277,7 +274,6 @@ class CouponBackofficeControllerTest {
                         .content(objectMapper.writeValueAsString(couponModifyRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(HttpStatus.OK.value()))
-                .andExpect(jsonPath("$.message").value("쿠폰 수정에 성공하였습니다."))
                 .andDo(print());
         }
 
@@ -298,7 +294,6 @@ class CouponBackofficeControllerTest {
                         .content(objectMapper.writeValueAsString(mockDeleteRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(HttpStatus.OK.value()))
-                .andExpect(jsonPath("$.message").value("쿠폰 삭제에 성공하였습니다."))
                 .andDo(print());
         }
 

@@ -11,8 +11,9 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.requestF
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.restdocs.snippet.Attributes.key;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -115,20 +116,18 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
         // then
         result.andExpect(status().isOk())
             .andDo(restDoc.document(
-                responseFields(successResponseCommon()).and(
-                    subsectionWithPath("data").type(JsonFieldType.OBJECT)
-                        .description("응답 데이터"),
-                    subsectionWithPath("data.accommodationId").type(JsonFieldType.NUMBER)
+                responseFields(
+                    subsectionWithPath("accommodationId").type(JsonFieldType.NUMBER)
                         .description("숙소 식별자"),
-                    subsectionWithPath("data.accommodationName").type(JsonFieldType.STRING)
+                    subsectionWithPath("accommodationName").type(JsonFieldType.STRING)
                         .description("숙소 이름"),
-                    subsectionWithPath("data.rooms").type(JsonFieldType.ARRAY)
+                    subsectionWithPath("rooms").type(JsonFieldType.ARRAY)
                         .description("보유 객실 배열"),
-                    subsectionWithPath("data.rooms[].roomId").type(JsonFieldType.NUMBER)
+                    subsectionWithPath("rooms[].roomId").type(JsonFieldType.NUMBER)
                         .description("객실 식별자"),
-                    subsectionWithPath("data.rooms[].roomName").type(JsonFieldType.STRING)
+                    subsectionWithPath("rooms[].roomName").type(JsonFieldType.STRING)
                         .description("객실 이름"),
-                    subsectionWithPath("data.rooms[].roomPrice").type(JsonFieldType.NUMBER)
+                    subsectionWithPath("rooms[].roomPrice").type(JsonFieldType.NUMBER)
                         .description("객실 가격")
                 )
             ));
@@ -197,9 +196,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
                         key("constraints").value(
                             createCouponRequestDescriptions.descriptionsForProperty(
                                 "rooms[].eachPoint")))
-                ),
-                responseFields(successResponseCommon()).and(
-                    fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터"))
+                )
             ));
     }
 
@@ -248,42 +245,40 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
             .andExpect(status().is(HttpStatus.OK.value()))
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(restDoc.document(
-                responseFields(successResponseCommon()).and(
-                    subsectionWithPath("data").type(JsonFieldType.OBJECT)
-                        .description("응답 데이터"),
-                    subsectionWithPath("data.accommodationId").type(JsonFieldType.NUMBER)
+                responseFields(
+                    subsectionWithPath("accommodationId").type(JsonFieldType.NUMBER)
                         .description("숙소 식별자"),
-                    subsectionWithPath("data.accommodationName").type(JsonFieldType.STRING)
+                    subsectionWithPath("accommodationName").type(JsonFieldType.STRING)
                         .description("숙소 이름"),
-                    subsectionWithPath("data.expiry").type(JsonFieldType.STRING)
+                    subsectionWithPath("expiry").type(JsonFieldType.STRING)
                         .description("쿠폰 만료 일자"),
-                    subsectionWithPath("data.rooms").type(JsonFieldType.ARRAY)
+                    subsectionWithPath("rooms").type(JsonFieldType.ARRAY)
                         .description("객실 배열"),
-                    subsectionWithPath("data.rooms[].roomId").type(JsonFieldType.NUMBER)
+                    subsectionWithPath("rooms[].roomId").type(JsonFieldType.NUMBER)
                         .description("객실 식별 번호"),
-                    subsectionWithPath("data.rooms[].roomName").type(JsonFieldType.STRING)
+                    subsectionWithPath("rooms[].roomName").type(JsonFieldType.STRING)
                         .description("객실 이름"),
-                    subsectionWithPath("data.rooms[].roomPrice").type(JsonFieldType.NUMBER)
+                    subsectionWithPath("rooms[].roomPrice").type(JsonFieldType.NUMBER)
                         .description("객실 가격"),
-                    subsectionWithPath("data.rooms[].coupons").type(JsonFieldType.ARRAY)
+                    subsectionWithPath("rooms[].coupons").type(JsonFieldType.ARRAY)
                         .description("객실별 쿠폰 배열"),
-                    subsectionWithPath("data.rooms[].coupons[].couponId").type(JsonFieldType.NUMBER)
+                    subsectionWithPath("rooms[].coupons[].couponId").type(JsonFieldType.NUMBER)
                         .description("쿠폰 식별자"),
-                    subsectionWithPath("data.rooms[].coupons[].status").type(JsonFieldType.STRING)
+                    subsectionWithPath("rooms[].coupons[].status").type(JsonFieldType.STRING)
                         .description("쿠폰 상태"),
-                    subsectionWithPath("data.rooms[].coupons[].couponName").type(JsonFieldType.STRING)
+                    subsectionWithPath("rooms[].coupons[].couponName").type(JsonFieldType.STRING)
                         .description("쿠폰 이름"),
-                    subsectionWithPath("data.rooms[].coupons[].appliedPrice").type(JsonFieldType.NUMBER)
+                    subsectionWithPath("rooms[].coupons[].appliedPrice").type(JsonFieldType.NUMBER)
                         .description("쿠폰 적용 가격"),
-                    subsectionWithPath("data.rooms[].coupons[].discountType").type(JsonFieldType.STRING)
+                    subsectionWithPath("rooms[].coupons[].discountType").type(JsonFieldType.STRING)
                         .description("할인 유형"),
-                    subsectionWithPath("data.rooms[].coupons[].discount").type(JsonFieldType.NUMBER)
+                    subsectionWithPath("rooms[].coupons[].discount").type(JsonFieldType.NUMBER)
                         .description("할인가격/할인율"),
-                    subsectionWithPath("data.rooms[].coupons[].dayLimit").type(JsonFieldType.NUMBER)
+                    subsectionWithPath("rooms[].coupons[].dayLimit").type(JsonFieldType.NUMBER)
                         .description("일일 사용 한도"),
-                    subsectionWithPath("data.rooms[].coupons[].quantity").type(JsonFieldType.NUMBER)
+                    subsectionWithPath("rooms[].coupons[].quantity").type(JsonFieldType.NUMBER)
                         .description("쿠폰 수량"),
-                    subsectionWithPath("data.rooms[].coupons[].couponType").type(JsonFieldType.STRING)
+                    subsectionWithPath("rooms[].coupons[].couponType").type(JsonFieldType.STRING)
                         .description("쿠폰 유형")
                 )
             ));
@@ -301,7 +296,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
 
         List<CouponAddRooms> rooms = createMockAddCoupons();
         CouponAddRequest mockCouponAddRequest = new CouponAddRequest(
-            1L, 150000, LocalDate.of(2024,02,25), rooms);
+            1L, 150000, LocalDate.of(2024, 02, 25), rooms);
 
         doNothing().when(couponBackofficeService).addonCoupon(
             any(CouponAddRequest.class), any(Long.TYPE));
@@ -345,10 +340,11 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
                         key("constraints").value(
                             couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[].status"))),
-                    fieldWithPath("rooms[].coupons[].discountType").description("쿠폰 할인 유형").attributes(
-                        key("constraints").value(
-                            couponAddonRequestDescriptions.descriptionsForProperty(
-                                "rooms[].coupons[].discountType"))),
+                    fieldWithPath("rooms[].coupons[].discountType").description("쿠폰 할인 유형")
+                        .attributes(
+                            key("constraints").value(
+                                couponAddonRequestDescriptions.descriptionsForProperty(
+                                    "rooms[].coupons[].discountType"))),
                     fieldWithPath("rooms[].coupons[].discount").description("할인가/할인율").attributes(
                         key("constraints").value(
                             couponAddonRequestDescriptions.descriptionsForProperty(
@@ -357,21 +353,21 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
                         key("constraints").value(
                             couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[].dayLimit"))),
-                    fieldWithPath("rooms[].coupons[].buyQuantity").description("쿠폰 추가 구매 수량").attributes(
-                        key("constraints").value(
-                            couponAddonRequestDescriptions.descriptionsForProperty(
-                                "rooms[].coupons[].buyQuantity"))),
+                    fieldWithPath("rooms[].coupons[].buyQuantity").description("쿠폰 추가 구매 수량")
+                        .attributes(
+                            key("constraints").value(
+                                couponAddonRequestDescriptions.descriptionsForProperty(
+                                    "rooms[].coupons[].buyQuantity"))),
                     fieldWithPath("rooms[].coupons[].couponType").description("쿠폰 유형").attributes(
                         key("constraints").value(
                             couponAddonRequestDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[].couponType"))),
-                    fieldWithPath("rooms[].coupons[].eachPoint").description("쿠폰 별 구입 포인트").attributes(
-                        key("constraints").value(
-                            couponAddonRequestDescriptions.descriptionsForProperty(
-                                "rooms[].coupons[].eachPoint")))
-                    ),
-                responseFields(successResponseCommon()).and(
-                    fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터"))
+                    fieldWithPath("rooms[].coupons[].eachPoint").description("쿠폰 별 구입 포인트")
+                        .attributes(
+                            key("constraints").value(
+                                couponAddonRequestDescriptions.descriptionsForProperty(
+                                    "rooms[].coupons[].eachPoint")))
+                )
             ));
     }
 
@@ -426,10 +422,11 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
                         key("constraints").value(
                             couponModifyDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[].status"))),
-                    fieldWithPath("rooms[].coupons[].discountType").description("쿠폰 할인 유형").attributes(
-                        key("constraints").value(
-                            couponModifyDescriptions.descriptionsForProperty(
-                                "rooms[].coupons[].discountType"))),
+                    fieldWithPath("rooms[].coupons[].discountType").description("쿠폰 할인 유형")
+                        .attributes(
+                            key("constraints").value(
+                                couponModifyDescriptions.descriptionsForProperty(
+                                    "rooms[].coupons[].discountType"))),
                     fieldWithPath("rooms[].coupons[].discount").description("할인가/할인율").attributes(
                         key("constraints").value(
                             couponModifyDescriptions.descriptionsForProperty(
@@ -442,9 +439,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
                         key("constraints").value(
                             couponModifyDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[].couponType")))
-                ),
-                responseFields(successResponseCommon()).and(
-                    fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터"))
+                )
             ));
     }
 
@@ -490,9 +485,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
                         key("constraints").value(
                             couponDeleteDescriptions.descriptionsForProperty(
                                 "rooms[].coupons[],couponId")))
-                ),
-                responseFields(successResponseCommon()).and(
-                    fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터"))
+                )
             ));
     }
 
@@ -519,16 +512,22 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
 
     private List<CouponAddRooms> createMockAddCoupons() {
         List<CouponAddInfos> coupons1 = List.of(
-            new CouponAddInfos(1L, CouponStatus.ENABLE, DiscountType.FLAT, 50000, 20, 50, CouponType.ALL_DAYS, 1000),
-            new CouponAddInfos(2L, CouponStatus.ENABLE, DiscountType.RATE, 10, 20, 50, CouponType.ALL_DAYS, 1000)
+            new CouponAddInfos(1L, CouponStatus.ENABLE, DiscountType.FLAT, 50000, 20, 50,
+                CouponType.ALL_DAYS, 1000),
+            new CouponAddInfos(2L, CouponStatus.ENABLE, DiscountType.RATE, 10, 20, 50,
+                CouponType.ALL_DAYS, 1000)
         );
         List<CouponAddInfos> coupons2 = List.of(
-            new CouponAddInfos(5L, CouponStatus.ENABLE, DiscountType.FLAT, 10000, 20, 50, CouponType.ALL_DAYS, 1000),
-            new CouponAddInfos(6L, CouponStatus.ENABLE, DiscountType.RATE, 20, 20, 50, CouponType.ALL_DAYS, 1000)
+            new CouponAddInfos(5L, CouponStatus.ENABLE, DiscountType.FLAT, 10000, 20, 50,
+                CouponType.ALL_DAYS, 1000),
+            new CouponAddInfos(6L, CouponStatus.ENABLE, DiscountType.RATE, 20, 20, 50,
+                CouponType.ALL_DAYS, 1000)
         );
         List<CouponAddInfos> coupons3 = List.of(
-            new CouponAddInfos(9L, CouponStatus.ENABLE, DiscountType.FLAT, 30000, 20, 50, CouponType.ALL_DAYS, 1000),
-            new CouponAddInfos(10L, CouponStatus.ENABLE, DiscountType.RATE, 50, 20, 50, CouponType.ALL_DAYS, 1000)
+            new CouponAddInfos(9L, CouponStatus.ENABLE, DiscountType.FLAT, 30000, 20, 50,
+                CouponType.ALL_DAYS, 1000),
+            new CouponAddInfos(10L, CouponStatus.ENABLE, DiscountType.RATE, 50, 20, 50,
+                CouponType.ALL_DAYS, 1000)
         );
         List<CouponAddRooms> rooms = List.of(
             new CouponAddRooms(1L, coupons1),

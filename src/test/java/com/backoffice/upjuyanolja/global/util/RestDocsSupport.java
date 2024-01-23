@@ -1,6 +1,8 @@
 package com.backoffice.upjuyanolja.global.util;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyHeaders;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -44,17 +46,24 @@ public abstract class RestDocsSupport {
     public void setup(RestDocumentationContextProvider restDocumentationContextProvider) {
         this.mockMvc = MockMvcBuilders
             .webAppContextSetup(context)
-            .apply(documentationConfiguration(restDocumentationContextProvider))
+            .apply(documentationConfiguration(
+                restDocumentationContextProvider).operationPreprocessors()
+                .withRequestDefaults(modifyHeaders()
+                    .remove("Vary")
+                    .remove("X-Content-Type-Options")
+                    .remove("X-XSS-Protection")
+                    .remove("Cache-Control")
+                    .remove("Pragma")
+                    .remove("Expires")
+                    .remove("X-Frame-Options")
+                    .remove("Content-Length")
+                    .remove("Host"))
+                .withResponseDefaults(prettyPrint()))
             .alwaysDo(print())
             .alwaysDo(restDoc)
             .apply(springSecurity())
             .addFilters(new CharacterEncodingFilter("UTF-8", true))
             .build();
-    }
-
-    protected FieldDescriptor[] successResponseCommon() {
-        return new FieldDescriptor[]{
-            fieldWithPath("message").type(JsonFieldType.STRING).description("응답 메시지")};
     }
 
     protected FieldDescriptor[] failResponseCommon() {
