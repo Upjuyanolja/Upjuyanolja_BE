@@ -23,6 +23,7 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import com.backoffice.upjuyanolja.domain.member.entity.Owner;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
@@ -119,7 +120,8 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
             .rooms(mockRequests)
             .build();
 
-        doNothing().when(couponBackofficeService).createCoupon(any(CouponMakeRequest.class), any(Member.class));
+        doNothing().when(couponBackofficeService).createCoupon(any(CouponMakeRequest.class), any(
+            Owner.class));
 
         // when & Then
         mockMvc.perform(post("/api/coupons/backoffice/buy")
