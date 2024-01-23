@@ -66,11 +66,6 @@ public abstract class RestDocsSupport {
             .build();
     }
 
-    protected FieldDescriptor[] successResponseCommon() {
-        return new FieldDescriptor[]{
-            fieldWithPath("message").type(JsonFieldType.STRING).description("응답 메시지")};
-    }
-
     protected FieldDescriptor[] failResponseCommon() {
         return new FieldDescriptor[]{
             fieldWithPath("code").type(JsonFieldType.NUMBER).description("응답 코드"),

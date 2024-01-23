@@ -8,22 +8,10 @@ import org.springframework.http.ResponseEntity;
 
 public class ApiResponse {
 
-    public static <T> ResponseEntity<SuccessResponse<T>> success(
-        HttpStatus status,
-        SuccessResponse<T> body
-    ) {
-        return ResponseEntity.status(status).body(body);
-    }
-
     public static ResponseEntity<FailResponse> error(FailResponse responseDto) {
         return ResponseEntity
             .status(FailResponse.getHttpStatusByCode(responseDto.code))
             .body(responseDto);
-    }
-
-    @Builder
-    public record SuccessResponse<T>(String message, T data) {
-
     }
 
     @Builder
