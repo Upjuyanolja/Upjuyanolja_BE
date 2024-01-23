@@ -20,7 +20,6 @@ public interface AccommodationCommandUseCase {
 
     AccommodationPageResponse findAccommodations(
         String Category,
-        String type,
         boolean onlyHasCoupon,
         String keyword,
         Pageable pageable
