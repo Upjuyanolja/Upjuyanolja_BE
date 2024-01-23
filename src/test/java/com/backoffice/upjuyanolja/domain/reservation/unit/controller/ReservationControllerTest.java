@@ -403,7 +403,8 @@ class ReservationControllerTest {
 
             // when
             // then
-            mockMvc.perform(MockMvcRequestBuilders.get("/api/reservations/cancel")
+            mockMvc.perform(MockMvcRequestBuilders.get("/api/reservations")
+                    .queryParam("status", "CANCELLED")
                     .param("page", String.valueOf(pageable.getPageNumber()))
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().is(HttpStatus.OK.value()))

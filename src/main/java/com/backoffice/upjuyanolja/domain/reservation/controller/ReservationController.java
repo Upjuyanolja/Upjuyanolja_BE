@@ -4,7 +4,9 @@ import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.reservation.dto.request.CreateReservationRequest;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetCanceledResponse;
+import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservationResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
+import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
 import com.backoffice.upjuyanolja.domain.reservation.service.ReservationService;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse;
 import com.backoffice.upjuyanolja.global.common.response.ApiResponse.SuccessResponse;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -62,31 +65,38 @@ public class ReservationController {
     }
 
     @GetMapping()
-    public ResponseEntity<SuccessResponse<GetReservedResponse>> getReserved(
+    public ResponseEntity<SuccessResponse<GetReservationResponse>> getReserved(
+        @RequestParam(name = "status", defaultValue = "RESERVED") ReservationStatus status,
         @PageableDefault(size = 3) Pageable pageable
     ) {
         Member currentMember = getCurrentMember();
-        GetReservedResponse response = reservationService.getReserved(currentMember, pageable);
 
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<GetReservedResponse>builder()
-                .message("예약 조회에 성공하였습니다.")
-                .data(response)
-                .build());
-    }
+        ResponseEntity<SuccessResponse<GetReservationResponse>> success;
+        switch (status) {
+            case RESERVED, SERVICED -> {
+                GetReservedResponse response = reservationService.getReserved(currentMember,
+                    pageable);
 
-    @GetMapping("/cancel")
-    public ResponseEntity<SuccessResponse<GetCanceledResponse>> getCanceled(
-        @PageableDefault(size = 3) Pageable pageable
-    ) {
-        Member currentMember = getCurrentMember();
-        GetCanceledResponse response = reservationService.getCanceled(currentMember, pageable);
+                success = ApiResponse.success(HttpStatus.OK,
+                    SuccessResponse.<GetReservationResponse>builder()
+                        .message("예약 조회에 성공하였습니다.")
+                        .data(response)
+                        .build());
+            }
+            case CANCELLED -> {
+                GetCanceledResponse response = reservationService.getCanceled(currentMember,
+                    pageable);
 
-        return ApiResponse.success(HttpStatus.OK,
-            SuccessResponse.<GetCanceledResponse>builder()
-                .message("예약 취소 조회에 성공하였습니다.")
-                .data(response)
-                .build());
+                success = ApiResponse.success(HttpStatus.OK,
+                    SuccessResponse.<GetReservationResponse>builder()
+                        .message("예약 취소 조회에 성공하였습니다.")
+                        .data(response)
+                        .build());
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + status);
+        }
+
+        return success;
     }
 
     private Member getCurrentMember() {
