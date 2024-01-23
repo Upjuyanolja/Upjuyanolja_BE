@@ -47,9 +47,9 @@ public class CouponBackofficeController {
     ) {
         //Todo: Id validation 검증 로직 보완
         log.info("GET /api/coupons/backoffice/buy/{accommodationId}");
-        Member currentMember = getCurrentMember();
+        Long currentMemberId = securityUtil.getCurrentMemberId();
         couponService.validateAccommodationRequest(
-            accommodationId, currentMember.getId());
+            accommodationId, currentMemberId);
 
         return ApiResponse.success(
             HttpStatus.OK,
