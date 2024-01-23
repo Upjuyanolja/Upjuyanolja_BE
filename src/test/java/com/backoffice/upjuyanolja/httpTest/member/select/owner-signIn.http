@@ -12,6 +12,6 @@ Content-Type: application/json
     client.assert(response.contentType.mimeType === "application/json", "Expected 'application/json'");
   });
 
-  client.log(response.body.data.accessToken);
-  client.global.set("access_token",response.body.data.accessToken)
+  client.log(response.body.accessToken);
+  client.global.set("access_token",response.body.accessToken);
 %}
