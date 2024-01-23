@@ -32,7 +32,7 @@ public class PointController {
         log.info("GET /api/points/summary");
 
         PointSummaryResponse response = pointService.getSummary(
-            securityUtil.getCurrentOwnerId(), rangeDate
+            securityUtil.getCurrentMemberId(), rangeDate
         );
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

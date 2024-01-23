@@ -18,7 +18,15 @@ public class PointChargesCustomRepositoryImpl implements PointChargesCustomRepos
     private final QPointCharges qPointCharges = QPointCharges.pointCharges;
 
     @Override
-    public List<PointCharges> findByPointAndRefundableAndChargeDateWithin(
+    public Long sumChargePointByRefundable(Point point) {
+        return query.select(qPointCharges.chargePoint.sum())
+            .from(qPointCharges)
+            .where(isPointRefundable(point))
+            .fetchFirst();
+    }
+
+    @Override
+    public List<PointCharges> findByPointAndRefundableAndRangeDate(
         Point point, YearMonth rangeDate
     ) {
         List<PointCharges> result = getPointCharges(point, rangeDate);
@@ -29,11 +37,15 @@ public class PointChargesCustomRepositoryImpl implements PointChargesCustomRepos
         Point point, YearMonth rangeDate
     ) {
         return query.selectFrom(qPointCharges)
-            .where(qPointCharges.point.eq(point)
-                .and(qPointCharges.refundable.isTrue())
+            .where(isPointRefundable(point)
                 .and(eqChargeDate(rangeDate))
             )
             .fetch();
+    }
+
+    private BooleanExpression isPointRefundable(Point point) {
+        return qPointCharges.point.eq(point)
+            .and(qPointCharges.refundable.isTrue());
     }
 
     private BooleanExpression eqChargeDate(YearMonth rangeDate) {

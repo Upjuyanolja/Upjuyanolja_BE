@@ -1,9 +1,7 @@
 package com.backoffice.upjuyanolja.domain.point.repository;
 
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
-import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
 import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
-import com.backoffice.upjuyanolja.domain.point.entity.QPointCharges;
 import com.backoffice.upjuyanolja.domain.point.entity.QPointUsage;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -20,7 +18,7 @@ public class PointUsageCustomRepositoryImpl implements PointUsageCustomRepositor
     private final QPointUsage qPointUsage = QPointUsage.pointUsage;
 
     @Override
-    public List<PointUsage> findByPointAndChargeDateWithin(
+    public List<PointUsage> findByPointAndRangeDate(
         Point point, YearMonth rangeDate
     ) {
         List<PointUsage> result = getPointUsages(point, rangeDate);
