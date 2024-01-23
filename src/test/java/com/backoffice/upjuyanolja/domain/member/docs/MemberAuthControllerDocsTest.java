@@ -52,8 +52,8 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
                 queryParameters(
                     parameterWithName("email").description("이메일")
                 ),
-                responseFields(successResponseCommon()).and(
-                    fieldWithPath("data.isExists").type(JsonFieldType.BOOLEAN)
+                responseFields(
+                    fieldWithPath("isExists").type(JsonFieldType.BOOLEAN)
                         .description("이메일 중복 여부")
                 )
             ));
@@ -77,14 +77,14 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
         // when then
         mockMvc.perform(get("/api/auth/members"))
             .andDo(restDoc.document(
-                responseFields(successResponseCommon()).and(
-                    fieldWithPath("data.memberId").type(JsonFieldType.NUMBER)
+                responseFields(
+                    fieldWithPath("memberId").type(JsonFieldType.NUMBER)
                         .description("회원 식별자"),
-                    fieldWithPath("data.email").type(JsonFieldType.STRING)
+                    fieldWithPath("email").type(JsonFieldType.STRING)
                         .description("이메일"),
-                    fieldWithPath("data.name").type(JsonFieldType.STRING)
+                    fieldWithPath("name").type(JsonFieldType.STRING)
                         .description("이름"),
-                    fieldWithPath("data.phoneNumber").type(JsonFieldType.STRING)
+                    fieldWithPath("phoneNumber").type(JsonFieldType.STRING)
                         .description("전화번호")
                 )
             ));

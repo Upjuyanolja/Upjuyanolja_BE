@@ -266,10 +266,6 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
                         .attributes(key("constraints")
                             .value(createReservationRequestDescriptions.descriptionsForProperty(
                                 "payMethod")))
-                ),
-                responseFields(
-                    fieldWithPath("message").description("응답 메세지"),
-                    subsectionWithPath("data").description("응답 데이터")
                 )
             ));
     }
@@ -288,7 +284,6 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         mockMvc.perform(delete("/api/reservations/{reservationId}", reservationId)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.status().is(HttpStatus.NO_CONTENT.value()))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("성공적으로 예약을 취소했습니다."))
             .andDo(print());
 
         //when
@@ -298,12 +293,7 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
 
         //then
         result.andExpect(status().isNoContent())
-            .andDo(restDoc.document(
-                responseFields(
-                    fieldWithPath("message").description("응답 메세지"),
-                    subsectionWithPath("data").description("응답 데이터")
-                )
-            ));
+            .andDo(restDoc.document());
     }
 
     @Test
@@ -341,33 +331,31 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
                 queryParameters(
                     parameterWithName("page").description("불러올 페이지 순서")),
                 responseFields(
-                    fieldWithPath("message").description("응답 메세지"),
-                    subsectionWithPath("data").description("응답 데이터"),
-                    subsectionWithPath("data.pageNum").description("현재 페이지"),
-                    subsectionWithPath("data.pageSize").description("각 페이지 사이즈"),
-                    subsectionWithPath("data.totalPages").description("전체 페이지 수"),
-                    subsectionWithPath("data.totalElements").description("전체 요소 수"),
-                    subsectionWithPath("data.isLast").description("마지막 페이지 여부"),
-                    subsectionWithPath("data.reservations").description("예약 리스트"),
-                    subsectionWithPath("data.reservations[].id").description("예약 ID"),
-                    subsectionWithPath("data.reservations[].date").description("예약 완료 날짜"),
-                    subsectionWithPath("data.reservations[].isCouponUsed").description("쿠폰 사용 여부"),
-                    subsectionWithPath("data.reservations[].roomPrice").description("객실 가격"),
-                    subsectionWithPath("data.reservations[].totalAmount").description("결제 금액"),
-                    subsectionWithPath("data.reservations[].accommodationId").description("숙소 ID"),
-                    subsectionWithPath("data.reservations[].accommodationName").description(
+                    subsectionWithPath("pageNum").description("현재 페이지"),
+                    subsectionWithPath("pageSize").description("각 페이지 사이즈"),
+                    subsectionWithPath("totalPages").description("전체 페이지 수"),
+                    subsectionWithPath("totalElements").description("전체 요소 수"),
+                    subsectionWithPath("isLast").description("마지막 페이지 여부"),
+                    subsectionWithPath("reservations").description("예약 리스트"),
+                    subsectionWithPath("reservations[].id").description("예약 ID"),
+                    subsectionWithPath("reservations[].date").description("예약 완료 날짜"),
+                    subsectionWithPath("reservations[].isCouponUsed").description("쿠폰 사용 여부"),
+                    subsectionWithPath("reservations[].roomPrice").description("객실 가격"),
+                    subsectionWithPath("reservations[].totalAmount").description("결제 금액"),
+                    subsectionWithPath("reservations[].accommodationId").description("숙소 ID"),
+                    subsectionWithPath("reservations[].accommodationName").description(
                         "숙소 이름"),
-                    subsectionWithPath("data.reservations[].roomId").description("객실 ID"),
-                    subsectionWithPath("data.reservations[].roomName").description("겍실 이름"),
-                    subsectionWithPath("data.reservations[].checkInTime").description(
+                    subsectionWithPath("reservations[].roomId").description("객실 ID"),
+                    subsectionWithPath("reservations[].roomName").description("겍실 이름"),
+                    subsectionWithPath("reservations[].checkInTime").description(
                         "Check-in 시간"),
-                    subsectionWithPath("data.reservations[].checkOutTime").description(
+                    subsectionWithPath("reservations[].checkOutTime").description(
                         "Check-out 시간"),
-                    subsectionWithPath("data.reservations[].defaultCapacity").description("기본 인원"),
-                    subsectionWithPath("data.reservations[].maxCapacity").description("최대 인원"),
-                    subsectionWithPath("data.reservations[].startDate").description("예약 시작일"),
-                    subsectionWithPath("data.reservations[].endDate").description("예약 종료일"),
-                    subsectionWithPath("data.reservations[].status").description("예약 상태")
+                    subsectionWithPath("reservations[].defaultCapacity").description("기본 인원"),
+                    subsectionWithPath("reservations[].maxCapacity").description("최대 인원"),
+                    subsectionWithPath("reservations[].startDate").description("예약 시작일"),
+                    subsectionWithPath("reservations[].endDate").description("예약 종료일"),
+                    subsectionWithPath("reservations[].status").description("예약 상태")
                 )
             ));
     }
@@ -407,33 +395,31 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
                     parameterWithName("page").description("불러올 페이지 순서")
                 ),
                 responseFields(
-                    fieldWithPath("message").description("응답 메세지"),
-                    subsectionWithPath("data").description("응답 데이터"),
-                    subsectionWithPath("data.pageNum").description("현재 페이지"),
-                    subsectionWithPath("data.pageSize").description("각 페이지 사이즈"),
-                    subsectionWithPath("data.totalPages").description("전체 페이지 수"),
-                    subsectionWithPath("data.totalElements").description("전체 요소 수"),
-                    subsectionWithPath("data.isLast").description("마지막 페이지 여부"),
-                    subsectionWithPath("data.reservations").description("예약 리스트"),
-                    subsectionWithPath("data.reservations[].id").description("예약 ID"),
-                    subsectionWithPath("data.reservations[].date").description("예약 완료 날짜"),
-                    subsectionWithPath("data.reservations[].isCouponUsed").description("쿠폰 사용 여부"),
-                    subsectionWithPath("data.reservations[].roomPrice").description("객실 가격"),
-                    subsectionWithPath("data.reservations[].totalAmount").description("결제 금액"),
-                    subsectionWithPath("data.reservations[].accommodationId").description("숙소 ID"),
-                    subsectionWithPath("data.reservations[].accommodationName").description(
+                    subsectionWithPath("pageNum").description("현재 페이지"),
+                    subsectionWithPath("pageSize").description("각 페이지 사이즈"),
+                    subsectionWithPath("totalPages").description("전체 페이지 수"),
+                    subsectionWithPath("totalElements").description("전체 요소 수"),
+                    subsectionWithPath("isLast").description("마지막 페이지 여부"),
+                    subsectionWithPath("reservations").description("예약 리스트"),
+                    subsectionWithPath("reservations[].id").description("예약 ID"),
+                    subsectionWithPath("reservations[].date").description("예약 완료 날짜"),
+                    subsectionWithPath("reservations[].isCouponUsed").description("쿠폰 사용 여부"),
+                    subsectionWithPath("reservations[].roomPrice").description("객실 가격"),
+                    subsectionWithPath("reservations[].totalAmount").description("결제 금액"),
+                    subsectionWithPath("reservations[].accommodationId").description("숙소 ID"),
+                    subsectionWithPath("reservations[].accommodationName").description(
                         "숙소 이름"),
-                    subsectionWithPath("data.reservations[].roomId").description("객실 ID"),
-                    subsectionWithPath("data.reservations[].roomName").description("겍실 이름"),
-                    subsectionWithPath("data.reservations[].checkInTime").description(
+                    subsectionWithPath("reservations[].roomId").description("객실 ID"),
+                    subsectionWithPath("reservations[].roomName").description("겍실 이름"),
+                    subsectionWithPath("reservations[].checkInTime").description(
                         "Check-in 시간"),
-                    subsectionWithPath("data.reservations[].checkOutTime").description(
+                    subsectionWithPath("reservations[].checkOutTime").description(
                         "Check-out 시간"),
-                    subsectionWithPath("data.reservations[].defaultCapacity").description("기본 인원"),
-                    subsectionWithPath("data.reservations[].maxCapacity").description("최대 인원"),
-                    subsectionWithPath("data.reservations[].startDate").description("예약 시작일"),
-                    subsectionWithPath("data.reservations[].endDate").description("예약 종료일"),
-                    subsectionWithPath("data.reservations[].status").description("예약 상태")
+                    subsectionWithPath("reservations[].defaultCapacity").description("기본 인원"),
+                    subsectionWithPath("reservations[].maxCapacity").description("최대 인원"),
+                    subsectionWithPath("reservations[].startDate").description("예약 시작일"),
+                    subsectionWithPath("reservations[].endDate").description("예약 종료일"),
+                    subsectionWithPath("reservations[].status").description("예약 상태")
                 )
             ));
     }

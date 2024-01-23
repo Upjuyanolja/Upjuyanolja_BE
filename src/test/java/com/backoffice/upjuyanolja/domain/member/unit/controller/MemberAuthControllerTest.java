@@ -72,9 +72,7 @@ public class MemberAuthControllerTest {
             mockMvc.perform(get("/api/auth/members/email")
                     .queryParam("email", "test@mail.com"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.data").isMap())
-                .andExpect(jsonPath("$.data.isExists").isBoolean())
+                .andExpect(jsonPath("$.isExists").isBoolean())
                 .andDo(print());
 
             verify(memberAuthService, times(1)).checkEmailDuplicate(any(String.class));
@@ -95,9 +93,7 @@ public class MemberAuthControllerTest {
             mockMvc.perform(get("/api/auth/members/email")
                     .queryParam("email", "test@mail.com"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.data").isMap())
-                .andExpect(jsonPath("$.data.isExists").isBoolean())
+                .andExpect(jsonPath("$.isExists").isBoolean())
                 .andDo(print());
 
             verify(memberAuthService, times(1)).checkEmailDuplicate(any(String.class));
@@ -126,12 +122,10 @@ public class MemberAuthControllerTest {
             // when then
             mockMvc.perform(get("/api/auth/members"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.data").isMap())
-                .andExpect(jsonPath("$.data.memberId").isNumber())
-                .andExpect(jsonPath("$.data.email").isString())
-                .andExpect(jsonPath("$.data.name").isString())
-                .andExpect(jsonPath("$.data.phoneNumber").isString())
+                .andExpect(jsonPath("$.memberId").isNumber())
+                .andExpect(jsonPath("$.email").isString())
+                .andExpect(jsonPath("$.name").isString())
+                .andExpect(jsonPath("$.phoneNumber").isString())
                 .andDo(print());
 
             verify(memberGetService, times(1)).getMember(any(Long.class));
