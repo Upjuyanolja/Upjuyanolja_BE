@@ -26,9 +26,9 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import com.backoffice.upjuyanolja.domain.member.entity.Owner;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
-import com.backoffice.upjuyanolja.domain.point.entity.PointType;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -76,12 +76,13 @@ class CouponBackofficeControllerTest {
 
     Member mockMember;
 
+    Owner mockOwner;
     Point mockPoint;
     Accommodation mockAccommodation;
 
     @BeforeEach
     public void initTest() {
-        mockMember = createMember(1L);
+        mockOwner = createOwner(1L);
         mockAccommodation = createAccommodation(1L);
     }
 
@@ -128,9 +129,11 @@ class CouponBackofficeControllerTest {
             List<CouponRoomsRequest> mockCouponRoomsRequests = createCouponRooms();
             CouponMakeRequest mockCouponMakeRequest = createCouponMakeRequest(
                 mockCouponRoomsRequests, 1L);
-            mockPoint = createPoint(1L, mockMember, 50000);
+            mockPoint = createPoint(1L, mockOwner, 50000);
 
-            doNothing().when(couponBackofficeService).createCoupon(any(CouponMakeRequest.class), any(Member.class));
+            doNothing().when(couponBackofficeService)
+                .createCoupon(any(CouponMakeRequest.class), any(
+                    Owner.class));
 
             // when & Then
             mockMvc.perform(post("/api/coupons/backoffice/buy")
@@ -173,6 +176,15 @@ class CouponBackofficeControllerTest {
         );
     }
 
+    private Owner createOwner(Long id) {
+        return  Owner.builder()
+            .id(id)
+            .email("test1@tester.com")
+            .name("test")
+            .phone("010-1234-1234")
+            .build();
+    }
+
     private Member createMember(Long id) {
         return Member.builder()
             .id(id)
@@ -186,11 +198,11 @@ class CouponBackofficeControllerTest {
             .build();
     }
 
-    private Point createPoint(Long pointId, Member member, int balance) {
+    private Point createPoint(Long pointId, Owner owner, int balance) {
         return Point.builder()
             .id(pointId)
-            .member(member)
-            .pointBalance(balance)
+            .owner(owner)
+            .totalPointBalance(balance)
             .build();
     }
 
