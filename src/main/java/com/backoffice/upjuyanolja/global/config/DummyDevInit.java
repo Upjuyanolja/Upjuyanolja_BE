@@ -16,10 +16,9 @@ import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.entity.Owner;
+import com.backoffice.upjuyanolja.domain.member.exception.CreateVerificationCodeException;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
 import com.backoffice.upjuyanolja.domain.member.repository.OwnerRepository;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.domain.member.service.OwnerGetService;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
@@ -27,11 +26,16 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -40,13 +44,14 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
+@Profile("dev")
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 @Transactional
 public class DummyDevInit {
 
     private final MemberRepository memberRepository;
-    private final OwnerRepository ownerRepository;
     private final AccommodationRepository accommodationRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
     private final CouponRepository couponRepository;
@@ -54,8 +59,7 @@ public class DummyDevInit {
     private final CategoryRepository categoryRepository;
     private final PointRepository pointRepository;
     private final BCryptPasswordEncoder encoder;
-    private final MemberGetService memberGetService;
-    private final OwnerGetService ownerGetService;
+    private final OwnerRepository ownerRepository;
 
     @Profile("dev")
     @Bean
@@ -63,39 +67,51 @@ public class DummyDevInit {
         return new ApplicationRunner() {
             @Override
             public void run(ApplicationArguments args) throws Exception {
-                createMember(1L);
-                createOwner(1L);
-                Member member = memberGetService.getMemberById(1L);
-                Owner owner = ownerGetService.getOwnerById(1L);
-                Accommodation accommodation = createAccommodation(1L);
-                createAccommodationOwnership(accommodation, member);
-                createRooms(accommodation);
-                createPoint(1L, owner, 50000L);
+                Member member = createMember(1L);
+                Owner owner = createOwner(1L);
+                Accommodation accommodation1 = createAccommodation(1L);
+                createAccommodationOwnership(accommodation1, member);
+
+                List<Long> roomIdSet = List.of(1L, 2L, 3L);
+                List<String> roomNameSet = List.of("스탠다드", "디럭스", "스위트");
+                List<Room> rooms = createRooms(accommodation1, roomIdSet, roomNameSet);
+
+                List<Long> couponIds1 = List.of(1L, 2L, 3L, 4L);
+                List<Long> couponIds2 = List.of(5L, 6L, 7L, 8L);
+                List<Long> couponIds3 = List.of(9L, 10L, 11L, 12L);
+                createCoupons(couponIds1, rooms.get(0));
+                createCoupons(couponIds2, rooms.get(1));
+                createCoupons(couponIds3, rooms.get(2));
+
+                createPoint(1L, member, 200000L);
             }
         };
     }
 
-    private void createOwner(Long id) {
-        Owner owner = Owner.builder()
-            .id(id)
-            .email("test1@tester.com")
-            .name("test")
-            .phone("010-1234-1234")
-            .build();
-        ownerRepository.save(owner);
-    }
-    private void createMember(Long id) {
+    private Member createMember(Long id) {
         Member member = Member.builder()
             .id(id)
             .email("test1@tester.com")
-            .password(encoder.encode("abcd@1234Z"))
+            .password(encoder.encode("Qwert12345"))
             .name("test")
             .phone("010-1234-1234")
             .imageUrl(
                 "https://fastly.picsum.photos/id/866/200/300.jpg?hmac=rcadCENKh4rD6MAp6V_ma-AyWv641M4iiOpe1RyFHeI")
-            .authority(Authority.ROLE_USER)
+            .authority(Authority.ROLE_ADMIN)
             .build();
         memberRepository.save(member);
+        return member;
+    }
+
+    private Owner createOwner(long ownerId) {
+        Owner owner = Owner.builder()
+            .id(ownerId)
+            .email("test1@tester.com")
+            .name("test")
+            .phone("010-1234-5678")
+            .build();
+        ownerRepository.save(owner);
+        return owner;
     }
 
     private Accommodation createAccommodation(Long accommodationId) {
@@ -132,7 +148,8 @@ public class DummyDevInit {
     }
 
     private AccommodationOwnership createAccommodationOwnership(
-        Accommodation accommodation, Member member) {
+        Accommodation accommodation, Member member
+    ) {
         AccommodationOwnership ownership = AccommodationOwnership.builder()
             .id(1L)
             .accommodation(accommodation)
@@ -142,11 +159,13 @@ public class DummyDevInit {
         return ownership;
     }
 
-    private List<Room> createRooms (Accommodation accommodation) {
+    private List<Room> createRooms(
+        Accommodation accommodation, List<Long> roomIds, List<String> roomNames
+    ) {
         List<Room> rooms = List.of(
-            createRoom(1L, "스탠다드", accommodation),
-            createRoom(2L, "디럭스", accommodation),
-            createRoom(3L, "스위트", accommodation)
+            createRoom(roomIds.get(0), roomNames.get(0), accommodation),
+            createRoom(roomIds.get(1), roomNames.get(1), accommodation),
+            createRoom(roomIds.get(2), roomNames.get(2), accommodation)
         );
         roomRepository.saveAll(rooms);
         return rooms;
@@ -178,21 +197,26 @@ public class DummyDevInit {
             .build();
     }
 
-    private Room saveRoom(Long roomId, String roomName, Accommodation accommodation) {
-        Room room = createRoom(roomId, roomName, accommodation);
-        roomRepository.save(room);
-        return room;
+    private List<Coupon> createCoupons(List<Long> couponIds, Room room) {
+        List<Coupon> coupons = List.of(
+            createCoupon(
+                couponIds.get(0), room, DiscountType.FLAT, CouponStatus.ENABLE, 5000, 20),
+            createCoupon(
+                couponIds.get(1), room, DiscountType.RATE, CouponStatus.ENABLE, 10, 20),
+            createCoupon(
+                couponIds.get(2), room, DiscountType.FLAT, CouponStatus.SOLD_OUT, 1000, 0),
+            createCoupon(
+                couponIds.get(3), room, DiscountType.RATE, CouponStatus.DELETED, 30, 0)
+        );
+        couponRepository.saveAll(coupons);
+        return coupons;
     }
 
-    private Coupon saveCoupon(
-        Long couponId,
-        Room room,
-        DiscountType discountType,
-        CouponStatus status,
-        int discount,
+    private Coupon createCoupon(
+        long couponId, Room room, DiscountType discountType, CouponStatus status, int discount,
         int stock
     ) {
-        Coupon coupon = Coupon.builder()
+        return Coupon.builder()
             .id(couponId)
             .room(room)
             .couponType(CouponType.ALL_DAYS)
@@ -203,15 +227,14 @@ public class DummyDevInit {
             .dayLimit(-1)
             .stock(stock)
             .build();
-        couponRepository.save(coupon);
-        return coupon;
     }
 
-    private Point createPoint(Long pointId, Owner owner, long balance) {
+    private Point createPoint(Long pointId, Member member, long balance) {
         Point point = Point.builder()
             .id(pointId)
-            .owner(owner)
-            .totalPointBalance(balance)
+            .member(member)
+            .pointBalance(balance)
+            .standardDate(YearMonth.of(2024, 01))
             .build();
         pointRepository.save(point);
         return point;

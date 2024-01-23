@@ -22,57 +22,49 @@ public class AccommodationCustomRepositoryImpl implements AccommodationCustomRep
 
     @Override
     public Page<Accommodation> searchPageByCategoryWithTypeAndName(
-        String category, String type, String keyword, Pageable pageable
+        String category, String keyword, Pageable pageable
     ) {
         Page<Accommodation> result = getAccommodations(
-            category, type, keyword, pageable
+            category, keyword, pageable
         );
 
         return result;
     }
 
     private Page<Accommodation> getAccommodations(
-        String category, String type, String keyword, Pageable pageable
+        String category, String keyword, Pageable pageable
     ) {
         List<Accommodation> content = query.selectFrom(qAccommodation)
             .leftJoin(qAccommodation)
             .where(
-                eqCategory(category, type),
+                eqCategory(category),
                 eqKeyword(keyword)
             )
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
 
-        JPAQuery<Long> countQuery = getCountQuery(category, type, keyword);
+        JPAQuery<Long> countQuery = getCountQuery(category, keyword);
 
         return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchFirst());
     }
 
     private JPAQuery<Long> getCountQuery(
-        String category, String type, String keyword
+        String category, String keyword
     ) {
         return query.select(qAccommodation.count())
             .from(qAccommodation)
             .where(
-                eqCategory(category, type),
+                eqCategory(category),
                 eqKeyword(keyword)
             );
     }
 
-    private BooleanExpression eqCategory(String category, String type) {
-        if (category.equals("ALL") && type.equals("ALL")) {
+    private BooleanExpression eqCategory(String category) {
+        if (category.equals("ALL")) {
             return null;
         }
-        BooleanExpression categoryExpression = qAccommodation.category.parent.name.eq(category);
-        BooleanExpression typeExpression = qAccommodation.category.name.eq(type);
-        if (category.equals("ALL")) {
-            return typeExpression;
-        }
-        if (type.equals("ALL")) {
-            return categoryExpression;
-        }
-        return categoryExpression.or(typeExpression);
+        return qAccommodation.category.parent.name.eq(category);
     }
 
     private BooleanExpression eqKeyword(String keyword) {

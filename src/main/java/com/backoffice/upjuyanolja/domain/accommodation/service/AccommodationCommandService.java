@@ -11,6 +11,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageUrlResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
@@ -78,10 +79,10 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     @Override
     @Transactional(readOnly = true)
     public AccommodationPageResponse findAccommodations(
-        String category, String type, boolean onlyHasCoupon, String keyword, Pageable pageable
+        String category, boolean onlyHasCoupon, String keyword, Pageable pageable
     ) {
         Page<Accommodation> accommodations = accommodationRepository
-            .searchPageByCategoryWithTypeAndName(category, type, keyword, pageable);
+            .searchPageByCategoryWithTypeAndName(category, keyword, pageable);
 
         return AccommodationPageResponse.from(
             new PageImpl<>(
@@ -296,6 +297,18 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                 .description(request.description())
                 .category(category)
                 .thumbnail(request.thumbnail())
+                .option(AccommodationOption.builder()
+                    .cooking(request.option().cooking())
+                    .parking(request.option().parking())
+                    .pickup(request.option().pickup())
+                    .barbecue(request.option().barbecue())
+                    .fitness(request.option().fitness())
+                    .karaoke(request.option().karaoke())
+                    .sauna(request.option().sauna())
+                    .sports(request.option().sports())
+                    .seminar(request.option().seminar())
+                    .build()
+                )
                 .build());
 
         if (request.images().isEmpty()) {

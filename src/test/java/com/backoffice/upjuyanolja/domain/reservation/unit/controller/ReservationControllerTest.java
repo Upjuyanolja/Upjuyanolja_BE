@@ -257,7 +257,6 @@ class ReservationControllerTest {
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().is(HttpStatus.CREATED.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("예약이 완료되었습니다."))
                 .andDo(print());
         }
 
@@ -273,7 +272,6 @@ class ReservationControllerTest {
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().is(HttpStatus.CREATED.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("예약이 완료되었습니다."))
                 .andDo(print());
         }
     }
@@ -293,7 +291,6 @@ class ReservationControllerTest {
             mockMvc.perform(delete("/api/reservations/{reservationId}", revervationId)
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().is(HttpStatus.NO_CONTENT.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("성공적으로 예약을 취소했습니다."))
                 .andDo(print());
         }
     }
@@ -333,49 +330,48 @@ class ReservationControllerTest {
                     .param("page", String.valueOf(pageable.getPageNumber()))
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().is(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("예약 조회에 성공하였습니다."))
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.pageNum")
+                    MockMvcResultMatchers.jsonPath("$.pageNum")
                         .value(pageable.getPageNumber()))
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.pageSize").value(pageable.getPageSize()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.totalPages").isNumber())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.totalElements").isNumber())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.isLast").isBoolean())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations").isArray())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].id").isNumber())
+                    MockMvcResultMatchers.jsonPath("$.pageSize").value(pageable.getPageSize()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalElements").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isLast").isBoolean())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.reservations").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.reservations[0].id").isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].isCouponUsed")
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].isCouponUsed")
                         .isBoolean())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].roomPrice").isNumber())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].roomPrice").isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].totalAmount").isNumber())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].totalAmount").isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].accommodationId")
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].accommodationId")
                         .isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].accommodationName")
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].accommodationName")
                         .isString())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].roomId").isNumber())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].roomId").isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].roomName").isString())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].roomName").isString())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].checkInTime").isString())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].checkInTime").isString())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].checkOutTime")
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].checkOutTime")
                         .isString())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].defaultCapacity")
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].defaultCapacity")
                         .isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].maxCapacity").isNumber())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].maxCapacity").isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].startDate").isString())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].startDate").isString())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].endDate").isString())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].status",
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].endDate").isString())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.reservations[0].status",
                     Matchers.isOneOf("RESERVED", "SERVICED")))
                 .andDo(print());
         }
@@ -403,54 +399,54 @@ class ReservationControllerTest {
 
             // when
             // then
-            mockMvc.perform(MockMvcRequestBuilders.get("/api/reservations/cancel")
+            mockMvc.perform(MockMvcRequestBuilders.get("/api/reservations")
+                    .queryParam("status", "CANCELLED")
                     .param("page", String.valueOf(pageable.getPageNumber()))
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().is(HttpStatus.OK.value()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("예약 취소 조회에 성공하였습니다."))
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.pageNum")
+                    MockMvcResultMatchers.jsonPath("$.pageNum")
                         .value(pageable.getPageNumber()))
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.pageSize").value(pageable.getPageSize()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.totalPages").isNumber())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.totalElements").isNumber())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.isLast").isBoolean())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations").isArray())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.reservations[0].id").isNumber())
+                    MockMvcResultMatchers.jsonPath("$.pageSize").value(pageable.getPageSize()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalElements").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isLast").isBoolean())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.reservations").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.reservations[0].id").isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].isCouponUsed")
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].isCouponUsed")
                         .isBoolean())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].roomPrice").isNumber())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].roomPrice").isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].totalAmount").isNumber())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].totalAmount").isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].accommodationId")
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].accommodationId")
                         .isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].accommodationName")
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].accommodationName")
                         .isString())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].roomId").isNumber())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].roomId").isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].roomName").isString())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].roomName").isString())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].checkInTime").isString())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].checkInTime").isString())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].checkOutTime")
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].checkOutTime")
                         .isString())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].defaultCapacity")
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].defaultCapacity")
                         .isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].maxCapacity").isNumber())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].maxCapacity").isNumber())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].startDate").isString())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].startDate").isString())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].endDate").isString())
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].endDate").isString())
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.data.reservations[0].status")
+                    MockMvcResultMatchers.jsonPath("$.reservations[0].status")
                         .value("CANCELLED"))
                 .andDo(print());
         }
