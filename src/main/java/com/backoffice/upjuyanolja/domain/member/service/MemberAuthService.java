@@ -2,11 +2,11 @@ package com.backoffice.upjuyanolja.domain.member.service;
 
 import static com.backoffice.upjuyanolja.domain.member.entity.Authority.ROLE_USER;
 
+import com.backoffice.upjuyanolja.domain.member.dto.request.EmailRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.TokenRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
-import com.backoffice.upjuyanolja.domain.member.dto.response.RefreshTokenResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponse;
@@ -103,9 +103,9 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
         }
     }
 
-    public CheckEmailDuplicateResponse checkEmailDuplicate(String email) {
+    public CheckEmailDuplicateResponse checkEmailDuplicate(EmailRequest request) {
         return CheckEmailDuplicateResponse.builder()
-            .isExists(isDuplicatedEmail(email))
+            .isExists(isDuplicatedEmail(request.email()))
             .build();
     }
 
@@ -127,7 +127,7 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
 
         // 3. 저장소에서 Member ID 를 기반으로 Refresh Token 값 가져옴
         String refreshToken = redisService.getValues(authentication.getName());
-        if (refreshToken.equals("false")){
+        if (refreshToken.equals("false")) {
             throw new LoggedOutMemberException();
         }
 

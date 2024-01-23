@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.backoffice.upjuyanolja.domain.member.dto.request.EmailRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
@@ -37,11 +38,15 @@ public class MemberAuthServiceTest {
         @DisplayName("이메일이 존재하면 isExists에 true를 담아 반환한다.")
         void isExists_willSuccess() {
             // given
+            EmailRequest emailRequest = EmailRequest.builder()
+                .email("test@mail.com")
+                .build();
+
             given(memberRepository.existsByEmail(any(String.class))).willReturn(true);
 
             // when
-            CheckEmailDuplicateResponse result = memberAuthService.checkEmailDuplicate(
-                "test@mail.com");
+            CheckEmailDuplicateResponse result = memberAuthService
+                .checkEmailDuplicate(emailRequest);
 
             // then
             assertTrue(result.isExists());
@@ -53,11 +58,15 @@ public class MemberAuthServiceTest {
         @DisplayName("이메일이 존재하면 isExists에 false를 담아 반환한다.")
         void isNotExists_willSuccess() {
             // given
+            EmailRequest emailRequest = EmailRequest.builder()
+                .email("test@mail.com")
+                .build();
+
             given(memberRepository.existsByEmail(any(String.class))).willReturn(false);
 
             // when
             CheckEmailDuplicateResponse result = memberAuthService.checkEmailDuplicate(
-                "test@mail.com");
+                emailRequest);
 
             // then
             assertFalse(result.isExists());
