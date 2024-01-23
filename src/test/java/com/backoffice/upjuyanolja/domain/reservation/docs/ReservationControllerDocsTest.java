@@ -394,7 +394,8 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
 
         // when
         ResultActions result = mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/reservations/cancel")
+            MockMvcRequestBuilders.get("/api/reservations")
+                .queryParam("status", "CANCELLED")
                 .queryParam("page", String.valueOf(pageable.getPageNumber()))
                 .contentType(MediaType.APPLICATION_JSON));
 
@@ -402,7 +403,9 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         result.andExpect(status().isOk())
             .andDo(restDoc.document(
                 queryParameters(
-                    parameterWithName("page").description("불러올 페이지 순서")),
+                    parameterWithName("status").description("조회할 예약 상태"),
+                    parameterWithName("page").description("불러올 페이지 순서")
+                ),
                 responseFields(
                     fieldWithPath("message").description("응답 메세지"),
                     subsectionWithPath("data").description("응답 데이터"),
