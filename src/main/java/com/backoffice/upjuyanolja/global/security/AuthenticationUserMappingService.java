@@ -31,7 +31,7 @@ public final class AuthenticationUserMappingService implements UserDetailsServic
         return User
             .withUsername(email)
             .password(authInfo.getPassword())//{bcrypt}로 시작
-            .authorities("USER")
+            .authorities(authInfo.getAuthority().toString())
             .accountExpired(false)
             .accountLocked(false)
             .credentialsExpired(false)
