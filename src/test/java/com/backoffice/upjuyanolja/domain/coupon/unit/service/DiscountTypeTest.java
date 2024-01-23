@@ -2,7 +2,7 @@ package com.backoffice.upjuyanolja.domain.coupon.unit.service;
 
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.FLAT;
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.RATE;
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.getPaymentPrice;
+import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.makePaymentPrice;
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.isRightDiscount;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -36,8 +36,8 @@ class DiscountTypeTest {
     @Test
     public void flatDiscountAmountTest() throws Exception {
         // given
-        int price1 = getPaymentPrice(FLAT, 100000, 20000);
-        int price2 = getPaymentPrice(RATE, 100000, 5);
+        int price1 = makePaymentPrice(FLAT, 100000, 20000);
+        int price2 = makePaymentPrice(RATE, 100000, 5);
 
         // when & then
         assertThat(price1).isEqualTo(80000);
@@ -54,5 +54,19 @@ class DiscountTypeTest {
 
         // when & Then
         assertThat(result).isEqualTo(500);
+    }
+
+    @DisplayName("할인 유형과 할인가(할인율)을 입력하면 view에 응답할 쿠폰 이름을 만들어서 보여준다." )
+    @Test
+    public void makeDicountCouponName() throws Exception {
+        // given
+        int discount1 = 5000;
+        int discount2 = 10;
+        String mockName1 = DiscountType.makeTitleName(FLAT, discount1);
+        String mockName2 = DiscountType.makeTitleName(RATE, discount2);
+
+        // when & Then
+        assertThat(mockName1).isEqualTo("5,000원 할인 쿠폰");
+        assertThat(mockName2).isEqualTo("10% 할인 쿠폰");
     }
 }
