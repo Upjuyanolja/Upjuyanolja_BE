@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.point.service;
 
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.OwnerGetService;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointSummaryResponse;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
@@ -9,7 +10,7 @@ import com.backoffice.upjuyanolja.domain.point.repository.PointChargesRepository
 import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
 import com.backoffice.upjuyanolja.domain.point.repository.PointUsageRepository;
 import java.time.YearMonth;
-import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,47 +23,49 @@ public class PointService {
     private final PointRepository pointRepository;
     private final PointChargesRepository pointChargesRepository;
     private final PointUsageRepository pointUsageRepository;
-    private final MemberGetService memberGetService;
+    private final OwnerGetService ownerGetService;
 
-    public PointSummaryResponse getSummary(Long currentMemberId, YearMonth rangeDate) {
-        Point memberPoint = getMemberPoint(currentMemberId);
+    public PointSummaryResponse getSummary(Long ownerId, YearMonth rangeDate) {
+        Point ownerPoint = getownerPoint(ownerId);
         Long currentPoint =
-            getChargePoint(memberPoint, rangeDate) +
-                getChargePoint(memberPoint, rangeDate.minusMonths(1)) -
-                getUsePoint(memberPoint, rangeDate) -
-                getUsePoint(memberPoint, rangeDate.minusMonths(1));
-
+            getChargePoint(ownerPoint, rangeDate) +
+                getChargePoint(ownerPoint, rangeDate.minusMonths(1)) -
+                getUsePoint(ownerPoint, rangeDate) -
+                getUsePoint(ownerPoint, rangeDate.minusMonths(1));
 
         return PointSummaryResponse.builder()
-            .chargePoint(getChargePoint(memberPoint, rangeDate))
-            .usePoint(getUsePoint(memberPoint, rangeDate))
+            .chargePoint(getChargePoint(ownerPoint, rangeDate))
+            .usePoint(getUsePoint(ownerPoint, rangeDate))
             .currentPoint(currentPoint)
             .build();
     }
 
-    private Point getMemberPoint(Long currentMemberId) {
-        return pointRepository.findByMemberId(currentMemberId)
-            .orElseGet(() -> createPoint(currentMemberId));
+    private Point getownerPoint(Long ownerId) {
+        return pointRepository.findByOwnerId(ownerId)
+            .orElseGet(() -> createPoint(ownerId));
     }
 
-    private Point createPoint(Long currentMemberId) {
+    private Point createPoint(Long ownerId) {
         Point newPoint = Point.builder()
             .totalPointBalance(0)
-            .member(memberGetService.getMemberById(currentMemberId))
+            .owner(ownerGetService.getOwnerById(ownerId))
             .build();
 
         pointRepository.save(newPoint);
+        getAvailablePoint(newPoint);
 
         return newPoint;
     }
 
-    private void updatePoint(Point point, Long pointBalance){
-        point.updatePoint(pointBalance);
+    private void getAvailablePoint(Point point) {
+        long chargeSum = Optional.of(pointChargesRepository.sumChargePointByRefundable(point))
+            .orElse(0L);
+        point.updatePoint(chargeSum);
         pointRepository.save(point);
     }
 
     private long getChargePoint(Point point, YearMonth rangeDate) {
-        return pointChargesRepository.findByPointAndRefundableAndChargeDateWithin(
+        return pointChargesRepository.findByPointAndRefundableAndRangeDate(
                 point, rangeDate
             ).stream()
             .mapToLong(PointCharges::getChargePoint)
@@ -70,7 +73,7 @@ public class PointService {
     }
 
     private long getUsePoint(Point point, YearMonth rangeDate) {
-        return pointUsageRepository.findByPointAndChargeDateWithin(
+        return pointUsageRepository.findByPointAndRangeDate(
                 point, rangeDate
             ).stream()
             .mapToLong(PointUsage::getOrderPrice)

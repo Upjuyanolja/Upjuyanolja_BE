@@ -34,7 +34,7 @@ public class PointController {
         log.info("GET /api/points/summary");
 
         PointSummaryResponse response = pointService.getSummary(
-            securityUtil.getCurrentMemberId(), rangeDate
+            securityUtil.getCurrentOwnerId(), rangeDate
         );
         return ApiResponse.success(
             HttpStatus.OK,
