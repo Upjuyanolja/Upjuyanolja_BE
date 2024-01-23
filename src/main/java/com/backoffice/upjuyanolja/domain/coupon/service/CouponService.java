@@ -52,7 +52,7 @@ public class CouponService {
             return new ArrayList<>();
         }
 
-        Collections.sort(resultCoupons, Comparator.comparingInt(coupon -> DiscountType.getPaymentPrice(
+        Collections.sort(resultCoupons, Comparator.comparingInt(coupon -> DiscountType.makePaymentPrice(
                 coupon.getDiscountType(), roomPrice, coupon.getDiscount()
             ))
         );
@@ -60,7 +60,7 @@ public class CouponService {
         for (Coupon coupon : resultCoupons) {
             responses.add(CouponDetailResponse.of(
                 coupon,
-                DiscountType.getPaymentPrice(coupon.getDiscountType(), roomPrice,
+                DiscountType.makePaymentPrice(coupon.getDiscountType(), roomPrice,
                     coupon.getDiscount()
                 ))
             );
@@ -92,14 +92,14 @@ public class CouponService {
             return new ArrayList<>();
         }
 
-        roomCoupons.sort(Comparator.comparingInt(coupon -> DiscountType.getPaymentPrice(
+        roomCoupons.sort(Comparator.comparingInt(coupon -> DiscountType.makePaymentPrice(
                 coupon.getDiscountType(), roomPrice, coupon.getDiscount()
             ))
         );
 
         return roomCoupons.stream()
             .map(coupon -> {
-                int discountedPrice = DiscountType.getPaymentPrice(
+                int discountedPrice = DiscountType.makePaymentPrice(
                     coupon.getDiscountType(), roomPrice, coupon.getDiscount()
                 );
                 return CouponDetailResponse.of(coupon, discountedPrice);

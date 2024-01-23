@@ -1,9 +1,16 @@
 package com.backoffice.upjuyanolja.domain.coupon.unit.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willReturn;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
@@ -12,26 +19,42 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwner
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddInfos;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
+import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRooms;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMakeRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponRoomsRequest;
+import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
+import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.point.entity.Point;
+import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
+import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
-import org.assertj.core.api.Assertions;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
@@ -48,9 +71,13 @@ class CouponBackofficeServiceTest {
     @Mock
     CouponRepository couponRepository;
 
+    @Mock
+    PointRepository pointRepository;
+
     Member mockMember;
     Accommodation mockAccommodation;
     AccommodationOwnership mockAccommodationOwnership;
+    Point mockPoint;
 
     @BeforeEach
     public void initTest() {
@@ -58,7 +85,6 @@ class CouponBackofficeServiceTest {
         mockAccommodation = createAccommodation(1L);
         mockAccommodationOwnership = createAccommodationOwnership();
     }
-
 
     @DisplayName("로그인한 업주의 id와 동록된 숙소의 id의 다르면 예외가 발생하는지 검증한다.")
     @Test
@@ -96,7 +122,7 @@ class CouponBackofficeServiceTest {
             .phone("010-1234-1234")
             .imageUrl(
                 "https://fastly.picsum.photos/id/866/200/300.jpg?hmac=rcadCENKh4rD6MAp6V_ma-AyWv641M4iiOpe1RyFHeI")
-            .authority(Authority.ROLE_USER)
+            .authority(Authority.ROLE_ADMIN)
             .build();
     }
 
@@ -136,11 +162,62 @@ class CouponBackofficeServiceTest {
     }
 
     private AccommodationOwnership createAccommodationOwnership() {
-        AccommodationOwnership ownership = AccommodationOwnership.builder()
+        return AccommodationOwnership.builder()
             .id(1L)
             .accommodation(mockAccommodation)
             .member(mockMember)
             .build();
-        return ownership;
     }
+
+    private Point createPoint(Long pointId, Member member, long balance) {
+        return Point.builder()
+            .id(pointId)
+            .member(member)
+            .pointBalance(balance)
+            .standardDate(YearMonth.of(2024,01))
+            .build();
+    }
+
+    private List<Room> createRooms(
+        Accommodation accommodation, List<Long> roomIds, List<String> roomNames
+    ) {
+        List<Room> rooms = List.of(
+            createRoom(roomIds.get(0), roomNames.get(0), accommodation),
+            createRoom(roomIds.get(1), roomNames.get(1), accommodation),
+            createRoom(roomIds.get(2), roomNames.get(2), accommodation)
+        );
+        return rooms;
+    }
+
+    private Room createRoom(
+        Long roomId,
+        String roomName,
+        Accommodation accommodation
+    ) {
+        return Room.builder()
+            .id(roomId)
+            .accommodation(accommodation)
+            .name(roomName)
+            .defaultCapacity(2)
+            .maxCapacity(3)
+            .checkInTime(LocalTime.of(15, 0, 0))
+            .checkOutTime(LocalTime.of(11, 0, 0))
+            .price(RoomPrice.builder()
+                .offWeekDaysMinFee(100000)
+                .offWeekendMinFee(100000)
+                .peakWeekDaysMinFee(100000)
+                .peakWeekendMinFee(100000)
+                .build())
+            .amount(858)
+            .status(RoomStatus.SELLING)
+            .option(RoomOption.builder()
+                .airCondition(true)
+                .tv(true)
+                .internet(true)
+                .build())
+            .images(new ArrayList<>())
+            .build();
+    }
+
+
 }
