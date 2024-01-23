@@ -2,7 +2,6 @@ package com.backoffice.upjuyanolja.domain.point.entity;
 
 import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.entity.Owner;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,19 +32,19 @@ public class Point extends BaseTime {
     private long totalPointBalance;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "member_id")
     @Comment("회원 식별자")
-    private Owner owner;
+    private Member member;
 
     @Builder
     public Point(
         Long id,
         long totalPointBalance,
-        Owner owner
+        Member member
     ) {
         this.id = id;
         this.totalPointBalance = totalPointBalance;
-        this.owner = owner;
+        this.member = member;
     }
 
     public void updatePoint(long totalPointBalance) {
