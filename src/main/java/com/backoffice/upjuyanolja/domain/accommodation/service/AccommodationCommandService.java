@@ -78,10 +78,10 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     @Override
     @Transactional(readOnly = true)
     public AccommodationPageResponse findAccommodations(
-        String category, String type, boolean onlyHasCoupon, String keyword, Pageable pageable
+        String category, boolean onlyHasCoupon, String keyword, Pageable pageable
     ) {
         Page<Accommodation> accommodations = accommodationRepository
-            .searchPageByCategoryWithTypeAndName(category, type, keyword, pageable);
+            .searchPageByCategoryWithTypeAndName(category, keyword, pageable);
 
         return AccommodationPageResponse.from(
             new PageImpl<>(
