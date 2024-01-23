@@ -12,6 +12,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationR
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,8 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
             .category(request.category())
             .thumbnail(request.thumbnail())
             .option(request.option())
+            .rooms(new ArrayList<>())
+            .images(new ArrayList<>())
             .build());
     }
 
