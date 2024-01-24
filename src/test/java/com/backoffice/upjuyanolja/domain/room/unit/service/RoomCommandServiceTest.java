@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -15,6 +16,12 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOptio
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
+import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
+import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
+import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
@@ -37,6 +44,7 @@ import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import jakarta.persistence.EntityManager;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +74,9 @@ public class RoomCommandServiceTest {
 
     @Mock
     private RoomQueryUseCase roomQueryUseCase;
+
+    @Mock
+    private CouponService couponService;
 
     @Mock
     private EntityManager em;
@@ -645,6 +656,57 @@ public class RoomCommandServiceTest {
                     .build())
                 .images(List.of(roomImage))
                 .build();
+            List<Coupon> coupons = List.of(
+                Coupon.builder()
+                    .id(1L)
+                    .room(savedRoom)
+                    .couponType(CouponType.ALL_DAYS)
+                    .discountType(DiscountType.FLAT)
+                    .couponStatus(CouponStatus.ENABLE)
+                    .discount(10000)
+                    .endDate(LocalDate.MAX)
+                    .dayLimit(10)
+                    .build(),
+                Coupon.builder()
+                    .id(2L)
+                    .room(savedRoom)
+                    .couponType(CouponType.ALL_DAYS)
+                    .discountType(DiscountType.RATE)
+                    .couponStatus(CouponStatus.ENABLE)
+                    .discount(20)
+                    .endDate(LocalDate.MAX)
+                    .dayLimit(10)
+                    .build(),
+                Coupon.builder()
+                    .id(3L)
+                    .room(savedRoom)
+                    .couponType(CouponType.ALL_DAYS)
+                    .discountType(DiscountType.FLAT)
+                    .couponStatus(CouponStatus.ENABLE)
+                    .discount(15000)
+                    .endDate(LocalDate.MAX)
+                    .dayLimit(10)
+                    .build()
+            );
+            List<CouponDetailResponse> flatCoupons = List.of(
+                CouponDetailResponse.builder()
+                    .id(1L)
+                    .name("10000원 할인")
+                    .price(90000)
+                    .build(),
+                CouponDetailResponse.builder()
+                    .id(3L)
+                    .name("15000원 할인")
+                    .price(95000)
+                    .build()
+            );
+            List<CouponDetailResponse> rateCoupons = List.of(
+                CouponDetailResponse.builder()
+                    .id(2L)
+                    .name("20% 할인")
+                    .price(80000)
+                    .build()
+            );
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(accommodationQueryUseCase.getAccommodationById(any(Long.TYPE)))
@@ -655,6 +717,17 @@ public class RoomCommandServiceTest {
                 .willReturn(true);
             given(roomQueryUseCase.findAllByAccommodationId(any(Long.TYPE), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(savedRoom)));
+            given(couponService.getCouponInRoom(any(Room.class))).willReturn(coupons);
+            given(couponService.getSortedCouponResponseInRoom(
+                any(Room.class),
+                any(List.class),
+                eq(DiscountType.FLAT)
+            )).willReturn(flatCoupons);
+            given(couponService.getSortedCouponResponseInRoom(
+                any(Room.class),
+                any(List.class),
+                eq(DiscountType.RATE)
+            )).willReturn(rateCoupons);
 
             // when
             RoomPageResponse result = roomCommandService.getRooms(1L, 1L, roomPageRequest.of());
@@ -667,7 +740,8 @@ public class RoomCommandServiceTest {
             assertThat(result.rooms().get(0).maxCapacity()).isEqualTo(3);
             assertThat(result.rooms().get(0).checkInTime()).isEqualTo("15:00");
             assertThat(result.rooms().get(0).checkOutTime()).isEqualTo("11:00");
-            assertThat(result.rooms().get(0).price()).isEqualTo(100000);
+            assertThat(result.rooms().get(0).basePrice()).isEqualTo(100000);
+            assertThat(result.rooms().get(0).discountPrice()).isEqualTo(80000);
             assertThat(result.rooms().get(0).images()).isNotEmpty();
             assertThat(result.rooms().get(0).images().get(0).id()).isEqualTo(1L);
             assertThat(result.rooms().get(0).images().get(0).url()).isEqualTo(
@@ -676,6 +750,7 @@ public class RoomCommandServiceTest {
             assertThat(result.rooms().get(0).option().airCondition()).isEqualTo(true);
             assertThat(result.rooms().get(0).option().tv()).isEqualTo(true);
             assertThat(result.rooms().get(0).option().internet()).isEqualTo(true);
+            assertThat(result.rooms().get(0).coupons()).isNotEmpty();
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
             verify(accommodationQueryUseCase, times(1)).getAccommodationById(any(Long.TYPE));
@@ -686,6 +761,17 @@ public class RoomCommandServiceTest {
                 );
             verify(roomQueryUseCase, times(1))
                 .findAllByAccommodationId(any(Long.TYPE), any(Pageable.class));
+            verify(couponService, times(1)).getCouponInRoom(any(Room.class));
+            verify(couponService, times(1)).getSortedCouponResponseInRoom(
+                any(Room.class),
+                any(List.class),
+                eq(DiscountType.FLAT)
+            );
+            verify(couponService, times(1)).getSortedCouponResponseInRoom(
+                any(Room.class),
+                any(List.class),
+                eq(DiscountType.RATE)
+            );
         }
     }
 
