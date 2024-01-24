@@ -160,17 +160,19 @@ public class RoomRepositoryTest {
     }
 
     @Nested
-    @DisplayName("existsRoomByName()는")
-    class Context_existsByEmail {
+    @DisplayName("existsRoomByNameAndAccommodation()는")
+    class Context_existsRoomByNameAndAccommodation {
 
         @Test
         @DisplayName("해당 객실 이름을 가진 객실의 존재 여부를 확인할 수 있다.")
         void _willSuccess() {
             // given
-            saveRoom(saveAccommodation());
+            Accommodation accommodation = saveAccommodation();
+            saveRoom(accommodation);
 
             // when
-            boolean result = roomRepository.existsRoomByName("65m² 킹룸");
+            boolean result = roomRepository
+                .existsRoomByNameAndAccommodation("65m² 킹룸", accommodation);
 
             // then
             assertThat(result).isTrue();
