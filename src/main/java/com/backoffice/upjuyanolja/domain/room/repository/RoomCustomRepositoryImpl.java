@@ -5,6 +5,7 @@ import static com.backoffice.upjuyanolja.domain.room.entity.QRoom.room;
 import static com.backoffice.upjuyanolja.domain.room.entity.QRoomImage.roomImage;
 import static com.backoffice.upjuyanolja.domain.room.entity.QRoomOption.roomOption;
 
+import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.global.util.QueryDslUtil;
 import com.querydsl.core.BooleanBuilder;
@@ -51,11 +52,11 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
     }
 
     @Override
-    public boolean existsRoomByName(String name) {
+    public boolean existsRoomByNameAndAccommodation(String name, Accommodation accommodation) {
         Integer fetchOne = queryFactory
             .selectOne()
             .from(room)
-            .where(createExistsSearchConditionsBuilder(name))
+            .where(createExistsSearchConditionsBuilder(name, accommodation))
             .fetchFirst();
 
         return fetchOne != null;
@@ -68,9 +69,13 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
         return booleanBuilder;
     }
 
-    private BooleanBuilder createExistsSearchConditionsBuilder(String name) {
+    private BooleanBuilder createExistsSearchConditionsBuilder(
+        String name,
+        Accommodation accommodation
+    ) {
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         booleanBuilder.and(room.name.eq(name));
+        booleanBuilder.and(room.accommodation.eq(accommodation));
         booleanBuilder.and(room.deletedAt.isNull());
         return booleanBuilder;
     }

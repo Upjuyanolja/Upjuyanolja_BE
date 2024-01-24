@@ -24,6 +24,7 @@ import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import com.backoffice.upjuyanolja.global.util.DateTimeParser;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,6 +43,7 @@ public class RoomCommandService implements RoomCommandUseCase {
     private final MemberGetService memberGetService;
     private final RoomQueryUseCase roomQueryUseCase;
     private final AccommodationQueryUseCase accommodationQueryUseCase;
+    private final EntityManager em;
 
     @Override
     public RoomInfoResponse registerRoom(
@@ -59,12 +61,13 @@ public class RoomCommandService implements RoomCommandUseCase {
 
     @Override
     public RoomInfoResponse saveRoom(Accommodation accommodation, RoomRegisterRequest request) {
-        validateRoomName(request.name());
+        validateRoomName(request.name(), accommodation);
         if (request.images().isEmpty()) {
             throw new RoomImageNotExistsException();
         }
 
         Room room = roomQueryUseCase.saveRoom(accommodation, Room.builder()
+            .accommodation(accommodation)
             .name(request.name())
             .status(RoomStatus.SELLING)
             .price(RoomPrice.builder()
@@ -74,7 +77,7 @@ public class RoomCommandService implements RoomCommandUseCase {
                 .peakWeekendMinFee(request.price())
                 .build())
             .defaultCapacity(request.defaultCapacity())
-            .defaultCapacity(request.maxCapacity())
+            .maxCapacity(request.maxCapacity())
             .checkInTime(DateTimeParser.timeParser(request.checkInTime()))
             .checkOutTime(DateTimeParser.timeParser(request.checkOutTime()))
             .amount(request.amount())
@@ -84,7 +87,8 @@ public class RoomCommandService implements RoomCommandUseCase {
         );
         roomQueryUseCase.saveRoomImages(RoomImageRequest.toEntity(room, request.images()));
 
-        return RoomInfoResponse.of(roomQueryUseCase.findRoomById(room.getId()));
+        em.refresh(room);
+        return RoomInfoResponse.of(room);
     }
 
     @Override
@@ -120,13 +124,14 @@ public class RoomCommandService implements RoomCommandUseCase {
         Room room = roomQueryUseCase.findRoomById(roomId);
 
         if (!room.getName().equals(request.name())) {
-            validateRoomName(request.name());
+            validateRoomName(request.name(), room.getAccommodation());
         }
         validateRoomStatus(request.status());
         checkOwnership(member, room.getAccommodation());
         updateRoom(room, request);
 
-        return RoomInfoResponse.of(roomQueryUseCase.findRoomById(roomId));
+        em.refresh(room);
+        return RoomInfoResponse.of(room);
     }
 
     @Override
@@ -151,8 +156,8 @@ public class RoomCommandService implements RoomCommandUseCase {
         return RoomInfoResponse.of(room);
     }
 
-    private void validateRoomName(String name) {
-        if (roomQueryUseCase.existsRoomByName(name)) {
+    private void validateRoomName(String name, Accommodation accommodation) {
+        if (roomQueryUseCase.existsRoomByNameAndAccommodation(name, accommodation)) {
             throw new DuplicateRoomNameException();
         }
     }
