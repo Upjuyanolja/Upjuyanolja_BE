@@ -58,8 +58,8 @@ public class RoomQueryService implements RoomQueryUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean existsRoomByName(String name) {
-        return roomRepository.existsRoomByName(name);
+    public boolean existsRoomByNameAndAccommodation(String name, Accommodation accommodation) {
+        return roomRepository.existsRoomByNameAndAccommodation(name, accommodation);
     }
 
     @Override

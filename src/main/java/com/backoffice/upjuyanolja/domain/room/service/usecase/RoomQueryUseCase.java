@@ -25,7 +25,7 @@ public interface RoomQueryUseCase {
 
     Room findRoomById(long id);
 
-    boolean existsRoomByName(String name);
+    boolean existsRoomByNameAndAccommodation(String name, Accommodation accommodation);
 
     RoomImage findRoomImage(long roomImageId);
 
