@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,17 +38,22 @@ public class CouponBackofficeController {
     private final SecurityUtil securityUtil;
     private final MemberGetService memberGetService;
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/buy/{accommodationId}")
     public ResponseEntity<CouponMakeViewResponse> responseRoomsView(
         @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
     ) {
         //Todo: Id validation 검증 로직 보완
         log.info("GET /api/coupons/backoffice/buy/{accommodationId}");
+        Long currentMemberId = securityUtil.getCurrentMemberId();
+        couponService.validateAccommodationRequest(
+            accommodationId, currentMemberId);
 
         CouponMakeViewResponse response = couponService.getRoomsByAccommodation(accommodationId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/buy")
     public ResponseEntity<Object> createCoupons(
         @Valid @RequestBody CouponMakeRequest couponMakeRequest
@@ -56,13 +62,14 @@ public class CouponBackofficeController {
 
         Member currentMember = getCurrentMember();
 
-        couponService.validateAccommodationOwnership(
+        couponService.validateAccommodationRequest(
             couponMakeRequest.accommodationId(), currentMember.getId());
         couponService.createCoupon(couponMakeRequest, currentMember);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/manage/{accommodationId}")
     public ResponseEntity<CouponManageResponse> manageCouponView(
         @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
@@ -70,12 +77,13 @@ public class CouponBackofficeController {
         log.info("GET /api/coupons/backoffice/manage/{accommodationId}");
 
         long currentMemberId = securityUtil.getCurrentMemberId();
-        couponService.validateAccommodationOwnership(accommodationId, currentMemberId);
-
+        couponService.validateAccommodationRequest(
+            accommodationId, currentMemberId);
         CouponManageResponse response = couponService.manageCoupon(accommodationId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/manage/buy")
     public ResponseEntity<Object> addonCoupon(
         @Valid @RequestBody CouponAddRequest request
@@ -84,13 +92,15 @@ public class CouponBackofficeController {
 
         Long accommodationId = request.accommodationId();
         long currentMemberId = securityUtil.getCurrentMemberId();
-        couponService.validateAccommodationOwnership(accommodationId, currentMemberId);
+        couponService.validateAccommodationRequest(
+            accommodationId, currentMemberId);
 
         couponService.addonCoupon(request, currentMemberId);
 
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/manage")
     public ResponseEntity<Object> modifyCoupon(
         @Valid @RequestBody CouponModifyRequest request
@@ -99,13 +109,16 @@ public class CouponBackofficeController {
 
         Long accommodationId = request.accommodationId();
         long currentMemberId = securityUtil.getCurrentMemberId();
-        couponService.validateAccommodationOwnership(accommodationId, currentMemberId);
+
+        couponService.validateAccommodationRequest(
+            accommodationId, currentMemberId);
 
         couponService.modifyCoupon(request);
 
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/manage")
     public ResponseEntity<Object> deleteCoupon(
         @Valid @RequestBody CouponDeleteRequest request
@@ -114,7 +127,9 @@ public class CouponBackofficeController {
 
         Long accommodationId = request.accommodationId();
         long currentMemberId = securityUtil.getCurrentMemberId();
-        couponService.validateAccommodationOwnership(accommodationId, currentMemberId);
+
+        couponService.validateAccommodationRequest(
+            accommodationId, currentMemberId);
 
         couponService.deleteCoupon(request);
 
