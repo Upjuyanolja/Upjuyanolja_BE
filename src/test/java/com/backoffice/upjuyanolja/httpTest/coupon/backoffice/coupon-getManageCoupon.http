@@ -1,3 +1,4 @@
+# Success login
 POST {{owner-login-api}}
 Content-Type: application/json
 
@@ -13,22 +14,21 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:8080/api/coupons/backoffice/buy/2
+GET http://localhost:8080//api/coupons/backoffice/manage/1
 Accept: application/json
 Authorization: Bearer {{access_token}}
 
 ###
-
-POST {{member-login-api}}
+# Error login
+POST {{owner-login-api}}
 Content-Type: application/json
 
 {
-  "email": "{{member-email}}",
-  "password": "{{member-password}}"
+  "email": "{{owner3-email}}",
+  "password": "{{owner3-password}}"
 }
 
 > {%
-  client.log(response.body.data.accessToken);
-  client.global.set("access_token",response.body.data.accessToken)
+  client.log(response.body.accessToken);
+  client.global.set("access_token",response.body.accessToken)
 %}
-

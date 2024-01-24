@@ -66,6 +66,7 @@ import org.springframework.restdocs.constraints.ConstraintDescriptions;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 
 @ActiveProfiles("test")
@@ -155,7 +156,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
             .build();
 
         doNothing().when(couponBackofficeService).createCoupon(
-            any(CouponMakeRequest.class), any(Member.class));
+            any(CouponMakeRequest.class), any(Long.class));
 
         // when & Then
         mockMvc.perform(post("/api/coupons/backoffice/buy")
