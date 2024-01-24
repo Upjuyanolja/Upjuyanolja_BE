@@ -34,6 +34,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotExistsException;
 import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
+import jakarta.persistence.EntityManager;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     private final RoomCommandUseCase roomCommandUseCase;
     private final MemberGetService memberGetService;
     private final S3UploadService s3UploadService;
+    private final EntityManager em;
 
     @Override
     public AccommodationInfoResponse createAccommodation(
@@ -70,10 +72,14 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         Member member = memberGetService.getMemberById(memberId);
         Accommodation accommodation = saveAccommodation(request);
         accommodationQueryUseCase.saveOwnership(member, accommodation);
+        if (request.rooms().isEmpty()) {
+            throw new RoomNotExistsException();
+        }
         request.rooms().forEach(
             roomRegisterRequest -> roomCommandUseCase.saveRoom(accommodation, roomRegisterRequest));
-        return AccommodationInfoResponse.of(
-            accommodationQueryUseCase.getAccommodationById(accommodation.getId()));
+
+        em.refresh(accommodation);
+        return AccommodationInfoResponse.of(accommodation);
     }
 
     @Override
@@ -314,9 +320,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         if (request.images().isEmpty()) {
             throw new AccommodationImageNotExistsException();
         }
-        if (request.rooms().isEmpty()) {
-            throw new RoomNotExistsException();
-        }
+
         accommodationQueryUseCase.saveAllImages(AccommodationImageRequest
             .toEntity(accommodation, request.images()));
 

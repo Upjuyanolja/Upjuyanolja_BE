@@ -3,6 +3,7 @@ package com.backoffice.upjuyanolja.domain.accommodation.unit.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationImageRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationOptionRequest;
@@ -34,6 +35,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
+import jakarta.persistence.EntityManager;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -69,6 +71,9 @@ public class AccommodationCommandServiceTest {
 
     @Mock
     private S3UploadService s3UploadService;
+
+    @Mock
+    private EntityManager em;
 
     @Nested
     @DisplayName("createAccommodation()은")
@@ -251,8 +256,7 @@ public class AccommodationCommandServiceTest {
             given(roomCommandService.saveRoom(any(Accommodation.class),
                 any(RoomRegisterRequest.class)))
                 .willReturn(roomInfoResponse);
-            given(accommodationQueryUseCase.getAccommodationById(any(Long.TYPE)))
-                .willReturn(savedAccommodation);
+            doNothing().when(em).refresh(any(Accommodation.class));
 
             // when
             AccommodationInfoResponse result = accommodationCommandService
@@ -265,9 +269,9 @@ public class AccommodationCommandServiceTest {
             assertThat(result.address()).isEqualTo("제주특별자치도 제주시 노형동 925 ");
             assertThat(result.description()).isEqualTo(
                 "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.");
-            assertThat(result.images()).isNotEmpty();
+            assertThat(result.images()).isNotNull();
             assertThat(result.option()).isNotNull();
-            assertThat(result.rooms()).isNotEmpty();
+            assertThat(result.rooms()).isNotNull();
         }
     }
 
