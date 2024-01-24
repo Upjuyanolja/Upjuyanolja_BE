@@ -151,7 +151,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
         );
         CouponMakeRequest mockCouponMakeRequest = CouponMakeRequest.builder()
             .accommodationId(1L)
-            .totalPoints(30000L)
+            .totalPoints(30000)
             .rooms(mockRequests)
             .build();
 
