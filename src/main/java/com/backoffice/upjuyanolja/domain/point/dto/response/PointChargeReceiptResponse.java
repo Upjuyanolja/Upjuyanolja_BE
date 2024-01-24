@@ -1,6 +1,5 @@
 package com.backoffice.upjuyanolja.domain.point.dto.response;
 
-import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
 import lombok.Builder;
 
 @Builder
@@ -11,11 +10,11 @@ public record PointChargeReceiptResponse(
 
 ) {
 
-    public static PointChargeReceiptResponse of(PointCharges pointCharges) {
+    public static PointChargeReceiptResponse of(String orderId, String tradeAt, long amount) {
         return PointChargeReceiptResponse.builder()
-            .orderId(pointCharges.getOrderName())
-            .tradeAt(pointCharges.getChargeDate().toString())
-            .amount(pointCharges.getChargePoint())
+            .orderId(orderId)
+            .tradeAt(tradeAt)
+            .amount(amount)
             .build();
     }
 }
