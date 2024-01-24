@@ -190,6 +190,7 @@ public class ReservationService {
             .visitorPhone(request.getVisitorPhone())
             .payment(payment)
             .isCouponUsed(request.getCouponId() != null)
+            .status(ReservationStatus.RESERVED)
             .build());
     }
 
