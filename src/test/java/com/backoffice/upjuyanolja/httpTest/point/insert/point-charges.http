@@ -1,0 +1,24 @@
+POST http://localhost:8080/api/auth/owners/signin
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+  client.log(response.body.accessToken);
+  client.global.set("access_token",response.body.accessToken);
+%}
+
+###
+
+POST http://localhost:8080/api/points/charges
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "paymentKey": "{{paymentKey}}",
+  "orderId": "a4CWyWY5m89PNh7xJwhk1",
+  "amount": 25000
+}
