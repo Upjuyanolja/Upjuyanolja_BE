@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddInfos;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponDeleteRequest;
@@ -47,6 +48,7 @@ public class CouponBackofficeService {
     private final CouponRepository couponRepository;
     private final RoomRepository roomRepository;
     private final PointRepository pointRepository;
+    private final AccommodationRepository accommodationRepository;
 
     public CouponMakeViewResponse getRoomsByAccommodation(Long accommodationId) {
         return couponRepository.findRoomsByAccommodationId(accommodationId);
@@ -102,6 +104,7 @@ public class CouponBackofficeService {
         log.info("쿠폰 발급 성공. 금액: {}", totalPoints);
     }
 
+    // 쿠폰 관리 View
     public CouponManageResponse manageCoupon(final Long accommodationId) {
         List<CouponManageQueryDto> queryResult = couponRepository.findCouponsByAccommodationId(
             accommodationId);
@@ -125,6 +128,7 @@ public class CouponBackofficeService {
             .build();
     }
 
+    // 쿠폰 추가 구매
     public void addonCoupon(final CouponAddRequest couponAddRequest, final long memberId) {
         // 1. 업주의 보유 포인트 검증
         final Optional<Point> resultPoint = pointRepository.findByMemberId(memberId);
@@ -147,6 +151,7 @@ public class CouponBackofficeService {
         log.info("쿠폰 추가 발급 성공. 금액: {}", totalPoints);
     }
 
+    // Todo: 쿠폰 수정 Validation 로직 추가
     public void modifyCoupon(final CouponModifyRequest modifyRequest) {
         List<Coupon> modifyCoupons = new ArrayList<>();
         for (var rooms : modifyRequest.rooms()) {
@@ -157,6 +162,7 @@ public class CouponBackofficeService {
         log.info("쿠폰 수정 성공.");
     }
 
+    // Todo: 쿠폰 삭제 Validation 로직 추가
     public void deleteCoupon(final CouponDeleteRequest request) {
 
         List<Coupon> deleteCoupons = new ArrayList<>();
@@ -182,6 +188,7 @@ public class CouponBackofficeService {
         coupon.increaseCouponStock(addCoupons.buyQuantity());
         return coupon;
     }
+
 
     private Coupon modifyCoupon(final CouponModifyInfos modifyCoupons, LocalDate endDate) {
         long couponId = modifyCoupons.couponId();
@@ -237,13 +244,16 @@ public class CouponBackofficeService {
         return point;
     }
 
-    // 업주의 회원 id와 등록된 숙소 id가 일치하는지 검증
+    // 정상적인 숙소 id 요청인지 검증
     @Transactional(readOnly = true)
-    public boolean validateAccommodationOwnership(
+    public boolean validateAccommodationRequest(
         final long accommodationId, final long currentMemberId
     ) {
         if (!couponRepository.existsAccommodationIdByMemberId(
             accommodationId, currentMemberId)) {
+            throw new AccommodationNotFoundException();
+        }
+        if (!accommodationRepository.existsById(accommodationId)) {
             throw new AccommodationNotFoundException();
         }
         return true;

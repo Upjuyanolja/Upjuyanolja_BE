@@ -1,12 +1,13 @@
 package com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice;
 
-import static com.backoffice.upjuyanolja.domain.coupon.config.CouponProperties.getDayLimit;
+
+import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.*;
 
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
+import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -23,7 +24,6 @@ public record CouponMakeRequest(
     @NotNull
     List<CouponRoomsRequest> rooms
 ) {
-
     public static Coupon toEntity(
         CouponRoomsRequest request,
         Room room
