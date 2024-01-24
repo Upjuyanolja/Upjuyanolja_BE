@@ -29,11 +29,6 @@ public class PointRefunds extends BaseTime {
     private Long id;
 
     @Column(nullable = false)
-    @Enumerated(value = EnumType.STRING)
-    @Comment("포인트 유형")
-    private PointCategory pointCategory;
-
-    @Column(nullable = false)
     @Comment("환불 일시")
     private LocalDateTime refundDate;
 
@@ -50,13 +45,11 @@ public class PointRefunds extends BaseTime {
     @Builder
     public PointRefunds(
         Long id,
-        PointCategory pointCategory,
         LocalDateTime refundDate,
         Point point,
         PointCharges pointCharges
     ) {
         this.id = id;
-        this.pointCategory = pointCategory;
         this.refundDate = refundDate;
         this.point = point;
         this.pointCharges = pointCharges;
