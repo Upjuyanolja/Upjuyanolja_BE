@@ -31,7 +31,7 @@ public class PointCharges extends BaseTime {
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     @Comment("포인트 유형")
-    private PointCategory pointCategory;
+    private PointStatus pointStatus;
 
     @Column(nullable = false)
     @Comment("포인트 결제 키")
@@ -66,7 +66,7 @@ public class PointCharges extends BaseTime {
     @Builder
     public PointCharges(
         Long id,
-        PointCategory pointCategory,
+        PointStatus pointStatus,
         String paymentKey,
         String orderName,
         long chargePoint,
@@ -76,7 +76,7 @@ public class PointCharges extends BaseTime {
         Point point
     ) {
         this.id = id;
-        this.pointCategory = pointCategory;
+        this.pointStatus = pointStatus;
         this.paymentKey = paymentKey;
         this.orderName = orderName;
         this.chargePoint = chargePoint;
