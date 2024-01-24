@@ -37,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -54,7 +55,7 @@ public class ReservationService {
     private final RoomCommandUseCase roomCommandUseCase;
     private final ReservationStockService stockService;
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     public void create(Member currentMember, CreateReservationRequest request) {
         int discountAmount = 0;
         Coupon coupon = null;
@@ -106,7 +107,8 @@ public class ReservationService {
         }
     }
 
-    private void decreaseRoomStock(Room room, LocalDate startDate, LocalDate endDate) {
+    @Transactional(propagation = Propagation.MANDATORY, rollbackFor = InvalidReservationInfoException.class)
+    public void decreaseRoomStock(Room room, LocalDate startDate, LocalDate endDate) {
         // 객실 재고 검증 및 get
         List<RoomStock> roomStocks = getRoomStock(room, startDate, endDate);
 
@@ -133,7 +135,8 @@ public class ReservationService {
         return modifiableRoomStocks;
     }
 
-    private Coupon decreaseCouponStock(Coupon coupon) {
+    @Transactional(propagation = Propagation.MANDATORY, rollbackFor = InvalidCouponException.class)
+    public Coupon decreaseCouponStock(Coupon coupon) {
         if (coupon.getStock() < 1) {
             throw new InvalidCouponException();
         }
@@ -194,7 +197,7 @@ public class ReservationService {
             .build());
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     public void cancel(Member currentMember, Long reservationId) {
         Reservation reservation = reservationRepository.findByIdAndMember(reservationId,
                 currentMember)
@@ -220,7 +223,8 @@ public class ReservationService {
         reservationRepository.save(reservation);
     }
 
-    private void increaseCouponStock(Reservation reservation) {
+    @Transactional(propagation = Propagation.MANDATORY, rollbackFor = NoSuchReservationException.class)
+    public void increaseCouponStock(Reservation reservation) {
         CouponRedeem couponRedeem = couponRedeemRepository.findByReservation(reservation)
             .orElseThrow(NoSuchReservationException::new);
 
@@ -230,7 +234,8 @@ public class ReservationService {
         couponRedeemRepository.delete(couponRedeem);
     }
 
-    private void increaseRoomStock(ReservationRoom reservationRoom) {
+    @Transactional(propagation = Propagation.MANDATORY, rollbackFor = NoSuchReservationException.class)
+    public void increaseRoomStock(ReservationRoom reservationRoom) {
         int daysCount =
             Period.between(reservationRoom.getStartDate(), reservationRoom.getEndDate()).getDays()
                 + 1;
