@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum PointStatus {
 
-    CONFIRMED("구매 확정"),
+    USED("구매 확정"),
     PAID("결제 완료"),
     CANCELED("취소 완료");
 

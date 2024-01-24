@@ -18,7 +18,6 @@ import com.backoffice.upjuyanolja.domain.point.repository.PointUsageRepository;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -59,11 +58,6 @@ public class PointService {
             .orElseGet(() -> createPoint(memberId));
     }
 
-    private Long getMemberPointId(Long memberId) {
-        return pointRepository.findIdByMemberId(memberId)
-            .orElseGet(() -> createPoint(memberId).getId());
-    }
-
     private Point createPoint(Long memberId) {
         Point newPoint = Point.builder()
             .totalPointBalance(0)
@@ -93,7 +87,7 @@ public class PointService {
 
 
     public PointChargePageResponse getChargePoints(Long memberId, Pageable pageable) {
-        Long pointId = getMemberPointId(memberId);
+        Long pointId = getMemberPoint(memberId).getId();
         Page<PointCharges> pointCharges = pointChargesRepository.findByPointId(pointId, pageable);
 
         return PointChargePageResponse.of(new PageImpl<>(
@@ -120,7 +114,7 @@ public class PointService {
             case CANCELED:
                 results.add(PointCategory.REFUND.getDescription());
                 results.add(PointType.REFUND.getDescription());
-            case CONFIRMED:
+            case USED:
                 results.add(PointCategory.USE.getDescription());
                 results.add(PointType.POINT.getDescription());
         }
@@ -146,7 +140,7 @@ public class PointService {
                     pointRefund.getRefundDate().toString(),
                     pointCharges.getChargePoint()
                 ));
-            case CONFIRMED:
+            case USED:
                 return pointUsageRepository.findByPointCharges(pointCharges).stream()
                     .map(pointUsage -> PointChargeReceiptResponse.of(
                         pointUsage.getOrderName(),
