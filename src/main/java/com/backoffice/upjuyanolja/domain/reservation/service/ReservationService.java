@@ -29,6 +29,7 @@ import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -127,8 +128,9 @@ public class ReservationService {
             throw new InvalidReservationInfoException();
         }
 
-        roomStocks.sort(Comparator.comparing(RoomStock::getDate));
-        return roomStocks;
+        List<RoomStock> modifiableRoomStocks = new ArrayList<>(roomStocks);
+        modifiableRoomStocks.sort(Comparator.comparing(RoomStock::getDate));
+        return modifiableRoomStocks;
     }
 
     private Coupon decreaseCouponStock(Coupon coupon) {
