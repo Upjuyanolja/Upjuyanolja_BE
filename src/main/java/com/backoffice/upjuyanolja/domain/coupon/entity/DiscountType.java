@@ -1,6 +1,6 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
-import static com.backoffice.upjuyanolja.domain.coupon.config.CouponProperties.*;
+import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.*;
 
 import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidCouponInfoException;
 import java.text.DecimalFormat;
