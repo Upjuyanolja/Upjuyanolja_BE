@@ -529,7 +529,7 @@ class CouponBackofficeControllerTest {
         return Point.builder()
             .id(pointId)
             .member(member)
-            .pointBalance(balance)
+            .totalPointBalance(balance)
             .build();
     }
 

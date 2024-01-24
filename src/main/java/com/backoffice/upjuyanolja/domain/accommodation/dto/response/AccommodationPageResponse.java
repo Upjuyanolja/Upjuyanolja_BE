@@ -15,7 +15,7 @@ public record AccommodationPageResponse(
 
 ) {
 
-    public static AccommodationPageResponse from(Page<AccommodationSummaryResponse> responsePage) {
+    public static AccommodationPageResponse of(Page<AccommodationSummaryResponse> responsePage) {
         return AccommodationPageResponse.builder()
             .pageNum(responsePage.getNumber() + 1)
             .pageSize(responsePage.getSize())

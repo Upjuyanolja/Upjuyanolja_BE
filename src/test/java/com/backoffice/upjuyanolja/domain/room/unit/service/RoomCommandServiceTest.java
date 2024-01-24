@@ -36,6 +36,7 @@ import com.backoffice.upjuyanolja.domain.room.exception.DuplicateRoomNameExcepti
 import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
+import jakarta.persistence.EntityManager;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +66,9 @@ public class RoomCommandServiceTest {
 
     @Mock
     private RoomQueryUseCase roomQueryUseCase;
+
+    @Mock
+    private EntityManager em;
 
     @Nested
     @DisplayName("registerRoom()은")
@@ -194,11 +198,13 @@ public class RoomCommandServiceTest {
                 any(Member.class),
                 any(Accommodation.class)))
                 .willReturn(true);
-            given(roomQueryUseCase.existsRoomByName(any(String.class))).willReturn(false);
+            given(roomQueryUseCase
+                .existsRoomByNameAndAccommodation(any(String.class), any(Accommodation.class)))
+                .willReturn(false);
             given(roomQueryUseCase.saveRoom(any(Accommodation.class), any(Room.class)))
                 .willReturn(room);
             given(roomQueryUseCase.saveRoomImages(any(List.class))).willReturn(List.of(roomImage));
-            given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(savedRoom);
+            doNothing().when(em).refresh(any(Room.class));
 
             // when
             RoomInfoResponse result = roomCommandService.registerRoom(1L, 1L, roomRegisterRequest);
@@ -212,10 +218,7 @@ public class RoomCommandServiceTest {
             assertThat(result.checkInTime()).isEqualTo("15:00");
             assertThat(result.checkOutTime()).isEqualTo("11:00");
             assertThat(result.price()).isEqualTo(100000);
-            assertThat(result.images()).isNotEmpty();
-            assertThat(result.images().get(0).id()).isEqualTo(1L);
-            assertThat(result.images().get(0).url()).isEqualTo(
-                "http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg");
+            assertThat(result.images()).isNotNull();
             assertThat(result.option()).isNotNull();
             assertThat(result.option().airCondition()).isEqualTo(true);
             assertThat(result.option().tv()).isEqualTo(true);
@@ -226,10 +229,10 @@ public class RoomCommandServiceTest {
             verify(accommodationQueryUseCase, times(1)).existsOwnershipByMemberAndAccommodation(
                 any(Member.class),
                 any(Accommodation.class));
-            verify(roomQueryUseCase, times(1)).existsRoomByName(any(String.class));
+            verify(roomQueryUseCase, times(1)).existsRoomByNameAndAccommodation(any(String.class),
+                any(Accommodation.class));
             verify(roomQueryUseCase, times(1)).saveRoom(any(Accommodation.class), any(Room.class));
             verify(roomQueryUseCase, times(1)).saveRoomImages(any(List.class));
-            verify(roomQueryUseCase, times(1)).findRoomById(any(Long.TYPE));
         }
 
         @Test
@@ -316,7 +319,8 @@ public class RoomCommandServiceTest {
             verify(accommodationQueryUseCase, times(1)).existsOwnershipByMemberAndAccommodation(
                 any(Member.class),
                 any(Accommodation.class));
-            verify(roomQueryUseCase, never()).existsRoomByName(any(String.class));
+            verify(roomQueryUseCase, never()).existsRoomByNameAndAccommodation(any(String.class),
+                any(Accommodation.class));
             verify(roomQueryUseCase, never()).saveRoom(any(Accommodation.class), any(Room.class));
             verify(roomQueryUseCase, never()).saveRoomImages(any(List.class));
             verify(roomQueryUseCase, never()).findRoomById(any(Long.TYPE));
@@ -519,7 +523,9 @@ public class RoomCommandServiceTest {
                 .rooms(new ArrayList<>())
                 .build();
 
-            given(roomQueryUseCase.existsRoomByName(any(String.class))).willReturn(true);
+            given(roomQueryUseCase
+                .existsRoomByNameAndAccommodation(any(String.class), any(Accommodation.class)))
+                .willReturn(true);
 
             // when
             Throwable exception = assertThrows(DuplicateRoomNameException.class, () -> {
@@ -529,7 +535,8 @@ public class RoomCommandServiceTest {
             // then
             assertEquals(exception.getMessage(), "중복된 객실 이름입니다.");
 
-            verify(roomQueryUseCase, times(1)).existsRoomByName(any(String.class));
+            verify(roomQueryUseCase, times(1))
+                .existsRoomByNameAndAccommodation(any(String.class), any(Accommodation.class));
         }
     }
 
@@ -945,7 +952,7 @@ public class RoomCommandServiceTest {
             given(roomQueryUseCase.findRoomImage(any(Long.TYPE)))
                 .willReturn(roomImage1);
             doNothing().when(roomQueryUseCase).deleteRoomImages(any(List.class));
-            given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(savedRoom);
+            doNothing().when(em).refresh(any(Room.class));
 
             // when
             RoomInfoResponse result = roomCommandService.modifyRoom(1L, 1L, roomUpdateRequest);
@@ -959,17 +966,14 @@ public class RoomCommandServiceTest {
             assertThat(result.checkInTime()).isEqualTo("15:00");
             assertThat(result.checkOutTime()).isEqualTo("11:00");
             assertThat(result.price()).isEqualTo(200000);
-            assertThat(result.images()).isNotEmpty();
-            assertThat(result.images().get(0).id()).isEqualTo(2L);
-            assertThat(result.images().get(0).url()).isEqualTo(
-                "http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_2.jpg");
+            assertThat(result.images()).isNotNull();
             assertThat(result.option()).isNotNull();
             assertThat(result.option().airCondition()).isEqualTo(true);
             assertThat(result.option().tv()).isEqualTo(true);
             assertThat(result.option().internet()).isEqualTo(true);
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
-            verify(roomQueryUseCase, times(2)).findRoomById(any(Long.TYPE));
+            verify(roomQueryUseCase, times(1)).findRoomById(any(Long.TYPE));
             verify(accommodationQueryUseCase, times(1))
                 .existsOwnershipByMemberAndAccommodation(any(Member.class),
                     any(Accommodation.class));

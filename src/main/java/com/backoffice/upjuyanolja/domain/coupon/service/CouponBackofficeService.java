@@ -133,7 +133,6 @@ public class CouponBackofficeService {
         // 1. 업주의 보유 포인트 검증
         final Optional<Point> resultPoint = pointRepository.findByMemberId(memberId);
         Point point = resultPoint.orElseThrow(PointNotFoundException::new);
-        final long ownerPoint = point.getPointBalance();
         final int totalPoints = couponAddRequest.totalPoints();
 
         List<Coupon> addCoupons = new ArrayList<>();
@@ -235,7 +234,7 @@ public class CouponBackofficeService {
     private Point validationPoint(final Member member, final long requestPoint) {
         final Optional<Point> resultPoint = pointRepository.findByMember(member);
         Point point = resultPoint.orElseThrow(PointNotFoundException::new);
-        final long ownerPoint = point.getPointBalance();
+        final long ownerPoint = point.getTotalPointBalance();
 
         // 쿠폰 구매 요청 금액이 업주의 보유 포인트보다 크다면 예외 발생
         if (ownerPoint < requestPoint) {

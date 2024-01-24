@@ -351,8 +351,7 @@ class CouponRepositoryTest {
         Point point = Point.builder()
             .id(pointId)
             .member(member)
-            .pointBalance(amount)
-            .standardDate(YearMonth.of(2024,01))
+            .totalPointBalance(amount)
             .build();
         pointRepository.save(point);
         return point;

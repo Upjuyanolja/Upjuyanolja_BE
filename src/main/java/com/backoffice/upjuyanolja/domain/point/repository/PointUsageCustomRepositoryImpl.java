@@ -20,7 +20,7 @@ public class PointUsageCustomRepositoryImpl implements PointUsageCustomRepositor
     private final QPointUsage qPointUsage = QPointUsage.pointUsage;
 
     @Override
-    public List<PointUsage> findByPointAndChargeDateWithin(
+    public List<PointUsage> findByPointAndRangeDate(
         Point point, YearMonth rangeDate
     ) {
         List<PointUsage> result = getPointUsages(point, rangeDate);

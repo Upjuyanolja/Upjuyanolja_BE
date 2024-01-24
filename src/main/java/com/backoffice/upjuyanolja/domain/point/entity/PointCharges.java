@@ -35,15 +35,11 @@ public class PointCharges extends BaseTime {
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     @Comment("포인트 유형")
-    private PointType pointType;
+    private PointCategory pointCategory;
 
     @Column(nullable = false)
     @Comment("포인트 결제 키")
     private String paymentKey;
-
-    @Column(nullable = false)
-    @Comment("포인트 결제 이름")
-    private String paymentName;
 
     @Column(nullable = false)
     @Comment("주문 이름")
@@ -76,11 +72,10 @@ public class PointCharges extends BaseTime {
     @Builder
     public PointCharges(
         Long id,
-        PointType pointType,
+        PointCategory pointCategory,
         String paymentKey,
-        String paymentName,
         String orderName,
-        int chargePoint,
+        long chargePoint,
         LocalDateTime chargeDate,
         LocalDateTime endDate,
         boolean refundable,
@@ -88,9 +83,8 @@ public class PointCharges extends BaseTime {
         List<PointRefunds> refunds
     ) {
         this.id = id;
-        this.pointType = pointType;
+        this.pointCategory = pointCategory;
         this.paymentKey = paymentKey;
-        this.paymentName = paymentName;
         this.orderName = orderName;
         this.chargePoint = chargePoint;
         this.chargeDate = chargeDate;

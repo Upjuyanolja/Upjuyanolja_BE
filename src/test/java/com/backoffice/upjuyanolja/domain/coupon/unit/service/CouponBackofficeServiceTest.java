@@ -173,8 +173,7 @@ class CouponBackofficeServiceTest {
         return Point.builder()
             .id(pointId)
             .member(member)
-            .pointBalance(balance)
-            .standardDate(YearMonth.of(2024,01))
+            .totalPointBalance(balance)
             .build();
     }
 
