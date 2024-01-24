@@ -17,14 +17,14 @@ public record PointChargeDetailResponse(
 ) {
 
     public static PointChargeDetailResponse of(
-        PointCharges pointCharges, String type,
-        String status, List<PointChargeReceiptResponse> receipt
+        PointCharges pointCharges, String category, String type,
+        List<PointChargeReceiptResponse> receipt
     ) {
         return PointChargeDetailResponse.builder()
             .id(pointCharges.getId())
-            .category(pointCharges.getPointCategory().getDescription())
+            .category(category)
             .type(type)
-            .status(status)
+            .status(pointCharges.getPointStatus().getDescription())
             .trade(pointCharges.getChargePoint())
             .amount(pointCharges.getChargePoint())
             .receipt(receipt)
