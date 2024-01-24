@@ -60,6 +60,8 @@ public class AuthenticationConfig {
                 .hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/accommodations/**")
                 .hasRole("ADMIN")
+                .requestMatchers("/api/auth/logout")
+                .hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated())
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
                 UsernamePasswordAuthenticationFilter.class)

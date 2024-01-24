@@ -38,6 +38,7 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
     private final BCryptPasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
     private final RedisService redisService;
+    private final MemberGetService memberGetService;
 
     @Transactional
     @Override
@@ -95,6 +96,21 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
             .name(memberInfo.getName())
             .phone(memberInfo.getPhone())
             .build();
+    }
+
+    public void logout(long memberId) {
+        Member member = memberGetService.getMemberById(memberId);
+
+        // 저장소에서 Member 이메일을 기반으로 Refresh Token 값 가져옴
+        String refreshToken = redisService.getValues(member.getEmail());
+
+        // 없다면 이미 로그아웃한 회원
+        if (refreshToken.equals("false")) {
+            throw new LoggedOutMemberException();
+        }
+
+        // 레디스 저장소에서 Refresh Token 삭제
+        redisService.deleteValues(member.getEmail());
     }
 
     public void validateDuplicatedEmail(String email) {
