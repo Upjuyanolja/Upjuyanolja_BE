@@ -85,9 +85,10 @@ public class RoomCommandService implements RoomCommandUseCase {
             .option(RoomOptionRequest.toEntity(request.option()))
             .build()
         );
-        roomQueryUseCase.saveRoomImages(RoomImageRequest.toEntity(room, request.images()));
-
-        em.refresh(room);
+        // 저장한 객실 이미지를 응답하기 위한 임시 방편
+        roomQueryUseCase.saveRoomImages(RoomImageRequest.toEntity(room, request.images()))
+            .forEach(roomImage -> room.getImages().add(roomImage));
+//        em.refresh(room);
         return RoomInfoResponse.of(room);
     }
 

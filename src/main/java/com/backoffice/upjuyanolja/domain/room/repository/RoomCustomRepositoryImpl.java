@@ -43,6 +43,7 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
             .limit(pageable.getPageSize());
         JPAQuery<Room> countQuery = queryFactory
             .select(room)
+            .from(room)
             .leftJoin(room.accommodation, accommodation).fetchJoin()
             .leftJoin(room.option, roomOption).fetchJoin()
             .leftJoin(room.images, roomImage).fetchJoin()
