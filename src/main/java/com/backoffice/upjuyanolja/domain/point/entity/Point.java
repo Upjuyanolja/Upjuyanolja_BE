@@ -1,13 +1,9 @@
 package com.backoffice.upjuyanolja.domain.point.entity;
 
-import static com.backoffice.upjuyanolja.global.exception.ErrorCode.POINT_INSUFFICIENT;
-
 import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.point.util.YearMonthConverter;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -15,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.time.YearMonth;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,41 +29,33 @@ public class Point extends BaseTime {
 
     @Column(nullable = false)
     @Comment("보유 포인트")
-    private long pointBalance;
-
-    @Column(nullable = false)
-    @Comment("기준 날짜")
-    @Convert(converter = YearMonthConverter.class)
-    private YearMonth standardDate;
+    private long totalPointBalance;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     @Comment("회원 식별자")
     private Member member;
 
-    public void decreasePointBalance(long usedPoints) {
-        if (pointBalance - usedPoints < 0) {
-            throw new InsufficientPointsException();
-        }
-        pointBalance -= usedPoints;
-    }
-
     @Builder
     public Point(
         Long id,
-        long pointBalance,
-        YearMonth standardDate,
+        long totalPointBalance,
         Member member
     ) {
         this.id = id;
-        this.pointBalance = pointBalance;
-        this.standardDate = standardDate;
+        this.totalPointBalance = totalPointBalance;
         this.member = member;
     }
 
-    public void updatePoint(Long pointBalance, YearMonth rangeDate){
-        this.pointBalance = pointBalance;
-        this.standardDate = rangeDate;
+    public void updatePoint(long totalPointBalance) {
+        this.totalPointBalance = totalPointBalance;
+    }
+
+    public void decreasePointBalance(long usedPoints) {
+        if (totalPointBalance - usedPoints < 0) {
+            throw new InsufficientPointsException();
+        }
+        totalPointBalance -= usedPoints;
     }
 
 }

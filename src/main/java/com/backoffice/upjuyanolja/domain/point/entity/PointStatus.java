@@ -5,12 +5,12 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum PointType {
+public enum PointStatus {
 
-    POINT("포인트"),
-    REFUND("취소");
+    CONFIRMED("구매 확정"),
+    PAID("결제 완료"),
+    CANCELED("취소 완료");
 
     private final String description;
-
 
 }
