@@ -17,7 +17,7 @@ public record PointChargeResponse(
         return PointChargeResponse.builder()
             .orderId(pointCharges.getOrderName())
             .tradeAt(pointCharges.getChargeDate().toString())
-            .orderName(pointCharges.getPaymentName())
+            .orderName(pointCharges.getChargePoint()+"원")
             .amount(pointCharges.getChargePoint())
             .build();
     }
