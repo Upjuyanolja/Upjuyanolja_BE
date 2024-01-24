@@ -34,7 +34,9 @@ public class CouponService {
                 .map(coupon -> CouponShortResponse.of(coupon))
                 .toList();
 
-            responses.add(CouponAccommodationResponse.of(room, coupons));
+            if (!coupons.isEmpty()) {
+                responses.add(CouponAccommodationResponse.of(room, coupons));
+            }
         }
 
         return responses;
