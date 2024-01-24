@@ -204,7 +204,7 @@ public class RoomCommandServiceTest {
             given(roomQueryUseCase.saveRoom(any(Accommodation.class), any(Room.class)))
                 .willReturn(room);
             given(roomQueryUseCase.saveRoomImages(any(List.class))).willReturn(List.of(roomImage));
-            doNothing().when(em).refresh(any(Room.class));
+            //doNothing().when(em).refresh(any(Room.class));
 
             // when
             RoomInfoResponse result = roomCommandService.registerRoom(1L, 1L, roomRegisterRequest);
@@ -442,7 +442,7 @@ public class RoomCommandServiceTest {
             given(roomQueryUseCase.saveRoom(any(Accommodation.class), any(Room.class))).willReturn(
                 room);
             given(roomQueryUseCase.saveRoomImages(any(List.class))).willReturn(List.of(roomImage));
-            doNothing().when(em).refresh(any(Room.class));
+            //doNothing().when(em).refresh(any(Room.class));
 
             // when
             RoomInfoResponse result = roomCommandService.saveRoom(accommodation,
