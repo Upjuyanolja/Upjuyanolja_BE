@@ -1,5 +1,6 @@
 package com.backoffice.upjuyanolja.domain.member.controller;
 
+import com.backoffice.upjuyanolja.domain.member.dto.request.EmailRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignInRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.SignUpRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.request.TokenRequest;
@@ -29,7 +30,7 @@ public class MemberAuthController {
 
     private final MemberAuthService memberAuthService;
     private final MemberGetService memberGetService;
-    private final SecurityUtil securityUtill;
+    private final SecurityUtil securityUtil;
 
     @PostMapping("members/signup")
     public ResponseEntity<SignUpResponse> signup(
@@ -39,11 +40,11 @@ public class MemberAuthController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("members/email")
+    @PostMapping("members/email")
     public ResponseEntity<CheckEmailDuplicateResponse> checkEmailDuplicate(
-        @RequestParam(name = "email") String email
+        @RequestBody EmailRequest request
     ) {
-        CheckEmailDuplicateResponse response = memberAuthService.checkEmailDuplicate(email);
+        CheckEmailDuplicateResponse response = memberAuthService.checkEmailDuplicate(request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -58,7 +59,7 @@ public class MemberAuthController {
     @GetMapping("members")
     public ResponseEntity<MemberInfoResponse> getMember() {
         MemberInfoResponse response = memberGetService.getMember(
-            securityUtill.getCurrentMemberId());
+            securityUtil.getCurrentMemberId());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
