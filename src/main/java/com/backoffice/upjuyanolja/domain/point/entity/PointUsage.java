@@ -50,6 +50,11 @@ public class PointUsage extends BaseTime {
     @Comment("포인트 식별자")
     private Point point;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "point_charges_id")
+    @Comment("포인트 충전 식별자")
+    private PointCharges pointCharges;
+
     @Builder
     public PointUsage(
         Long id,
@@ -57,7 +62,8 @@ public class PointUsage extends BaseTime {
         String orderName,
         LocalDateTime orderDate,
         long orderPrice,
-        Point point
+        Point point,
+        PointCharges pointcharges
     ) {
         this.id = id;
         this.pointCategory = pointCategory;
@@ -65,5 +71,6 @@ public class PointUsage extends BaseTime {
         this.orderDate = orderDate;
         this.orderPrice = orderPrice;
         this.point = point;
+        this.pointCharges = pointcharges;
     }
 }
