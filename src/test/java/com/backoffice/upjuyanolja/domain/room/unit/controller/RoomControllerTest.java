@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.room.controller.RoomController;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageAddRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageDeleteRequest;
@@ -23,6 +24,7 @@ import com.backoffice.upjuyanolja.domain.room.dto.response.RoomImageResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomOptionResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
+import com.backoffice.upjuyanolja.domain.room.dto.response.RoomsInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
@@ -151,14 +153,15 @@ public class RoomControllerTest {
         @DisplayName("객실 목록을 조회할 수 있다.")
         void _willSuccess() throws Exception {
             // given
-            RoomInfoResponse roomInfoResponse = RoomInfoResponse.builder()
+            RoomsInfoResponse roomsInfoResponse = RoomsInfoResponse.builder()
                 .id(1L)
                 .name("65m² 킹룸")
                 .defaultCapacity(2)
                 .maxCapacity(3)
                 .checkInTime("15:00")
                 .checkOutTime("11:00")
-                .price(100000)
+                .basePrice(100000)
+                .discountPrice(80000)
                 .amount(858)
                 .status("SELLING")
                 .option(RoomOptionResponse.builder()
@@ -170,6 +173,23 @@ public class RoomControllerTest {
                     .id(1L)
                     .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
                     .build()))
+                .coupons(List.of(
+                    CouponDetailResponse.builder()
+                        .id(2L)
+                        .name("20% 할인")
+                        .price(80000)
+                        .build(),
+                    CouponDetailResponse.builder()
+                        .id(3L)
+                        .name("15000원 할인")
+                        .price(85000)
+                        .build(),
+                    CouponDetailResponse.builder()
+                        .id(1L)
+                        .name("10000원 할인")
+                        .price(90000)
+                        .build()
+                ))
                 .build();
 
             RoomPageResponse roomPageResponse = RoomPageResponse.builder()
@@ -178,7 +198,7 @@ public class RoomControllerTest {
                 .totalPages(1)
                 .totalElements(1)
                 .isLast(true)
-                .rooms(List.of(roomInfoResponse))
+                .rooms(List.of(roomsInfoResponse))
                 .build();
 
             given(securityUtil.getCurrentMemberId()).willReturn(1L);
@@ -203,7 +223,8 @@ public class RoomControllerTest {
                 .andExpect(jsonPath("$.rooms[0].maxCapacity").isNumber())
                 .andExpect(jsonPath("$.rooms[0].checkInTime").isString())
                 .andExpect(jsonPath("$.rooms[0].checkOutTime").isString())
-                .andExpect(jsonPath("$.rooms[0].price").isNumber())
+                .andExpect(jsonPath("$.rooms[0].basePrice").isNumber())
+                .andExpect(jsonPath("$.rooms[0].discountPrice").isNumber())
                 .andExpect(jsonPath("$.rooms[0].amount").isNumber())
                 .andExpect(jsonPath("$.rooms[0].status").isString())
                 .andExpect(jsonPath("$.rooms[0].images").isArray())
@@ -213,6 +234,10 @@ public class RoomControllerTest {
                 .andExpect(jsonPath("$.rooms[0].option.airCondition").isBoolean())
                 .andExpect(jsonPath("$.rooms[0].option.tv").isBoolean())
                 .andExpect(jsonPath("$.rooms[0].option.internet").isBoolean())
+                .andExpect(jsonPath("$.rooms[0].coupons").isArray())
+                .andExpect(jsonPath("$.rooms[0].coupons[0].id").isNumber())
+                .andExpect(jsonPath("$.rooms[0].coupons[0].name").isString())
+                .andExpect(jsonPath("$.rooms[0].coupons[0].price").isNumber())
                 .andDo(print());
 
             verify(roomCommandUseCase, times(1))
