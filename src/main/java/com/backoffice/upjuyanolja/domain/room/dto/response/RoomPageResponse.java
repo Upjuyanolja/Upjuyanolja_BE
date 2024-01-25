@@ -10,7 +10,7 @@ public record RoomPageResponse(
     int totalPages,
     long totalElements,
     boolean isLast,
-    List<RoomInfoResponse> rooms
+    List<RoomsInfoResponse> rooms
 ) {
 
 }
