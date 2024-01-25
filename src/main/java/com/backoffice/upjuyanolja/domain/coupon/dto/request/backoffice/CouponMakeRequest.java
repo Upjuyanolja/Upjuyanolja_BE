@@ -7,7 +7,6 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
@@ -17,10 +16,9 @@ import lombok.Builder;
 public record CouponMakeRequest(
     @NotNull(message = "숙소 식별자는 필수입니다.")
     Long accommodationId,
-    @NotNull(message = "합계 금액은 필수입니다.")
-    @Min(value = 1000, message = "합계 금액을 확인하여 주세요.")
-    int totalPoints,
-    @NotNull
+    @NotNull(message = "합계 포인트는 필수입니다.")
+    long totalPoints,
+    @NotNull(message = "객실 정보를 하나 이상 입력해 주세요.")
     List<CouponRoomsRequest> rooms
 ) {
     public static Coupon toEntity(
