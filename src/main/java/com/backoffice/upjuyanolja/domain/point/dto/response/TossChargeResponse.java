@@ -6,9 +6,8 @@ import lombok.Builder;
 public record TossChargeResponse(
     String paymentKey,
     String orderId,
-    long amount,
-    String approvedAt,
-    String tradeAt,
+    long totalAmount,
+    String requestedAt,
     String orderName
 ) {
 

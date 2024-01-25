@@ -28,8 +28,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -184,22 +184,24 @@ public class PointService {
         TossChargeResponse tossResponse = getTossChargeResponse(request);
 
         validatePointChargeRequest(request, tossResponse);
-        PointCharges chargePoint = createChargePoint(tossResponse);
+        PointCharges chargePoint = createChargePoint(tossResponse, memberPoint);
+        pointChargesRepository.save(chargePoint);
         updateTotalPoint(memberPoint);
 
         return PointChargeResponse.of(chargePoint);
     }
 
     private PointCharges createChargePoint(
-        TossChargeResponse tossResponse
+        TossChargeResponse tossResponse, Point point
     ) {
         return PointCharges.builder()
+            .chargePoint(point.getId())
             .pointStatus(PointStatus.PAID)
             .paymentKey(tossResponse.paymentKey())
             .orderName(tossResponse.orderId())
-            .chargePoint(tossResponse.amount())
-            .chargeDate(LocalDateTime.parse(tossResponse.approvedAt()))
-            .endDate(LocalDateTime.parse(tossResponse.approvedAt()).plusDays(7))
+            .chargePoint(tossResponse.totalAmount())
+            .chargeDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime())
+            .endDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime().plusDays(7))
             .refundable(true)
             .build();
     }
@@ -256,7 +258,7 @@ public class PointService {
     ) {
         if (!request.orderId().equals(tossResponse.orderId()) ||
             !request.paymentKey().equals(tossResponse.paymentKey()) ||
-            request.amount() != tossResponse.amount()) {
+            request.amount() != tossResponse.totalAmount()) {
             throw new PaymentAuthorizationFailedException();
         }
     }
