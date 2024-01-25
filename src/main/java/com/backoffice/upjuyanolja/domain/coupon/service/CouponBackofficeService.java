@@ -150,6 +150,7 @@ public class CouponBackofficeService {
     public void addonCoupon(final CouponAddRequest couponAddRequest, final long memberId) {
         // 1. 업주의 보유 포인트 검증
         final int totalPoints = couponAddRequest.totalPoints();
+        pointService.validatePoint(memberId, totalPoints);
 
         List<Coupon> addCoupons = new ArrayList<>();
         for (var rooms : couponAddRequest.rooms()) {
@@ -168,18 +169,20 @@ public class CouponBackofficeService {
         log.info("쿠폰 추가 발급 성공. 금액: {}", totalPoints);
     }
 
-    // Todo: 쿠폰 수정 Validation 로직 추가
+    // 쿠폰 수정
     public void modifyCoupon(final CouponModifyRequest modifyRequest) {
+
         List<Coupon> modifyCoupons = new ArrayList<>();
         for (var rooms : modifyRequest.rooms()) {
             for (var coupons : rooms.coupons()) {
                 modifyCoupons.add(modifyCoupon(coupons, modifyRequest.expiry()));
             }
         }
+        couponRepository.saveAll(modifyCoupons);
         log.info("쿠폰 수정 성공.");
     }
 
-    // Todo: 쿠폰 삭제 Validation 로직 추가
+    // 쿠폰 삭제
     public void deleteCoupon(final CouponDeleteRequest request) {
 
         List<Coupon> deleteCoupons = new ArrayList<>();
@@ -188,6 +191,7 @@ public class CouponBackofficeService {
                 deleteCoupons.add(setupDelete(coupons.couponId()));
             }
         }
+        couponRepository.saveAll(deleteCoupons);
         log.info("쿠폰 삭제 성공.");
     }
 

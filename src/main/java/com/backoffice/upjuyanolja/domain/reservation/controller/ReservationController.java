@@ -11,6 +11,7 @@ import com.backoffice.upjuyanolja.global.validator.ValidId;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,7 +56,9 @@ public class ReservationController {
     @GetMapping()
     public ResponseEntity<GetReservationResponse> getReserved(
         @RequestParam(name = "status", defaultValue = "RESERVED") ReservationStatus status,
-        @PageableDefault(size = 3) Pageable pageable
+        @PageableDefault(
+            size = 3, sort = {"updatedAt", "createdAt"}, direction = Direction.DESC
+        ) Pageable pageable
     ) {
         Member currentMember = getCurrentMember();
 
