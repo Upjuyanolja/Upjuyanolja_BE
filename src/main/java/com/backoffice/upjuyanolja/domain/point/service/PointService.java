@@ -8,7 +8,7 @@ import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargePageRespo
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeReceiptResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointSummaryResponse;
-import com.backoffice.upjuyanolja.domain.point.dto.response.TossChargeResponse;
+import com.backoffice.upjuyanolja.domain.point.dto.response.TossResponse;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.entity.PointCategory;
 import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
@@ -19,6 +19,7 @@ import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
 import com.backoffice.upjuyanolja.domain.point.exception.PaymentAuthorizationFailedException;
 import com.backoffice.upjuyanolja.domain.point.exception.PointNotFoundException;
 import com.backoffice.upjuyanolja.domain.point.exception.TossApiErrorException;
+import com.backoffice.upjuyanolja.domain.point.exception.WrongRefundInfoException;
 import com.backoffice.upjuyanolja.domain.point.repository.PointChargesRepository;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRefundsRepository;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
@@ -189,27 +190,27 @@ public class PointService {
 
     public PointChargeResponse getChargePointResponse(Long memberId, PointChargeRequest request) {
         Point memberPoint = getMemberPoint(memberId);
-        TossChargeResponse tossResponse = getTossChargeResponse(request);
+        TossResponse tossResponse = getTossChargeResponse(request);
 
         validatePointChargeRequest(request, tossResponse);
-        PointCharges chargePoint = createChargePoint(tossResponse, memberPoint);
+        PointCharges chargePoint = createPointCharge(memberPoint, tossResponse);
         pointChargesRepository.save(chargePoint);
         updateTotalPoint(memberPoint);
 
         return PointChargeResponse.of(chargePoint);
     }
 
-    private PointCharges createChargePoint(
-        TossChargeResponse tossResponse, Point point
+    private PointCharges createPointCharge(
+        Point point, TossResponse tossResponse
     ) {
         return PointCharges.builder()
-            .chargePoint(point.getId())
+            .point(point)
             .pointStatus(PointStatus.PAID)
             .paymentKey(tossResponse.paymentKey())
             .orderName(tossResponse.orderId())
             .chargePoint(tossResponse.totalAmount())
-            .chargeDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime())
-            .endDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime().plusDays(7))
+            .chargeDate(ZonedDateTime.parse(tossResponse.approvedAt()).toLocalDateTime())
+            .endDate(ZonedDateTime.parse(tossResponse.approvedAt()).toLocalDateTime().plusDays(7))
             .refundable(true)
             .build();
     }
@@ -217,7 +218,7 @@ public class PointService {
     private void updateTotalPoint(Point point) {
         long chargeSum = Optional.of(pointChargesRepository.sumChargePointByRefundable(point))
             .orElse(0L);
-        point.updatePoint(chargeSum);
+        point.updatePointBalance(chargeSum);
         pointRepository.save(point);
     }
 
@@ -235,7 +236,7 @@ public class PointService {
         return authorizations;
     }
 
-    private TossChargeResponse getTossChargeResponse(PointChargeRequest request) {
+    private TossResponse getTossChargeResponse(PointChargeRequest request) {
 
         HttpResponse<String> response;
 
@@ -252,8 +253,7 @@ public class PointService {
             response = HttpClient.newHttpClient()
                 .send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
-            return objectMapper.readValue(response.body(),
-                TossChargeResponse.class);
+            return objectMapper.readValue(response.body(), TossResponse.class);
 
         } catch (IOException | InterruptedException e) {
             throw new TossApiErrorException();
@@ -262,7 +262,7 @@ public class PointService {
     }
 
     private void validatePointChargeRequest(
-        PointChargeRequest request, TossChargeResponse tossResponse
+        PointChargeRequest request, TossResponse tossResponse
     ) {
         if (!request.orderId().equals(tossResponse.orderId()) ||
             !request.paymentKey().equals(tossResponse.paymentKey()) ||
@@ -271,5 +271,62 @@ public class PointService {
         }
     }
 
+    public void refundPoint(Long chargeId) {
+        PointCharges pointCharges = pointChargesRepository.findById(chargeId)
+            .orElseThrow(PointNotFoundException::new);
+
+        validatePointRefund(pointCharges);
+
+        TossResponse tossResponse = getTossRefundResponse(pointCharges.getPaymentKey());
+        updateChargePointStatus(pointCharges);
+        updateTotalPoint(pointCharges.getPoint());
+
+        PointRefunds pointRefunds = createPointRefund(pointCharges, tossResponse);
+        pointRefundsRepository.save(pointRefunds);
+    }
+
+    private TossResponse getTossRefundResponse(String paymentKey) {
+
+        HttpResponse<String> response;
+
+        try {
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(tossBaseUrl +paymentKey+ "/cancel"))
+                .header("Authorization", "Basic " + createTossAuthorizations())
+                .header("Content-Type", "application/json")
+                .method("POST", HttpRequest.BodyPublishers.ofString(
+                    "{\"cancelReason\":\"" + "고객 변심" + "\"}"))
+                .build();
+
+            response = HttpClient.newHttpClient()
+                .send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+            return objectMapper.readValue(response.body(), TossResponse.class);
+
+        } catch (IOException | InterruptedException e) {
+            throw new TossApiErrorException();
+        }
+
+    }
+
+    private void updateChargePointStatus(PointCharges pointCharges) {
+        pointCharges.updatePointStatus(PointStatus.CANCELED);
+    }
+
+    private PointRefunds createPointRefund(PointCharges pointCharges, TossResponse tossResponse) {
+        return PointRefunds.builder()
+            .point(pointCharges.getPoint())
+            .pointCharges(pointCharges)
+            .refundDate(ZonedDateTime.parse(tossResponse.approvedAt()).toLocalDateTime())
+            .build();
+    }
+
+    private void validatePointRefund(PointCharges pointCharges) {
+        Point point = pointCharges.getPoint();
+        if (pointCharges.getChargePoint() > point.getTotalPointBalance() ||
+            pointCharges.getPointStatus() != PointStatus.PAID) {
+            throw new WrongRefundInfoException();
+        }
+    }
 
 }
