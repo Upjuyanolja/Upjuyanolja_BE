@@ -16,6 +16,8 @@ public interface AccommodationQueryUseCase {
 
     Accommodation getAccommodationById(long id);
 
+    boolean existsById(Long accommodationId);
+
     AccommodationOwnership saveOwnership(Member member, Accommodation accommodation);
 
     List<AccommodationOwnership> getOwnershipByMember(Member member);
