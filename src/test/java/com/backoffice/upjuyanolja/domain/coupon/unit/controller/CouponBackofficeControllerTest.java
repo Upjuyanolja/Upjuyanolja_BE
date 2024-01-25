@@ -142,7 +142,7 @@ class CouponBackofficeControllerTest {
 
         @DisplayName("쿠폰 만들기")
         @Test
-        public void couponMakeRequest_test() throws Exception {
+        public void couponMakeRequestTest() throws Exception {
             // given
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
             when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
@@ -153,7 +153,7 @@ class CouponBackofficeControllerTest {
             mockPoint = createPoint(1L, mockMember, 50000);
 
             doNothing().when(couponBackofficeService).createCoupon(
-                any(CouponMakeRequest.class), any(Member.class));
+                any(CouponMakeRequest.class), any(Long.class));
 
             // when & Then
             mockMvc.perform(post("/api/coupons/backoffice/buy")

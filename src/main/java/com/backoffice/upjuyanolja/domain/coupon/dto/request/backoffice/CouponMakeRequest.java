@@ -1,12 +1,11 @@
 package com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice;
 
 
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.*;
+import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions.getDayLimit;
 
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
-import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountRestrictions;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +19,7 @@ public record CouponMakeRequest(
     Long accommodationId,
     @NotNull(message = "합계 금액은 필수입니다.")
     @Min(value = 1000, message = "합계 금액을 확인하여 주세요.")
-    long totalPoints,
+    int totalPoints,
     @NotNull
     List<CouponRoomsRequest> rooms
 ) {

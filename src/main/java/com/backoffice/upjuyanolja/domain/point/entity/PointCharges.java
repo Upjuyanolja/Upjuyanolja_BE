@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.point.entity;
 
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,10 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,7 +31,7 @@ public class PointCharges extends BaseTime {
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     @Comment("포인트 유형")
-    private PointType pointType;
+    private PointStatus pointStatus;
 
     @Column(nullable = false)
     @Comment("포인트 결제 키")
@@ -66,24 +62,21 @@ public class PointCharges extends BaseTime {
     @Comment("포인트 식별자")
     private Point point;
 
-    @OneToMany(mappedBy = "pointCharges", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PointRefunds> refunds = new ArrayList<>();
 
     @Builder
     public PointCharges(
         Long id,
-        PointType pointType,
+        PointStatus pointStatus,
         String paymentKey,
         String orderName,
         long chargePoint,
         LocalDateTime chargeDate,
         LocalDateTime endDate,
         boolean refundable,
-        Point point,
-        List<PointRefunds> refunds
+        Point point
     ) {
         this.id = id;
-        this.pointType = pointType;
+        this.pointStatus = pointStatus;
         this.paymentKey = paymentKey;
         this.orderName = orderName;
         this.chargePoint = chargePoint;
@@ -91,7 +84,6 @@ public class PointCharges extends BaseTime {
         this.endDate = endDate;
         this.refundable = refundable;
         this.point = point;
-        this.refunds = refunds;
     }
 
 }
