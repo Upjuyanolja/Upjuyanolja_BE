@@ -43,9 +43,9 @@ public class CouponBackofficeController {
     public ResponseEntity<CouponMakeViewResponse> responseRoomsView(
         @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
     ) {
-        //Todo: Id validation 검증 로직 보완
         log.info("GET /api/coupons/backoffice/buy/{accommodationId}");
         Long currentMemberId = securityUtil.getCurrentMemberId();
+        //Todo: 공통 validation 로직을 AOP로 분리하기
         couponService.validateAccommodationRequest(
             accommodationId, currentMemberId);
 
@@ -60,11 +60,11 @@ public class CouponBackofficeController {
     ) {
         log.info("POST /api/coupons/backoffice/buy");
 
-        Member currentMember = getCurrentMember();
+        Long currentMemberId = securityUtil.getCurrentMemberId();
 
         couponService.validateAccommodationRequest(
-            couponMakeRequest.accommodationId(), currentMember.getId());
-        couponService.createCoupon(couponMakeRequest, currentMember);
+            couponMakeRequest.accommodationId(), currentMemberId);
+        couponService.createCoupon(couponMakeRequest, currentMemberId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
