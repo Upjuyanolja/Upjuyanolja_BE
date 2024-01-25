@@ -1,6 +1,5 @@
 package com.backoffice.upjuyanolja.domain.point.entity;
 
-import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
@@ -49,13 +48,6 @@ public class Point extends BaseTime {
 
     public void updatePointBalance(long totalPointBalance) {
         this.totalPointBalance = totalPointBalance;
-    }
-
-    public void decreasePointBalance(long usedPoints) {
-        if (totalPointBalance - usedPoints < 0) {
-            throw new InsufficientPointsException();
-        }
-        totalPointBalance -= usedPoints;
     }
 
 }
