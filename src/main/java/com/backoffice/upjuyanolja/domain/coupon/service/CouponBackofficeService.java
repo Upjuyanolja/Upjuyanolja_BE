@@ -7,6 +7,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddInfos;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponDeleteRequest;
@@ -29,6 +30,7 @@ import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.exception.PointNotFoundException;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
+import com.backoffice.upjuyanolja.domain.point.service.PointService;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
@@ -49,9 +51,10 @@ public class CouponBackofficeService {
 
     private final CouponRepository couponRepository;
     private final RoomRepository roomRepository;
-    private final PointRepository pointRepository;
-    private final AccommodationRepository accommodationRepository;
     private final CouponIssuanceRepository couponIssuanceRepository;
+
+    private final AccommodationQueryUseCase accommodationQueryUseCase;
+    private final PointService pointService;
 
     // 쿠폰 만들기 View Response
     public CouponMakeViewResponse getRoomsByAccommodation(Long accommodationId) {
@@ -63,7 +66,7 @@ public class CouponBackofficeService {
         final CouponMakeRequest couponMakeRequest, final Long memberId
     ) {
         final long totalPoints = couponMakeRequest.totalPoints();
-        Point point = validationPoint(memberId, totalPoints);
+        pointService.validatePoint(memberId, totalPoints);
 
         List<CouponRoomsRequest> couponRooms = couponMakeRequest.rooms();
         List<Coupon> coupons = new ArrayList<>();
@@ -107,8 +110,9 @@ public class CouponBackofficeService {
 
         // 8. 업주의 보유 포인트 차감
         // todo: 도메인이 다른 서비스를 트랜잭션 안에서 호출하는 게 좋은 설계일까 고민해 보기.
-        point.decreasePointBalance(totalPoints);
-        pointRepository.save(point);
+        pointService.usePointForCoupon(
+            memberId, couponMakeRequest.accommodationId(), couponMakeRequest.totalPoints()
+        );
 
         // 9. 포인트 사용 이력 전달
         // Todo: 포인트 사용 내역 Point 도메인에 전달하기
@@ -145,8 +149,6 @@ public class CouponBackofficeService {
     // 쿠폰 추가 구매
     public void addonCoupon(final CouponAddRequest couponAddRequest, final long memberId) {
         // 1. 업주의 보유 포인트 검증
-        final Optional<Point> resultPoint = pointRepository.findByMemberId(memberId);
-        Point point = resultPoint.orElseThrow(PointNotFoundException::new);
         final int totalPoints = couponAddRequest.totalPoints();
 
         List<Coupon> addCoupons = new ArrayList<>();
@@ -158,8 +160,9 @@ public class CouponBackofficeService {
         couponRepository.saveAll(addCoupons);
 
         // 2. 업주의 보유 포인트 차감
-        point.decreasePointBalance(totalPoints);
-        pointRepository.save(point);
+        pointService.usePointForCoupon(
+            memberId, couponAddRequest.accommodationId(), couponAddRequest.totalPoints()
+        );
 
         // Todo: 포인트 사용 내역 Point 도메인에 전달하기
         log.info("쿠폰 추가 발급 성공. 금액: {}", totalPoints);
@@ -243,21 +246,6 @@ public class CouponBackofficeService {
             .build();
     }
 
-    // 업주의 보유 포인트 검증
-    @Transactional(readOnly = true)
-    protected Point validationPoint(final Long memberId, final long requestPoint) {
-        final Optional<Point> resultPoint = pointRepository.findByMemberId(memberId);
-        Point point = resultPoint.orElseThrow(PointNotFoundException::new);
-        final long ownerPoint = point.getTotalPointBalance();
-
-        // 쿠폰 구매 요청 금액이 업주의 보유 포인트보다 크다면 예외 발생
-        if (ownerPoint < requestPoint) {
-            log.info("업주의 보유 포인트가 부족합니다. 보유 포인트: {}, 요청 포인트: {}",
-                ownerPoint, requestPoint);
-            throw new InsufficientPointsException();
-        }
-        return point;
-    }
 
     // 정상적인 숙소 id 요청인지 검증
     @Transactional(readOnly = true)
@@ -270,7 +258,8 @@ public class CouponBackofficeService {
                 currentMemberId, accommodationId);
             throw new NotOwnerException();
         }
-        if (!accommodationRepository.existsById(accommodationId)) {
+
+        if (!accommodationQueryUseCase.existsById(accommodationId)) {
             log.info("숙소의 정보를 찾을 수 없습니다. id: {}", accommodationId);
             throw new AccommodationNotFoundException();
         }
