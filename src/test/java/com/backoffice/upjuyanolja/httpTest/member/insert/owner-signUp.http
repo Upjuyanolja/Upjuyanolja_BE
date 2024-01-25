@@ -1,0 +1,7 @@
+POST http://localhost:8080/api/auth/owners/signup
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}

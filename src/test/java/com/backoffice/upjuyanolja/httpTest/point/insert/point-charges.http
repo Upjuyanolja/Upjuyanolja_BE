@@ -1,0 +1,24 @@
+POST http://localhost:8080/api/auth/owners/signin
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+  client.log(response.body.accessToken);
+  client.global.set("access_token",response.body.accessToken);
+%}
+
+###
+
+POST http://localhost:8080/api/points/charges
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "paymentKey": "tviva20240125121446WXum8",
+  "orderId": "MC4xMDI2NzY1MzU2NjE4",
+  "amount": 10000
+}

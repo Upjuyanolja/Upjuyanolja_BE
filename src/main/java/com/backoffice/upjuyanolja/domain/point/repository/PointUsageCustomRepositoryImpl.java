@@ -1,9 +1,7 @@
 package com.backoffice.upjuyanolja.domain.point.repository;
 
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
-import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
 import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
-import com.backoffice.upjuyanolja.domain.point.entity.QPointCharges;
 import com.backoffice.upjuyanolja.domain.point.entity.QPointUsage;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
