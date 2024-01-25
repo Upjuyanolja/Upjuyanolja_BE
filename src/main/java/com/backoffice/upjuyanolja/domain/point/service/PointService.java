@@ -320,6 +320,7 @@ public class PointService {
 
     private void updateChargePointStatus(PointCharges pointCharges) {
         pointCharges.updatePointStatus(PointStatus.CANCELED);
+        pointCharges.updateRefundable(false);
     }
 
     private PointRefunds createPointRefund(PointCharges pointCharges, TossResponse tossResponse) {
