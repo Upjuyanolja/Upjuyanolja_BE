@@ -16,6 +16,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.pathPara
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.restdocs.snippet.Attributes.key;
 
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageAddRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageDeleteRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
@@ -26,6 +27,7 @@ import com.backoffice.upjuyanolja.domain.room.dto.response.RoomImageResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomOptionResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
+import com.backoffice.upjuyanolja.domain.room.dto.response.RoomsInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
@@ -212,14 +214,15 @@ public class RoomControllerDocsTest extends RestDocsSupport {
     @WithMockUser(roles = "ADMIN")
     void getRooms() throws Exception {
         // given
-        RoomInfoResponse roomInfoResponse = RoomInfoResponse.builder()
+        RoomsInfoResponse roomsInfoResponse = RoomsInfoResponse.builder()
             .id(1L)
             .name("65m² 킹룸")
             .defaultCapacity(2)
             .maxCapacity(3)
             .checkInTime("15:00")
             .checkOutTime("11:00")
-            .price(100000)
+            .basePrice(100000)
+            .discountPrice(80000)
             .amount(858)
             .status("SELLING")
             .option(RoomOptionResponse.builder()
@@ -231,6 +234,23 @@ public class RoomControllerDocsTest extends RestDocsSupport {
                 .id(1L)
                 .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
                 .build()))
+            .coupons(List.of(
+                CouponDetailResponse.builder()
+                    .id(2L)
+                    .name("20% 할인")
+                    .price(80000)
+                    .build(),
+                CouponDetailResponse.builder()
+                    .id(3L)
+                    .name("15000원 할인")
+                    .price(85000)
+                    .build(),
+                CouponDetailResponse.builder()
+                    .id(1L)
+                    .name("10000원 할인")
+                    .price(90000)
+                    .build()
+            ))
             .build();
 
         RoomPageResponse roomPageResponse = RoomPageResponse.builder()
@@ -239,7 +259,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
             .totalPages(1)
             .totalElements(1)
             .isLast(true)
-            .rooms(List.of(roomInfoResponse))
+            .rooms(List.of(roomsInfoResponse))
             .build();
 
         given(securityUtil.getCurrentMemberId()).willReturn(1L);
@@ -284,8 +304,10 @@ public class RoomControllerDocsTest extends RestDocsSupport {
                         .description("객실 체크인 시간"),
                     fieldWithPath("rooms[].checkOutTime").type(JsonFieldType.STRING)
                         .description("객실 체크아웃 시간"),
-                    fieldWithPath("rooms[].price").type(JsonFieldType.NUMBER)
+                    fieldWithPath("rooms[].basePrice").type(JsonFieldType.NUMBER)
                         .description("객실 가격"),
+                    fieldWithPath("rooms[].discountPrice").type(JsonFieldType.NUMBER)
+                        .description("쿠폰 할인 가격 중 가장 저렴한 객실 가격"),
                     fieldWithPath("rooms[].amount").type(JsonFieldType.NUMBER)
                         .description("객실 개수"),
                     fieldWithPath("rooms[].status").type(JsonFieldType.STRING)
@@ -296,6 +318,14 @@ public class RoomControllerDocsTest extends RestDocsSupport {
                         .description("객실 이미지 식별자"),
                     fieldWithPath("rooms[].images[].url").type(JsonFieldType.STRING)
                         .description("객실 이미지 URL"),
+                    fieldWithPath("rooms[].coupons").type(JsonFieldType.ARRAY)
+                        .description("쿠폰 배열"),
+                    fieldWithPath("rooms[].coupons[].id").type(JsonFieldType.NUMBER)
+                        .description("쿠폰 식별자").optional(),
+                    fieldWithPath("rooms[].coupons[].name").type(JsonFieldType.STRING)
+                        .description("쿠폰 이름").optional(),
+                    fieldWithPath("rooms[].coupons[].price").type(JsonFieldType.NUMBER)
+                        .description("쿠폰을 적용한 객실 가격").optional(),
                     fieldWithPath("rooms[].option").type(JsonFieldType.OBJECT)
                         .description("객실 옵션"),
                     fieldWithPath("rooms[].option.airCondition").type(

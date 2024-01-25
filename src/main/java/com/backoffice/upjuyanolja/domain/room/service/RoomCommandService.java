@@ -2,6 +2,10 @@ package com.backoffice.upjuyanolja.domain.room.service;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
+import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
+import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
+import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageAddRequest;
@@ -12,6 +16,7 @@ import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomUpdateRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
+import com.backoffice.upjuyanolja.domain.room.dto.response.RoomsInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
@@ -29,6 +34,7 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -44,6 +50,7 @@ public class RoomCommandService implements RoomCommandUseCase {
     private final RoomQueryUseCase roomQueryUseCase;
     private final AccommodationQueryUseCase accommodationQueryUseCase;
     private final EntityManager em;
+    private final CouponService couponService;
 
     @Override
     public RoomInfoResponse registerRoom(
@@ -85,9 +92,10 @@ public class RoomCommandService implements RoomCommandUseCase {
             .option(RoomOptionRequest.toEntity(request.option()))
             .build()
         );
-        roomQueryUseCase.saveRoomImages(RoomImageRequest.toEntity(room, request.images()));
-
-        em.refresh(room);
+        // 저장한 객실 이미지를 응답하기 위한 임시 방편
+        roomQueryUseCase.saveRoomImages(RoomImageRequest.toEntity(room, request.images()))
+            .forEach(roomImage -> room.getImages().add(roomImage));
+//        em.refresh(room);
         return RoomInfoResponse.of(room);
     }
 
@@ -97,9 +105,17 @@ public class RoomCommandService implements RoomCommandUseCase {
         Accommodation accommodation = accommodationQueryUseCase
             .getAccommodationById(accommodationId);
         checkOwnership(member, accommodation);
-        List<RoomInfoResponse> rooms = new ArrayList<>();
+        List<RoomsInfoResponse> rooms = new ArrayList<>();
         Page<Room> roomPage = roomQueryUseCase.findAllByAccommodationId(accommodationId, pageable);
-        roomPage.get().forEach(room -> rooms.add(RoomInfoResponse.of(room)));
+        roomPage.get().forEach(room -> {
+            List<CouponDetailResponse> couponDetails = new ArrayList<>();
+            List<Coupon> coupons = couponService.getCouponInRoom(room);
+            couponDetails.addAll(couponService
+                .getSortedCouponResponseInRoom(room, coupons, DiscountType.FLAT));
+            couponDetails.addAll(couponService
+                .getSortedCouponResponseInRoom(room, coupons, DiscountType.RATE));
+            rooms.add(RoomsInfoResponse.of(room, couponDetails));
+        });
         return RoomPageResponse.builder()
             .pageNum(roomPage.getNumber())
             .pageSize(roomPage.getSize())
