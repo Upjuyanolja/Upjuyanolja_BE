@@ -10,6 +10,7 @@ public record PointChargeDetailResponse(
     String category,
     String type,
     String status,
+    String name,
     long trade,
     long amount,
     List<PointChargeReceiptResponse> receipt
@@ -25,6 +26,7 @@ public record PointChargeDetailResponse(
             .category(category)
             .type(type)
             .status(pointCharges.getPointStatus().getDescription())
+            .name("포인트 충전")
             .trade(pointCharges.getChargePoint())
             .amount(pointCharges.getChargePoint())
             .receipt(receipt)
