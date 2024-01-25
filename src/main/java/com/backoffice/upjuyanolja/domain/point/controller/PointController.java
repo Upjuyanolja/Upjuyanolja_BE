@@ -56,7 +56,7 @@ public class PointController {
     ) {
         log.info("Get /api/points/charges");
 
-        PointChargePageResponse response = pointService.getChargePoints(
+        PointChargePageResponse response = pointService.getPointChargePageResponse(
             securityUtil.getCurrentMemberId(), pageable
         );
 
@@ -69,7 +69,7 @@ public class PointController {
     ) {
         log.info("Get /api/points/charges/{chargeId}");
 
-        PointChargeResponse response = pointService.getDetailChargePoint(chargeId);
+        PointChargeResponse response = pointService.getDetailChargePointResponse(chargeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -80,7 +80,7 @@ public class PointController {
     ) {
         log.info("Post /api/points/charges");
 
-        PointChargeResponse response = pointService.getChargePointResponse(
+        PointChargeResponse response = pointService.chargePoint(
             securityUtil.getCurrentMemberId(), request
         );
 
