@@ -57,7 +57,6 @@ public class ReservationService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void create(Member currentMember, CreateReservationRequest request) {
-        int discountAmount = 0;
         Coupon coupon = null;
 
         Room room = roomRepository.findById(request.getRoomId())
@@ -71,6 +70,7 @@ public class ReservationService {
          * 객실 재고 수정 및 예약 객실 생성
          * */
         decreaseRoomStock(room, request.getStartDate(), request.getEndDate());
+        int totalAmount = room.getPrice().getOffWeekDaysMinFee();
 
         /*
          * 쿠폰 재고 수정
@@ -89,14 +89,14 @@ public class ReservationService {
             coupon = decreaseCouponStock(coupon);
 
             // 할인 금액 계산
-            discountAmount = DiscountType.makePaymentPrice(coupon.getDiscountType(),
+            totalAmount = DiscountType.makePaymentPrice(coupon.getDiscountType(),
                 room.getPrice().getOffWeekDaysMinFee(), coupon.getDiscount());
         }
 
         /*
          * 예약 및 결제 저장
          * */
-        Reservation reservation = saveReservation(currentMember, request, room, discountAmount);
+        Reservation reservation = saveReservation(currentMember, request, room, totalAmount);
 
         // 쿠폰 사용 시 쿠폰 사용 내역 저장
         if (Boolean.TRUE.equals(reservation.getIsCouponUsed())) {
@@ -143,9 +143,9 @@ public class ReservationService {
         return stockService.decreaseCouponStock(coupon.getId()); //lock
     }
 
-    private Payment savePayment(Member member, CreateReservationRequest request, int roomPrice,
-        int discountAmount) {
-        int totalAmount = roomPrice - discountAmount;
+    private Payment savePayment(
+        Member member, CreateReservationRequest request, int roomPrice, int totalAmount
+    ) {
 
         if (totalAmount != request.getTotalPrice()) {
             throw new PaymentFailureException();
@@ -155,7 +155,7 @@ public class ReservationService {
             .member(member)
             .payMethod(request.getPayMethod())
             .roomPrice(roomPrice)
-            .discountAmount(discountAmount)
+            .discountAmount(roomPrice - totalAmount)
             .totalAmount(totalAmount)
             .build());
     }
@@ -164,7 +164,7 @@ public class ReservationService {
         Member currentMember,
         CreateReservationRequest request,
         Room room,
-        int discountAmount
+        int totalAmount
     ) {
         /*
          * 예약 객실 저장
@@ -181,7 +181,7 @@ public class ReservationService {
          * 계산한 결제 금액과 요청 결제 금액이 다르면 결제 오류
          */
         Payment payment = savePayment(currentMember, request, reservationRoom.getPrice(),
-            discountAmount);
+            totalAmount);
 
         /*
          * 예약 저장
