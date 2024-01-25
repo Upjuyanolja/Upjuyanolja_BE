@@ -28,10 +28,6 @@ public class PointUsage extends BaseTime {
     private Long id;
 
     @Column(nullable = false)
-    @Comment("주문 이름")
-    private String orderName;
-
-    @Column(nullable = false)
     @Comment("주문 일시")
     private LocalDateTime orderDate;
 
@@ -56,7 +52,6 @@ public class PointUsage extends BaseTime {
     @Builder
     public PointUsage(
         Long id,
-        String orderName,
         LocalDateTime orderDate,
         long orderPrice,
         Long pointId,
@@ -64,7 +59,6 @@ public class PointUsage extends BaseTime {
         Accommodation accommodation
     ) {
         this.id = id;
-        this.orderName = orderName;
         this.orderDate = orderDate;
         this.orderPrice = orderPrice;
         this.pointId = pointId;
