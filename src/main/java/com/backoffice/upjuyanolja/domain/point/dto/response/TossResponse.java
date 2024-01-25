@@ -3,11 +3,11 @@ package com.backoffice.upjuyanolja.domain.point.dto.response;
 import lombok.Builder;
 
 @Builder
-public record TossChargeResponse(
+public record TossResponse(
     String paymentKey,
     String orderId,
     long totalAmount,
-    String requestedAt,
+    String approvedAt,
     String orderName
 ) {
 

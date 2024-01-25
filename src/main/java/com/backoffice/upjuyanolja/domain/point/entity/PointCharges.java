@@ -86,4 +86,8 @@ public class PointCharges extends BaseTime {
         this.point = point;
     }
 
+    public void updatePointStatus(PointStatus pointStatus) {
+        this.pointStatus = pointStatus;
+    }
+
 }

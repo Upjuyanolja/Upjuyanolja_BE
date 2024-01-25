@@ -16,7 +16,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,11 +54,22 @@ public class PointController {
     public ResponseEntity<PointChargePageResponse> getChargePoints(
         @PageableDefault(page = 0, size = 4) Pageable pageable
     ) {
-        log.info("Post /api/points/charges");
+        log.info("Get /api/points/charges");
 
         PointChargePageResponse response = pointService.getChargePoints(
             securityUtil.getCurrentMemberId(), pageable
         );
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/charges/{chargeId}")
+    public ResponseEntity<PointChargeResponse> getDetailChargePoints(
+        @PathVariable Long chargeId
+    ) {
+        log.info("Get /api/points/charges/{chargeId}");
+
+        PointChargeResponse response = pointService.getDetailChargePoint(chargeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -73,4 +86,16 @@ public class PointController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @DeleteMapping("/charges/{chargeId}")
+    public ResponseEntity<Void> refundPoint(
+        @PathVariable Long chargeId
+    ) {
+        log.info("Get /api/points/charges/{chargeId}");
+
+        pointService.refundPoint(chargeId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
 }

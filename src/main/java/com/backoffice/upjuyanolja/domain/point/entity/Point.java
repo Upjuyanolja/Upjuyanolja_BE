@@ -47,7 +47,7 @@ public class Point extends BaseTime {
         this.member = member;
     }
 
-    public void updatePoint(long totalPointBalance) {
+    public void updatePointBalance(long totalPointBalance) {
         this.totalPointBalance = totalPointBalance;
     }
 
