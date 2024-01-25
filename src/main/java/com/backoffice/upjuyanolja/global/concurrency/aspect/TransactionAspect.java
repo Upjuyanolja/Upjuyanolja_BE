@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class TransactionAspect {
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = RuntimeException.class)
     public Object proceed(final ProceedingJoinPoint joinPoint) throws Throwable {
         return joinPoint.proceed();
     }

@@ -55,7 +55,7 @@ public class ReservationService {
     private final RoomCommandUseCase roomCommandUseCase;
     private final ReservationStockService stockService;
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void create(Member currentMember, CreateReservationRequest request) {
         Coupon coupon = null;
 
@@ -107,8 +107,7 @@ public class ReservationService {
         }
     }
 
-    @Transactional(propagation = Propagation.MANDATORY, rollbackFor = InvalidReservationInfoException.class)
-    public void decreaseRoomStock(Room room, LocalDate startDate, LocalDate endDate) {
+    private void decreaseRoomStock(Room room, LocalDate startDate, LocalDate endDate) {
         // 객실 재고 검증 및 get
         List<RoomStock> roomStocks = getRoomStock(room, startDate, endDate);
 
@@ -135,8 +134,7 @@ public class ReservationService {
         return modifiableRoomStocks;
     }
 
-    @Transactional(propagation = Propagation.MANDATORY, rollbackFor = InvalidCouponException.class)
-    public Coupon decreaseCouponStock(Coupon coupon) {
+    private Coupon decreaseCouponStock(Coupon coupon) {
         if (coupon.getStock() < 1) {
             throw new InvalidCouponException();
         }
@@ -197,7 +195,7 @@ public class ReservationService {
             .build());
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void cancel(Member currentMember, Long reservationId) {
         Reservation reservation = reservationRepository.findByIdAndMember(reservationId,
                 currentMember)
@@ -223,8 +221,7 @@ public class ReservationService {
         reservationRepository.save(reservation);
     }
 
-    @Transactional(propagation = Propagation.MANDATORY, rollbackFor = NoSuchReservationException.class)
-    public void increaseCouponStock(Reservation reservation) {
+    private void increaseCouponStock(Reservation reservation) {
         CouponRedeem couponRedeem = couponRedeemRepository.findByReservation(reservation)
             .orElseThrow(NoSuchReservationException::new);
 
@@ -234,8 +231,7 @@ public class ReservationService {
         couponRedeemRepository.delete(couponRedeem);
     }
 
-    @Transactional(propagation = Propagation.MANDATORY, rollbackFor = NoSuchReservationException.class)
-    public void increaseRoomStock(ReservationRoom reservationRoom) {
+    private void increaseRoomStock(ReservationRoom reservationRoom) {
         int daysCount =
             Period.between(reservationRoom.getStartDate(), reservationRoom.getEndDate()).getDays()
                 + 1;
