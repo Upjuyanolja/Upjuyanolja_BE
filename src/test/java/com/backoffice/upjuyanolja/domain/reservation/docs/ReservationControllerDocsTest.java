@@ -48,6 +48,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.constraints.ConstraintDescriptions;
@@ -300,7 +301,11 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
     @WithMockUser(roles = "USER")
     void getReserved() throws Exception {
         // given
-        Pageable pageable = PageRequest.of(0, 3);
+        Sort sort = Sort.by(
+            Sort.Order.desc("updatedAt"),
+            Sort.Order.desc("createdAt")
+        );
+        Pageable pageable = PageRequest.of(0, 3, sort);
 
         List<Reservation> reservations = new ArrayList<>();
         reservations.add(createReservation(
@@ -364,7 +369,11 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
     @WithMockUser(roles = "USER")
     void getCanceled() throws Exception {
         // given
-        Pageable pageable = PageRequest.of(0, 3);
+        Sort sort = Sort.by(
+            Sort.Order.desc("updatedAt"),
+            Sort.Order.desc("createdAt")
+        );
+        Pageable pageable = PageRequest.of(0, 3, sort);
 
         List<Reservation> reservations = new ArrayList<>();
         reservations.add(createReservation(

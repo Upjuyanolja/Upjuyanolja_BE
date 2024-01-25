@@ -54,6 +54,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -303,7 +304,11 @@ class ReservationControllerTest {
         @DisplayName("예약 내역 조회")
         void getReserved() throws Exception {
             // given
-            Pageable pageable = PageRequest.of(0, 3);
+            Sort sort = Sort.by(
+                Sort.Order.desc("updatedAt"),
+                Sort.Order.desc("createdAt")
+            );
+            Pageable pageable = PageRequest.of(0, 3, sort);
 
             List<Reservation> reservations = new ArrayList<>();
             reservations.add(createReservation(
@@ -380,7 +385,11 @@ class ReservationControllerTest {
         @DisplayName("예약 취소 내역 조회")
         void getCanceled() throws Exception {
             // given
-            Pageable pageable = PageRequest.of(0, 3);
+            Sort sort = Sort.by(
+                Sort.Order.desc("updatedAt"),
+                Sort.Order.desc("createdAt")
+            );
+            Pageable pageable = PageRequest.of(0, 3, sort);
 
             List<Reservation> reservations = new ArrayList<>();
             reservations.add(createReservation(

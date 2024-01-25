@@ -66,7 +66,6 @@ import org.springframework.restdocs.constraints.ConstraintDescriptions;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 
 @ActiveProfiles("test")

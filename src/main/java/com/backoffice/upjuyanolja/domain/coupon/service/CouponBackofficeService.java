@@ -145,9 +145,8 @@ public class CouponBackofficeService {
     // 쿠폰 추가 구매
     public void addonCoupon(final CouponAddRequest couponAddRequest, final long memberId) {
         // 1. 업주의 보유 포인트 검증
-        final Optional<Point> resultPoint = pointRepository.findByMemberId(memberId);
-        Point point = resultPoint.orElseThrow(PointNotFoundException::new);
-        final int totalPoints = couponAddRequest.totalPoints();
+        final long totalPoints = couponAddRequest.totalPoints();
+        Point point = validationPoint(memberId, totalPoints);
 
         List<Coupon> addCoupons = new ArrayList<>();
         for (var rooms : couponAddRequest.rooms()) {
@@ -165,18 +164,20 @@ public class CouponBackofficeService {
         log.info("쿠폰 추가 발급 성공. 금액: {}", totalPoints);
     }
 
-    // Todo: 쿠폰 수정 Validation 로직 추가
+    // 쿠폰 수정
     public void modifyCoupon(final CouponModifyRequest modifyRequest) {
+        
         List<Coupon> modifyCoupons = new ArrayList<>();
         for (var rooms : modifyRequest.rooms()) {
             for (var coupons : rooms.coupons()) {
                 modifyCoupons.add(modifyCoupon(coupons, modifyRequest.expiry()));
             }
         }
+        couponRepository.saveAll(modifyCoupons);
         log.info("쿠폰 수정 성공.");
     }
 
-    // Todo: 쿠폰 삭제 Validation 로직 추가
+    // 쿠폰 삭제
     public void deleteCoupon(final CouponDeleteRequest request) {
 
         List<Coupon> deleteCoupons = new ArrayList<>();
@@ -185,6 +186,7 @@ public class CouponBackofficeService {
                 deleteCoupons.add(setupDelete(coupons.couponId()));
             }
         }
+        couponRepository.saveAll(deleteCoupons);
         log.info("쿠폰 삭제 성공.");
     }
 
@@ -245,15 +247,15 @@ public class CouponBackofficeService {
 
     // 업주의 보유 포인트 검증
     @Transactional(readOnly = true)
-    protected Point validationPoint(final Long memberId, final long requestPoint) {
+    protected Point validationPoint(final Long memberId, final long totalPoints) {
         final Optional<Point> resultPoint = pointRepository.findByMemberId(memberId);
         Point point = resultPoint.orElseThrow(PointNotFoundException::new);
         final long ownerPoint = point.getTotalPointBalance();
 
         // 쿠폰 구매 요청 금액이 업주의 보유 포인트보다 크다면 예외 발생
-        if (ownerPoint < requestPoint) {
+        if (ownerPoint < totalPoints) {
             log.info("업주의 보유 포인트가 부족합니다. 보유 포인트: {}, 요청 포인트: {}",
-                ownerPoint, requestPoint);
+                ownerPoint, totalPoints);
             throw new InsufficientPointsException();
         }
         return point;
