@@ -38,7 +38,6 @@ public class CouponBackofficeController {
     private final SecurityUtil securityUtil;
     private final MemberGetService memberGetService;
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/buy/{accommodationId}")
     public ResponseEntity<CouponMakeViewResponse> responseRoomsView(
         @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
@@ -53,7 +52,6 @@ public class CouponBackofficeController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/buy")
     public ResponseEntity<Object> createCoupons(
         @Valid @RequestBody CouponMakeRequest couponMakeRequest
@@ -69,7 +67,6 @@ public class CouponBackofficeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/manage/{accommodationId}")
     public ResponseEntity<CouponManageResponse> manageCouponView(
         @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
@@ -83,7 +80,6 @@ public class CouponBackofficeController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/manage/buy")
     public ResponseEntity<Object> addonCoupon(
         @Valid @RequestBody CouponAddRequest request
@@ -100,7 +96,6 @@ public class CouponBackofficeController {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/manage")
     public ResponseEntity<Object> modifyCoupon(
         @Valid @RequestBody CouponModifyRequest request
@@ -118,7 +113,6 @@ public class CouponBackofficeController {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/manage")
     public ResponseEntity<Object> deleteCoupon(
         @Valid @RequestBody CouponDeleteRequest request
