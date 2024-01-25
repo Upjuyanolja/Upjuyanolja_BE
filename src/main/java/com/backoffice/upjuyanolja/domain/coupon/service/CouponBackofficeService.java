@@ -149,7 +149,7 @@ public class CouponBackofficeService {
     // 쿠폰 추가 구매
     public void addonCoupon(final CouponAddRequest couponAddRequest, final long memberId) {
         // 1. 업주의 보유 포인트 검증
-        final int totalPoints = couponAddRequest.totalPoints();
+        final long totalPoints = couponAddRequest.totalPoints();
         pointService.validatePoint(memberId, totalPoints);
 
         List<Coupon> addCoupons = new ArrayList<>();
