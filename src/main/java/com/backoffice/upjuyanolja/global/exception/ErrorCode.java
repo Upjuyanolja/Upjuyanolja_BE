@@ -69,7 +69,7 @@ public enum ErrorCode {
     INVALID_REQUEST_BODY(HttpStatus.BAD_REQUEST, 9001, "유효하지 않은 요청 바디입니다."),
     SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 9002, "서버에 알 수 없는 에러가 발생했습니다."),
     INVALID_DATE(HttpStatus.BAD_REQUEST, 9003, "유효하지 않는 날짜입니다."),
-    NOT_OWNER(HttpStatus.UNAUTHORIZED, 9004, "숙소의 업주가 아닙니다.");
+    NOT_OWNER(HttpStatus.FORBIDDEN, 9004, "숙소의 업주가 아닙니다.");
 
     private final HttpStatus httpStatus;
     private final int code;
