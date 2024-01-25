@@ -88,9 +88,4 @@ public class CouponRepositoryImpl implements CouponRepositoryCustom {
             .orderBy(qRoom.id.asc())
             .fetch();
     }
-
-    private BooleanExpression condition(boolean excludeDeleted)  {
-        return excludeDeleted ? qCoupon.couponStatus.ne(CouponStatus.DELETED) : null;
-
-    }
 }
