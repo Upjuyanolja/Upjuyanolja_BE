@@ -248,7 +248,7 @@ public class CouponBackofficeService {
     protected Point validationPoint(final Long memberId, final long requestPoint) {
         final Optional<Point> resultPoint = pointRepository.findByMemberId(memberId);
         Point point = resultPoint.orElseThrow(PointNotFoundException::new);
-        final long ownerPoint = point.getPointBalance();
+        final long ownerPoint = point.getTotalPointBalance();
 
         // 쿠폰 구매 요청 금액이 업주의 보유 포인트보다 크다면 예외 발생
         if (ownerPoint < requestPoint) {

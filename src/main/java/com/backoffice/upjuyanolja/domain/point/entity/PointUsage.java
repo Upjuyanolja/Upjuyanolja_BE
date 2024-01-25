@@ -29,11 +29,6 @@ public class PointUsage extends BaseTime {
     private Long id;
 
     @Column(nullable = false)
-    @Enumerated(value = EnumType.STRING)
-    @Comment("포인트 유형")
-    private PointType pointType;
-
-    @Column(nullable = false)
     @Comment("주문 이름")
     private String orderName;
 
@@ -50,20 +45,25 @@ public class PointUsage extends BaseTime {
     @Comment("포인트 식별자")
     private Point point;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "point_charges_id")
+    @Comment("포인트 충전 식별자")
+    private PointCharges pointCharges;
+
     @Builder
     public PointUsage(
         Long id,
-        PointType pointType,
         String orderName,
         LocalDateTime orderDate,
         long orderPrice,
-        Point point
+        Point point,
+        PointCharges pointcharges
     ) {
         this.id = id;
-        this.pointType = pointType;
         this.orderName = orderName;
         this.orderDate = orderDate;
         this.orderPrice = orderPrice;
         this.point = point;
+        this.pointCharges = pointcharges;
     }
 }

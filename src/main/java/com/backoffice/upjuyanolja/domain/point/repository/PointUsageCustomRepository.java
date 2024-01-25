@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface PointUsageCustomRepository {
 
-    List<PointUsage> findByPointAndChargeDateWithin(Point point, YearMonth rangeDate);
+    List<PointUsage> findByPointAndRangeDate(Point point, YearMonth rangeDate);
 }

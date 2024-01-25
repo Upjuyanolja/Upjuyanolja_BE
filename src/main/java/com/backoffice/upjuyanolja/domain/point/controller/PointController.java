@@ -1,14 +1,18 @@
 package com.backoffice.upjuyanolja.domain.point.controller;
 
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargePageResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointSummaryResponse;
 import com.backoffice.upjuyanolja.domain.point.service.PointService;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import java.time.YearMonth;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,22 +22,37 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api/points")
 @RequiredArgsConstructor
+@Validated
 public class PointController {
 
     private final PointService pointService;
     private final SecurityUtil securityUtil;
 
     @GetMapping("/summary")
-    public ResponseEntity<PointSummaryResponse> getSummary(
+    public ResponseEntity<PointSummaryResponse> getPointSummary(
         @RequestParam(required = true)
         @DateTimeFormat(pattern = "yyyy-MM")
         YearMonth rangeDate
     ) {
         log.info("GET /api/points/summary");
 
-        PointSummaryResponse response = pointService.getSummary(
+        PointSummaryResponse response = pointService.getPointSummaryResponse(
             securityUtil.getCurrentMemberId(), rangeDate
         );
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/charges")
+    public ResponseEntity<PointChargePageResponse> getChargePoints(
+        @PageableDefault(page = 0, size = 4) Pageable pageable
+    ) {
+        log.info("Post /api/points/charges");
+
+        PointChargePageResponse response = pointService.getChargePoints(
+            securityUtil.getCurrentMemberId(), pageable
+        );
+
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

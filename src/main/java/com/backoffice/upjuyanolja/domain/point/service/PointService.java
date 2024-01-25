@@ -1,16 +1,28 @@
 package com.backoffice.upjuyanolja.domain.point.service;
 
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeDetailResponse;
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargePageResponse;
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeReceiptResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointSummaryResponse;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
+import com.backoffice.upjuyanolja.domain.point.entity.PointCategory;
 import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
+import com.backoffice.upjuyanolja.domain.point.entity.PointRefunds;
+import com.backoffice.upjuyanolja.domain.point.entity.PointType;
 import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
 import com.backoffice.upjuyanolja.domain.point.repository.PointChargesRepository;
+import com.backoffice.upjuyanolja.domain.point.repository.PointRefundsRepository;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
 import com.backoffice.upjuyanolja.domain.point.repository.PointUsageRepository;
 import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,36 +33,35 @@ public class PointService {
 
     private final PointRepository pointRepository;
     private final PointChargesRepository pointChargesRepository;
+    private final PointRefundsRepository pointRefundsRepository;
     private final PointUsageRepository pointUsageRepository;
     private final MemberGetService memberGetService;
 
-    public PointSummaryResponse getSummary(Long currentMemberId, YearMonth rangeDate) {
-        Point memberPoint = getMemberPoint(currentMemberId);
+    @Transactional(readOnly = true)
+    public PointSummaryResponse getPointSummaryResponse(Long memberId, YearMonth rangeDate) {
+        Point ownerPoint = getMemberPoint(memberId);
         Long currentPoint =
-            getChargePoint(memberPoint, rangeDate) +
-                getChargePoint(memberPoint, rangeDate.minusMonths(1)) -
-                getUsePoint(memberPoint, rangeDate) -
-                getUsePoint(memberPoint, rangeDate.minusMonths(1));
+            getChargePoint(ownerPoint, rangeDate) +
+                getChargePoint(ownerPoint, rangeDate.minusMonths(1)) -
+                getUsePoint(ownerPoint, rangeDate) -
+                getUsePoint(ownerPoint, rangeDate.minusMonths(1));
 
-        updatePoint(memberPoint, currentPoint, rangeDate);
-
-        return PointSummaryResponse.builder()
-            .chargePoint(getChargePoint(memberPoint, rangeDate))
-            .usePoint(getUsePoint(memberPoint, rangeDate))
-            .currentPoint(currentPoint)
-            .build();
+        return PointSummaryResponse.of(
+            getChargePoint(ownerPoint, rangeDate),
+            getUsePoint(ownerPoint, rangeDate),
+            currentPoint
+        );
     }
 
-    private Point getMemberPoint(Long currentMemberId) {
-        return pointRepository.findByMemberId(currentMemberId)
-            .orElseGet(() -> createPoint(currentMemberId));
+    private Point getMemberPoint(Long memberId) {
+        return pointRepository.findByMemberId(memberId)
+            .orElseGet(() -> createPoint(memberId));
     }
 
-    private Point createPoint(Long currentMemberId) {
+    private Point createPoint(Long memberId) {
         Point newPoint = Point.builder()
-            .pointBalance(0)
-            .standardDate(YearMonth.now())
-            .member(memberGetService.getMemberById(currentMemberId))
+            .totalPointBalance(0)
+            .member(memberGetService.getMemberById(memberId))
             .build();
 
         pointRepository.save(newPoint);
@@ -58,13 +69,8 @@ public class PointService {
         return newPoint;
     }
 
-    private void updatePoint(Point point, Long pointBalance, YearMonth rangeDate){
-        point.updatePoint(pointBalance,rangeDate);
-        pointRepository.save(point);
-    }
-
     private long getChargePoint(Point point, YearMonth rangeDate) {
-        return pointChargesRepository.findByPointAndRefundableAndChargeDateWithin(
+        return pointChargesRepository.findByPointAndRefundableAndRangeDate(
                 point, rangeDate
             ).stream()
             .mapToLong(PointCharges::getChargePoint)
@@ -72,13 +78,80 @@ public class PointService {
     }
 
     private long getUsePoint(Point point, YearMonth rangeDate) {
-        List<PointUsage> byPointAndChargeDateWithin = pointUsageRepository.findByPointAndChargeDateWithin(
-            point, rangeDate
-        );
-        return pointUsageRepository.findByPointAndChargeDateWithin(
+        return pointUsageRepository.findByPointAndRangeDate(
                 point, rangeDate
             ).stream()
             .mapToLong(PointUsage::getOrderPrice)
             .sum();
     }
+
+
+    public PointChargePageResponse getChargePoints(Long memberId, Pageable pageable) {
+        Long pointId = getMemberPoint(memberId).getId();
+        Page<PointCharges> pointCharges = pointChargesRepository.findByPointId(pointId, pageable);
+
+        return PointChargePageResponse.of(new PageImpl<>(
+                pointCharges.stream()
+                    .map(pointCharge -> PointChargeDetailResponse.of(
+                        pointCharge, getPointChargeCategoryAndType(pointCharge).get(0),
+                        getPointChargeCategoryAndType(pointCharge).get(1),
+                        getPointChargeReceiptResponse(pointCharge))
+                    )
+                    .toList(),
+                pageable,
+                pointCharges.getTotalElements()
+            )
+        );
+    }
+
+    private List<String> getPointChargeCategoryAndType(PointCharges pointCharges) {
+        List<String> results = new ArrayList<>();
+
+        switch (pointCharges.getPointStatus()) {
+            case PAID:
+                results.add(PointCategory.CHARGE.getDescription());
+                results.add(PointType.POINT.getDescription());
+            case CANCELED:
+                results.add(PointCategory.REFUND.getDescription());
+                results.add(PointType.REFUND.getDescription());
+            case USED:
+                results.add(PointCategory.USE.getDescription());
+                results.add(PointType.POINT.getDescription());
+        }
+        return results;
+
+    }
+
+    private List<PointChargeReceiptResponse> getPointChargeReceiptResponse(
+        PointCharges pointCharges) {
+
+        switch (pointCharges.getPointStatus()) {
+            case PAID:
+                return Collections.singletonList(PointChargeReceiptResponse.of(
+                    pointCharges.getOrderName(),
+                    pointCharges.getChargeDate().toString(),
+                    pointCharges.getChargePoint()
+                ));
+            case CANCELED:
+                PointRefunds pointRefund = pointRefundsRepository.findByPointCharges(
+                    pointCharges);
+                return Collections.singletonList(PointChargeReceiptResponse.of(
+                    pointCharges.getOrderName(),
+                    pointRefund.getRefundDate().toString(),
+                    pointCharges.getChargePoint()
+                ));
+            case USED:
+                return pointUsageRepository.findByPointCharges(pointCharges).stream()
+                    .map(pointUsage -> PointChargeReceiptResponse.of(
+                        pointUsage.getOrderName(),
+                        pointUsage.getOrderDate().toString(),
+                        pointUsage.getOrderPrice()
+                    ))
+                    .toList();
+            default:
+                return Collections.emptyList();
+        }
+
+    }
+
 }
