@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface PointChargesCustomRepository {
 
-    Long sumChargePointByRefundable(Point point);
+    Long sumChargePointByPaidStatus(Point point);
 
     List<PointCharges> findByPointAndRefundableAndRangeDate(Point point,
         YearMonth rangeDate);

@@ -2,6 +2,7 @@ package com.backoffice.upjuyanolja.domain.point.repository;
 
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
+import com.backoffice.upjuyanolja.domain.point.entity.PointStatus;
 import com.backoffice.upjuyanolja.domain.point.entity.QPointCharges;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,10 +19,10 @@ public class PointChargesCustomRepositoryImpl implements PointChargesCustomRepos
     private final QPointCharges qPointCharges = QPointCharges.pointCharges;
 
     @Override
-    public Long sumChargePointByRefundable(Point point) {
+    public Long sumChargePointByPaidStatus(Point point) {
         return query.select(qPointCharges.chargePoint.sum())
             .from(qPointCharges)
-            .where(isPointRefundable(point))
+            .where(isPointPaidStatus(point))
             .fetchFirst();
     }
 
@@ -37,15 +38,15 @@ public class PointChargesCustomRepositoryImpl implements PointChargesCustomRepos
         Point point, YearMonth rangeDate
     ) {
         return query.selectFrom(qPointCharges)
-            .where(isPointRefundable(point)
+            .where(isPointPaidStatus(point)
                 .and(eqChargeDate(rangeDate))
             )
             .fetch();
     }
 
-    private BooleanExpression isPointRefundable(Point point) {
+    private BooleanExpression isPointPaidStatus(Point point) {
         return qPointCharges.point.eq(point)
-            .and(qPointCharges.refundable.isTrue());
+            .and(qPointCharges.pointStatus.eq(PointStatus.PAID));
     }
 
     private BooleanExpression eqChargeDate(YearMonth rangeDate) {
