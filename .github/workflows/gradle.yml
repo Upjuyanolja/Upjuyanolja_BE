@@ -17,7 +17,7 @@ jobs:
       - name: Checkout the submodules
         uses: actions/checkout@v3
         with:
-          submodules: recursive
+          submodules: true
           token: ${{ secrets.ACTION_TOKEN }}
 
       - name: Checkout the code
