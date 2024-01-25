@@ -149,15 +149,12 @@ public class PointService {
                 .uri(URI.create("https://api.tosspayments.com/v1/payments/confirm"))
                 .header("Authorization", "Basic " + createTossAuthorizations())
                 .header("Content-Type", "application/json")
-                .method("POST"
-                    , HttpRequest
-                        .BodyPublishers
-                        .ofString("{\"paymentKey\":\"" + request.paymentKey() + "\",\"amount\":\""
-                            + request.amount() + "\",\"orderId\":\"" + request.orderId() + "\"}")
-                ).build();
+                .method("POST", HttpRequest.BodyPublishers.ofString(
+                    "{\"paymentKey\":\"" + request.paymentKey() + "\",\"amount\":\""
+                        + request.amount() + "\",\"orderId\":\"" + request.orderId() + "\"}"))
+                .build();
 
-            response = HttpClient
-                .newHttpClient()
+            response = HttpClient.newHttpClient()
                 .send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
             return objectMapper.readValue(response.body(),

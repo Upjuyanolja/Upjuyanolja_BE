@@ -18,7 +18,7 @@ Authorization: Bearer {{access_token}}
 Content-Type: application/json
 
 {
-  "paymentKey": "{{paymentKey}}",
-  "orderId": "a4CWyWY5m89PNh7xJwhk1",
-  "amount": 25000
+  "paymentKey": "tviva20240125121446WXum8",
+  "orderId": "MC4xMDI2NzY1MzU2NjE4",
+  "amount": 10000
 }
