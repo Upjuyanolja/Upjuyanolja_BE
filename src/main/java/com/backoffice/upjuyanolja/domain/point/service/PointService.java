@@ -17,6 +17,7 @@ import com.backoffice.upjuyanolja.domain.point.entity.PointStatus;
 import com.backoffice.upjuyanolja.domain.point.entity.PointType;
 import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
 import com.backoffice.upjuyanolja.domain.point.exception.PaymentAuthorizationFailedException;
+import com.backoffice.upjuyanolja.domain.point.exception.PointNotFoundException;
 import com.backoffice.upjuyanolja.domain.point.exception.TossApiErrorException;
 import com.backoffice.upjuyanolja.domain.point.repository.PointChargesRepository;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRefundsRepository;
@@ -65,14 +66,14 @@ public class PointService {
     public PointSummaryResponse getPointSummaryResponse(Long memberId, YearMonth rangeDate) {
         Point memberPoint = getMemberPoint(memberId);
         Long currentPoint =
-            getChargePoint(memberPoint, rangeDate) +
-                getChargePoint(memberPoint, rangeDate.minusMonths(1)) -
-                getUsePoint(memberPoint, rangeDate) -
-                getUsePoint(memberPoint, rangeDate.minusMonths(1));
+            getTotalChargePoint(memberPoint, rangeDate) +
+                getTotalChargePoint(memberPoint, rangeDate.minusMonths(1)) -
+                getTotalUsePoint(memberPoint, rangeDate) -
+                getTotalUsePoint(memberPoint, rangeDate.minusMonths(1));
 
         return PointSummaryResponse.of(
-            getChargePoint(memberPoint, rangeDate),
-            getUsePoint(memberPoint, rangeDate),
+            getTotalChargePoint(memberPoint, rangeDate),
+            getTotalUsePoint(memberPoint, rangeDate),
             currentPoint
         );
     }
@@ -93,7 +94,7 @@ public class PointService {
         return newPoint;
     }
 
-    private long getChargePoint(Point point, YearMonth rangeDate) {
+    private long getTotalChargePoint(Point point, YearMonth rangeDate) {
         return pointChargesRepository.findByPointAndRefundableAndRangeDate(
                 point, rangeDate
             ).stream()
@@ -101,7 +102,7 @@ public class PointService {
             .sum();
     }
 
-    private long getUsePoint(Point point, YearMonth rangeDate) {
+    private long getTotalUsePoint(Point point, YearMonth rangeDate) {
         return pointUsageRepository.findByPointAndRangeDate(
                 point, rangeDate
             ).stream()
@@ -109,6 +110,13 @@ public class PointService {
             .sum();
     }
 
+    @Transactional(readOnly = true)
+    public PointChargeResponse getDetailChargePoint(Long chargeId) {
+        PointCharges detailchargePoint = pointChargesRepository.findById(chargeId)
+            .orElseThrow(PointNotFoundException::new);
+
+        return PointChargeResponse.of(detailchargePoint);
+    }
 
     public PointChargePageResponse getChargePoints(Long memberId, Pageable pageable) {
         Long pointId = getMemberPoint(memberId).getId();
@@ -262,4 +270,6 @@ public class PointService {
             throw new PaymentAuthorizationFailedException();
         }
     }
+
+
 }
