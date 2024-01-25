@@ -1,0 +1,63 @@
+POST {{owner-login-api}}
+Content-Type: application/json
+
+{
+  "email": "{{owner1-email}}",
+  "password": "{{owner1-password}}"
+}
+
+> {%
+  client.log(response.body.accessToken);
+  client.global.set("access_token",response.body.accessToken)
+%}
+
+###
+
+POST http://localhost:8080/api/coupons/backoffice/buy
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "accommodationId": 1,
+  "totalPoints": 30000,
+  "rooms": [
+    {
+      "roomId": 1,
+      "discountType": "FLAT",
+      "discount": 1000,
+      "quantity": 10,
+      "eachPoint": 20000
+    },
+    {
+      "roomId": 2,
+      "discountType": "RATE",
+      "discount": 10,
+      "quantity": 10,
+      "eachPoint": 20000
+    },
+    {
+      "roomId": 3,
+      "discountType": "RATE",
+      "discount": 10,
+      "quantity": 10,
+      "eachPoint": 20000
+    }
+  ]
+}
+
+
+###
+
+POST {{member-login-api}}
+Content-Type: application/json
+
+{
+  "email": "{{member-email}}",
+  "password": "{{member-password}}"
+}
+
+> {%
+  client.log(response.body.data.accessToken);
+  client.global.set("access_token",response.body.data.accessToken)
+%}
+

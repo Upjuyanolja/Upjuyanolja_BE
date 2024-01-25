@@ -9,5 +9,6 @@ public interface PointRepository extends JpaRepository<Point, Long> {
 
     Optional<Point> findByMember(Member member);
 
-    Optional<Point> findByMemberId(Long id);
+    Optional<Point> findByMemberId(Long memberId);
+
 }
