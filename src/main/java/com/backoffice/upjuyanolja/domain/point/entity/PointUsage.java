@@ -1,10 +1,9 @@
 package com.backoffice.upjuyanolja.domain.point.entity;
 
+import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -40,15 +39,19 @@ public class PointUsage extends BaseTime {
     @Comment("주문 금액")
     private long orderPrice;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "point_id")
+    @Column(nullable = false)
     @Comment("포인트 식별자")
-    private Point point;
+    private Long pointId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "point_charges_id")
     @Comment("포인트 충전 식별자")
     private PointCharges pointCharges;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accommodation_id")
+    private Accommodation accommodation;
+
 
     @Builder
     public PointUsage(
@@ -56,14 +59,16 @@ public class PointUsage extends BaseTime {
         String orderName,
         LocalDateTime orderDate,
         long orderPrice,
-        Point point,
-        PointCharges pointcharges
+        Long pointId,
+        PointCharges pointcharges,
+        Accommodation accommodation
     ) {
         this.id = id;
         this.orderName = orderName;
         this.orderDate = orderDate;
         this.orderPrice = orderPrice;
-        this.point = point;
+        this.pointId = pointId;
         this.pointCharges = pointcharges;
+        this.accommodation = accommodation;
     }
 }

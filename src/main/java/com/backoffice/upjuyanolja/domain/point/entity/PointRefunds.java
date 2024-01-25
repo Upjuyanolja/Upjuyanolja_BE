@@ -32,10 +32,9 @@ public class PointRefunds extends BaseTime {
     @Comment("환불 일시")
     private LocalDateTime refundDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "point_id")
+    @Column(nullable = false)
     @Comment("포인트 식별자")
-    private Point point;
+    private Long pointId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "point_charges_id")
@@ -46,12 +45,12 @@ public class PointRefunds extends BaseTime {
     public PointRefunds(
         Long id,
         LocalDateTime refundDate,
-        Point point,
+        Long pointId,
         PointCharges pointCharges
     ) {
         this.id = id;
         this.refundDate = refundDate;
-        this.point = point;
+        this.pointId = pointId;
         this.pointCharges = pointCharges;
     }
 

@@ -29,7 +29,7 @@ public class PointUsageCustomRepositoryImpl implements PointUsageCustomRepositor
         Point point, YearMonth rangeDate
     ) {
         return query.selectFrom(qPointUsage)
-            .where(qPointUsage.point.eq(point)
+            .where(qPointUsage.pointId.eq(point.getId())
                 .and(eqChargeDate(rangeDate))
             )
             .fetch();
