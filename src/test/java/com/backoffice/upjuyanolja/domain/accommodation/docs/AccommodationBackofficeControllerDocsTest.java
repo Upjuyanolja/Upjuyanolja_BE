@@ -5,13 +5,10 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.multipart;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.partWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.requestParts;
 import static org.springframework.restdocs.snippet.Attributes.key;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationImageRequest;
@@ -22,8 +19,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationNameResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOptionResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageUrlResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
@@ -33,21 +28,18 @@ import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomOptionResponse;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.constraints.ConstraintDescriptions;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-public class AccommodationControllerDocsTest extends RestDocsSupport {
+public class AccommodationBackofficeControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private AccommodationCommandService accommodationCommandService;
@@ -164,7 +156,7 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
             .willReturn(accommodationInfoResponse);
 
         // when then
-        mockMvc.perform(post("/api/accommodations")
+        mockMvc.perform(post("/backoffice-api/accommodations")
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON))
             .andDo(restDoc.document(
@@ -388,7 +380,7 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
             .willReturn(accommodationOwnershipResponse);
 
         // when then
-        mockMvc.perform(get("/api/accommodations/backoffice"))
+        mockMvc.perform(get("/backoffice-api/accommodations"))
             .andDo(restDoc.document(
                 responseFields().and(
                     fieldWithPath("accommodations").type(JsonFieldType.ARRAY)
@@ -401,81 +393,5 @@ public class AccommodationControllerDocsTest extends RestDocsSupport {
             ));
 
         verify(accommodationCommandService, times(1)).getAccommodationOwnership(any(Long.TYPE));
-    }
-
-    @Test
-    @DisplayName("이미지를 저장할 수 있다.")
-    @WithMockUser(roles = "ADMIN")
-    void saveImages() throws Exception {
-        // given
-        URL resource = getClass().getResource("/images/image_sample.jpg");
-
-        List<ImageUrlResponse> urls = new ArrayList<>();
-        urls.add(ImageUrlResponse.builder()
-            .url("https://aws/coupons/images/001")
-            .build());
-        urls.add(ImageUrlResponse.builder()
-            .url("https://aws/coupons/images/002")
-            .build());
-        urls.add(ImageUrlResponse.builder()
-            .url("https://aws/coupons/images/003")
-            .build());
-        urls.add(ImageUrlResponse.builder()
-            .url("https://aws/coupons/images/004")
-            .build());
-        ImageResponse imageResponse = ImageResponse.builder()
-            .urls(urls)
-            .build();
-
-        given(accommodationCommandService.saveImages(any(List.class)))
-            .willReturn(imageResponse);
-
-        // when then
-        mockMvc.perform(multipart("/api/accommodations/images")
-                .file(new MockMultipartFile(
-                    "image1",
-                    "image_sample.jpg",
-                    "images/png",
-                    resource.openStream().readAllBytes()
-                ))
-                .file(new MockMultipartFile(
-                    "image2",
-                    "image_sample.jpg",
-                    "images/png",
-                    resource.openStream().readAllBytes()
-                ))
-                .file(new MockMultipartFile(
-                    "image3",
-                    "image_sample.jpg",
-                    "images/png",
-                    resource.openStream().readAllBytes()
-                ))
-                .file(new MockMultipartFile(
-                    "image4",
-                    "image_sample.jpg",
-                    "images/png",
-                    resource.openStream().readAllBytes()
-                ))
-                .file(new MockMultipartFile(
-                    "image5",
-                    new byte[0]
-                )))
-            .andDo(restDoc.document(
-                requestParts(
-                    partWithName("image1").description("저장할 이미지 1"),
-                    partWithName("image2").description("저장할 이미지 2"),
-                    partWithName("image3").description("저장할 이미지 3"),
-                    partWithName("image4").description("저장할 이미지 4"),
-                    partWithName("image5").description("저장할 이미지 5")
-                ),
-                responseFields().and(
-                    fieldWithPath("urls").type(JsonFieldType.ARRAY)
-                        .description("이미지 URL 배열"),
-                    fieldWithPath("urls[].url").type(JsonFieldType.STRING).optional()
-                        .description("이미지 URL")
-                )
-            ));
-
-        verify(accommodationCommandService, times(1)).saveImages(any(List.class));
     }
 }

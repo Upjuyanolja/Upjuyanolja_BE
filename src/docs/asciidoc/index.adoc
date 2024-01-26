@@ -19,6 +19,8 @@
 
 === link:coupon/coupon-api.html[쿠폰 API, window=blank]
 
+=== link:image/image-api.html[이미지 API, window=blank]
+
 == API Common Response
 
 [[overview-status-code]]

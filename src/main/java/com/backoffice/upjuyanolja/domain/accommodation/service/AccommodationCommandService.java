@@ -8,8 +8,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationSummaryResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageUrlResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
@@ -17,7 +15,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationImageNotExistsException;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
-import com.backoffice.upjuyanolja.domain.accommodation.exception.FailedSaveImageException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
@@ -35,7 +32,6 @@ import com.backoffice.upjuyanolja.domain.room.exception.RoomNotExistsException;
 import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import jakarta.persistence.EntityManager;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -48,7 +44,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional
@@ -125,31 +120,6 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
             AccommodationNameResponse.of(ownership.getAccommodation())));
         return AccommodationOwnershipResponse.builder()
             .accommodations(accommodations)
-            .build();
-    }
-
-    @Override
-    public ImageResponse saveImages(List<MultipartFile> imageMultipartFiles) {
-        List<ImageUrlResponse> imageUrls = new ArrayList<>();
-
-        for (MultipartFile multipartFile : imageMultipartFiles) {
-            try {
-                if (multipartFile.isEmpty()) {
-                    imageUrls.add(ImageUrlResponse.builder()
-                        .url(null)
-                        .build());
-                } else {
-                    imageUrls.add(ImageUrlResponse.builder()
-                        .url(s3UploadService.saveFile(multipartFile))
-                        .build());
-                }
-            } catch (IOException e) {
-                throw new FailedSaveImageException();
-            }
-        }
-
-        return ImageResponse.builder()
-            .urls(imageUrls)
             .build();
     }
 

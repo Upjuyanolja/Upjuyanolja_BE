@@ -1,0 +1,28 @@
+ifndef::snippets[]
+:snippets: build/generated-snippets
+endif::[]
+
+= Image REST API Docs
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+
+[[Save-Images]]
+== 이미지 저장
+
+이미지 저장 API 입니다.
+이미지를 저장하고 URL을 반환합니다.
+
+=== HttpRequest
+
+Http Request 가 이미지로 인해 길어져, Httpie Request 로 문서화했습니다.
+
+include::{snippets}/image-controller-docs-test/save-images/httpie-request.adoc[]
+include::{snippets}/image-controller-docs-test/save-images/request-parts.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/image-controller-docs-test/save-images/http-response.adoc[]
+include::{snippets}/image-controller-docs-test/save-images/response-fields.adoc[]

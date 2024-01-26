@@ -118,7 +118,7 @@ public class RoomControllerTest {
                 .willReturn(roomInfoResponse);
 
             // when then
-            mockMvc.perform(post("/api/rooms/{accommodationId}", 1L)
+            mockMvc.perform(post("/backoffice-api/accommodations/{accommodationId}/rooms", 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -207,7 +207,7 @@ public class RoomControllerTest {
                 .willReturn(roomPageResponse);
 
             // when then
-            mockMvc.perform(get("/api/rooms/list/{accommodationId}", 1L)
+            mockMvc.perform(get("/backoffice-api/accommodations/{accommodationId}/rooms", 1L)
                     .queryParam("pageNum", "0")
                     .queryParam("pageSize", "10"))
                 .andExpect(status().isOk())
@@ -279,7 +279,9 @@ public class RoomControllerTest {
                 .willReturn(roomInfoResponse);
 
             // when then
-            mockMvc.perform(get("/api/rooms/{accommodationId}", 1L))
+            mockMvc.perform(get("/backoffice-api/accommodations/{accommodationId}/rooms/{roomId}",
+                    1L,
+                    1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.name").isString())
@@ -360,7 +362,9 @@ public class RoomControllerTest {
                 .willReturn(roomInfoResponse);
 
             // when then
-            mockMvc.perform(put("/api/rooms/{roomId}", 1L)
+            mockMvc.perform(put("/backoffice-api/accommodations/{accommodationId}/rooms/{roomId}",
+                    1L,
+                    1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -421,7 +425,10 @@ public class RoomControllerTest {
                 .willReturn(roomInfoResponse);
 
             // when then
-            mockMvc.perform(delete("/api/rooms/{accommodationId}", 1L))
+            mockMvc.perform(
+                    delete("/backoffice-api/accommodations/{accommodationId}/rooms/{roomId}",
+                        1L,
+                        1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.name").isString())
