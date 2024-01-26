@@ -31,6 +31,8 @@ public interface RoomQueryUseCase {
 
     void deleteRoomImages(List<RoomImage> requests);
 
+    void saveRoomStock(RoomStock roomStock);
+
     List<RoomStock> findStockByRoom(Room room);
 
     List<RoomStock> findStocksByRoomAndDateAfter(Room room, LocalDate date);

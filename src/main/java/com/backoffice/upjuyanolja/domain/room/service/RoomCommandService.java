@@ -34,7 +34,6 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -96,6 +95,9 @@ public class RoomCommandService implements RoomCommandUseCase {
         roomQueryUseCase.saveRoomImages(RoomImageRequest.toEntity(room, request.images()))
             .forEach(roomImage -> room.getImages().add(roomImage));
 //        em.refresh(room);
+
+        createRoomStock(room);
+
         return RoomInfoResponse.of(room);
     }
 
@@ -226,6 +228,16 @@ public class RoomCommandService implements RoomCommandUseCase {
         }
         if (!flag) {
             throw new InvalidRoomStatusException();
+        }
+    }
+
+    private void createRoomStock(Room room) {
+        for (int i = 0; i < 30; i++) {
+            roomQueryUseCase.saveRoomStock(RoomStock.builder()
+                .room(room)
+                .count(room.getAmount())
+                .date(LocalDate.now().plusDays(i))
+                .build());
         }
     }
 }
