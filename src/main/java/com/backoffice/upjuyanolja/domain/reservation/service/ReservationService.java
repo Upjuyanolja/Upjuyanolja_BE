@@ -69,6 +69,13 @@ public class ReservationService {
             request.getEndDate());
 
         /*
+         * 객실 재고 수정
+         * */
+        for (RoomStock roomStock : roomStocks) {
+            stockService.decreaseRoomStock(roomStock.getId()); //lock
+        }
+
+        /*
          * 쿠폰 유효성 및 재고 검증
          * request.getCouponId() = null 인 경우 스킵
          * */
@@ -80,6 +87,13 @@ public class ReservationService {
             if (coupon.getCouponStatus() != CouponStatus.ENABLE || coupon.getStock() < 1) {
                 throw new InvalidCouponException();
             }
+        }
+
+        /*
+         * 쿠폰 재고 수정
+         * */
+        if (coupon != null) {
+            stockService.decreaseCouponStock(coupon.getId()); //lock
         }
 
         // 할인 금액 계산
@@ -97,20 +111,6 @@ public class ReservationService {
                 .coupon(coupon)
                 .reservation(reservation)
                 .build());
-        }
-
-        /*
-         * 쿠폰 재고 수정
-         * */
-        if (coupon != null) {
-            stockService.decreaseCouponStock(coupon.getId()); //lock
-        }
-
-        /*
-         * 객실 재고 수정
-         * */
-        for (RoomStock roomStock : roomStocks) {
-            stockService.decreaseRoomStock(roomStock.getId()); //lock
         }
     }
 
