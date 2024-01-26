@@ -19,9 +19,19 @@ public class PointChargesCustomRepositoryImpl implements PointChargesCustomRepos
     private final QPointCharges qPointCharges = QPointCharges.pointCharges;
 
     @Override
-    public Long sumTotalPointByStatus(Point point) {
-        return sumTotalPaidPoint(point) + sumTotalRemainedPoint(point);
+    public Long sumTotalPaidPoint(Point point){
+        return query.select(qPointCharges.chargePoint.sum())
+            .from(qPointCharges)
+            .where(qPointCharges.pointStatus.eq(PointStatus.PAID))
+            .fetchFirst();
+    }
 
+    @Override
+    public Long sumTotalRemainedPoint(Point point){
+        return query.select(qPointCharges.remainPoint.sum())
+            .from(qPointCharges)
+            .where(qPointCharges.pointStatus.eq(PointStatus.REMAINED))
+            .fetchFirst();
     }
 
     @Override
@@ -35,19 +45,6 @@ public class PointChargesCustomRepositoryImpl implements PointChargesCustomRepos
             .fetch();
     }
 
-    private Long sumTotalPaidPoint(Point point){
-        return query.select(qPointCharges.chargePoint.sum().nullif(0L))
-            .from(qPointCharges)
-            .where(qPointCharges.pointStatus.eq(PointStatus.PAID))
-            .fetchFirst();
-    }
-
-    private Long sumTotalRemainedPoint(Point point){
-        return query.select(qPointCharges.remainPoint.sum().nullif(0L))
-            .from(qPointCharges)
-            .where(qPointCharges.pointStatus.eq(PointStatus.REMAINED))
-            .fetchFirst();
-    }
 
     private BooleanExpression isPointAvailableStatus(Point point) {
         return qPointCharges.point.eq(point)
