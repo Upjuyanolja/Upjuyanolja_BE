@@ -8,6 +8,7 @@ import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargePageRespo
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeReceiptResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointSummaryResponse;
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointTotalBalanceResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.TossResponse;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.entity.PointCategory;
@@ -79,6 +80,13 @@ public class PointService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public PointTotalBalanceResponse getPointTotalBalanceResponse(Long memberId){
+        Point memberPoint = getMemberPoint(memberId);
+
+        return PointTotalBalanceResponse.of(memberPoint.getTotalPointBalance());
+    }
+
     private Point getMemberPoint(Long memberId) {
         return pointRepository.findByMemberId(memberId)
             .orElseGet(() -> createPoint(memberId));
@@ -94,6 +102,7 @@ public class PointService {
 
         return newPoint;
     }
+
 
     private long getTotalChargePoint(Point point, YearMonth rangeDate) {
         return pointChargesRepository.findByPointAndRefundableAndRangeDate(
@@ -311,6 +320,7 @@ public class PointService {
 
     private void updateChargePointStatus(PointCharges pointCharges) {
         pointCharges.updatePointStatus(PointStatus.CANCELED);
+        pointCharges.updateRefundable(false);
     }
 
     private PointRefunds createPointRefund(PointCharges pointCharges, TossResponse tossResponse) {
