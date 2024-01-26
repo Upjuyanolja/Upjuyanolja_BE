@@ -169,7 +169,7 @@ public class PointService {
                 continue;
             }
             resultPoint += pointCharge.getChargePoint();
-            createPointUsage(pointCharge, couponAccommodation);
+            createPointUsage(memberPoint, pointCharge.getChargePoint());
             updateChargePointUseStatus(pointCharge);
             if (resultPoint >= couponPrice) {
                 break;
