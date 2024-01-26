@@ -33,10 +33,9 @@ public class AuthenticationConfig {
         "/api/open-api"
     };
     private static final String[] PERMIT_OWNER_URL_ARRAY = {
-        "/api/accommodations/backoffice/**",
+        "/backoffice-api/**",
         "/api/coupons/backoffice/**",
         "/api/points/**",
-        "/api/rooms/**"
     };
 
     @Bean
