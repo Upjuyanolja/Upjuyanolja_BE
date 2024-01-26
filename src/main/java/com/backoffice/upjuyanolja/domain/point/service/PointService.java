@@ -164,7 +164,8 @@ public class PointService {
         long resultPoint = 0;
 
         for (PointCharges pointCharge : pointCharges) {
-            if (pointCharge.getPointStatus() != PointStatus.PAID) {
+            if (pointCharge.getPointStatus() != PointStatus.PAID ||
+                pointCharge.getPointStatus() != PointStatus.REMAINED) {
                 continue;
             }
             resultPoint += pointCharge.getChargePoint();
@@ -205,6 +206,7 @@ public class PointService {
             .paymentKey(tossResponse.paymentKey())
             .orderName(tossResponse.orderId())
             .chargePoint(tossResponse.totalAmount())
+            .remainPoint(0L)
             .chargeDate(ZonedDateTime.parse(tossResponse.approvedAt()).toLocalDateTime())
             .endDate(ZonedDateTime.parse(tossResponse.approvedAt()).toLocalDateTime().plusDays(7))
             .refundable(true)
