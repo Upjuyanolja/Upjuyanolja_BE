@@ -23,19 +23,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/rooms")
+@RequestMapping("/backoffice-api/accommodations/{accommodationId}/rooms")
 @RequiredArgsConstructor
 public class RoomController {
 
     private final RoomCommandUseCase roomCommandUseCase;
     private final SecurityUtil securityUtil;
 
-    @PostMapping("/{accommodationId}")
+    @PostMapping
     public ResponseEntity<RoomInfoResponse> registerRoom(
         @PathVariable long accommodationId,
         @RequestBody RoomRegisterRequest roomRegisterRequest
     ) {
-        log.info("POST /api/rooms/{}", accommodationId);
+        log.info("POST /backoffice-api/accommodations/{}/rooms", accommodationId);
 
         RoomInfoResponse response = roomCommandUseCase.registerRoom(
             securityUtil.getCurrentMemberId(),
@@ -45,13 +45,18 @@ public class RoomController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/list/{accommodationId}")
+    @GetMapping
     public ResponseEntity<RoomPageResponse> getRooms(
         @PathVariable long accommodationId,
         @RequestParam(defaultValue = "0") int pageNum,
         @RequestParam(defaultValue = "10") int pageSize
     ) {
-        log.info("GET /api/rooms/list/{}", accommodationId);
+        log.info(
+            "GET /backoffice-api/accommodations/{}/rooms?pageNum={}&pageSize={}",
+            accommodationId,
+            pageNum,
+            pageSize
+        );
 
         RoomPageResponse response = roomCommandUseCase.getRooms(
             securityUtil.getCurrentMemberId(),
@@ -65,8 +70,11 @@ public class RoomController {
     }
 
     @GetMapping("/{roomId}")
-    public ResponseEntity<RoomInfoResponse> getRoom(@PathVariable long roomId) {
-        log.info("GET /api/rooms/{}", roomId);
+    public ResponseEntity<RoomInfoResponse> getRoom(
+        @PathVariable long accommodationId,
+        @PathVariable long roomId
+    ) {
+        log.info("GET /backoffice-api/accommodations/{}/rooms/{}", accommodationId, roomId);
 
         RoomInfoResponse response = roomCommandUseCase
             .getRoom(securityUtil.getCurrentMemberId(), roomId);
@@ -75,10 +83,11 @@ public class RoomController {
 
     @PutMapping("/{roomId}")
     public ResponseEntity<RoomInfoResponse> modifyRoom(
+        @PathVariable long accommodationId,
         @PathVariable long roomId,
         @RequestBody RoomUpdateRequest roomUpdateRequest
     ) {
-        log.info("PUT /api/rooms/{}", roomId);
+        log.info("PUT /backoffice-api/accommodations/{}/rooms/{}", accommodationId, roomId);
 
         RoomInfoResponse response = roomCommandUseCase
             .modifyRoom(securityUtil.getCurrentMemberId(), roomId, roomUpdateRequest);
@@ -86,8 +95,11 @@ public class RoomController {
     }
 
     @DeleteMapping("/{roomId}")
-    public ResponseEntity<RoomInfoResponse> deleteRoom(@PathVariable long roomId) {
-        log.info("DELETE /api/rooms/{}", roomId);
+    public ResponseEntity<RoomInfoResponse> deleteRoom(
+        @PathVariable long accommodationId,
+        @PathVariable long roomId
+    ) {
+        log.info("DELETE /backoffice-api/accommodations/{}/rooms/{}", accommodationId, roomId);
 
         RoomInfoResponse response = roomCommandUseCase
             .deleteRoom(securityUtil.getCurrentMemberId(), roomId);

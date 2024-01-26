@@ -8,6 +8,7 @@ import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargePageRespo
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeReceiptResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointSummaryResponse;
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointTotalBalanceResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.TossResponse;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.entity.PointCategory;
@@ -79,6 +80,13 @@ public class PointService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public PointTotalBalanceResponse getPointTotalBalanceResponse(Long memberId){
+        Point memberPoint = getMemberPoint(memberId);
+
+        return PointTotalBalanceResponse.of(memberPoint.getTotalPointBalance());
+    }
+
     private Point getMemberPoint(Long memberId) {
         return pointRepository.findByMemberId(memberId)
             .orElseGet(() -> createPoint(memberId));
@@ -94,6 +102,7 @@ public class PointService {
 
         return newPoint;
     }
+
 
     private long getTotalChargePoint(Point point, YearMonth rangeDate) {
         return pointChargesRepository.findByPointAndRefundableAndRangeDate(
@@ -155,34 +164,26 @@ public class PointService {
 
     }
 
-    private List<PointChargeReceiptResponse> getPointChargeReceiptResponse(
+    private PointChargeReceiptResponse getPointChargeReceiptResponse(
         PointCharges pointCharges) {
 
         switch (pointCharges.getPointStatus()) {
-            case PAID:
-                return Collections.singletonList(PointChargeReceiptResponse.of(
+            case PAID :
+            case USED :
+                return PointChargeReceiptResponse.of(
                     pointCharges.getOrderName(),
                     pointCharges.getChargeDate().toString(),
                     pointCharges.getChargePoint()
-                ));
+                );
             case CANCELED:
-                PointRefunds pointRefund = pointRefundsRepository.findByPointCharges(
-                    pointCharges);
-                return Collections.singletonList(PointChargeReceiptResponse.of(
+                PointRefunds pointRefund = pointRefundsRepository.findByPointCharges(pointCharges);
+                return PointChargeReceiptResponse.of(
                     pointCharges.getOrderName(),
                     pointRefund.getRefundDate().toString(),
                     pointCharges.getChargePoint()
-                ));
-            case USED:
-                return pointUsageRepository.findByPointCharges(pointCharges).stream()
-                    .map(pointUsage -> PointChargeReceiptResponse.of(
-                        pointUsage.getOrderName(),
-                        pointUsage.getOrderDate().toString(),
-                        pointUsage.getOrderPrice()
-                    ))
-                    .toList();
+                );
             default:
-                return Collections.emptyList();
+                return PointChargeReceiptResponse.builder().build();
         }
 
     }
@@ -311,6 +312,7 @@ public class PointService {
 
     private void updateChargePointStatus(PointCharges pointCharges) {
         pointCharges.updatePointStatus(PointStatus.CANCELED);
+        pointCharges.updateRefundable(false);
     }
 
     private PointRefunds createPointRefund(PointCharges pointCharges, TossResponse tossResponse) {

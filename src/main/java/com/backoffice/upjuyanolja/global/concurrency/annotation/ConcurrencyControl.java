@@ -22,12 +22,12 @@ public @interface ConcurrencyControl {
     /**
      * The maximum time to wait for the lock to be available, in the specified time unit.
      */
-    long waitTime() default 3L;
+    long waitTime() default 10L;
 
     /**
      * The duration to hold the lock for, in the specified time unit.
      */
-    long leaseTime() default 2L;
+    long leaseTime() default 10L;
 
     /**
      * The time unit for the waitTime and leaseTime values.

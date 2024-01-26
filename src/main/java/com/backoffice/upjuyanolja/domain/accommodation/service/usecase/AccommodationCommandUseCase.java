@@ -32,6 +32,4 @@ public interface AccommodationCommandUseCase {
     );
 
     AccommodationOwnershipResponse getAccommodationOwnership(long memberId);
-
-    ImageResponse saveImages(List<MultipartFile> imageMultipartFiles);
 }
