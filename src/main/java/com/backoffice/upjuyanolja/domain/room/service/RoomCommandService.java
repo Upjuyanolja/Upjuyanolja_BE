@@ -34,7 +34,6 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -96,6 +95,9 @@ public class RoomCommandService implements RoomCommandUseCase {
         roomQueryUseCase.saveRoomImages(RoomImageRequest.toEntity(room, request.images()))
             .forEach(roomImage -> room.getImages().add(roomImage));
 //        em.refresh(room);
+
+        createRoomStock(room);
+
         return RoomInfoResponse.of(room);
     }
 
@@ -145,7 +147,7 @@ public class RoomCommandService implements RoomCommandUseCase {
         validateRoomStatus(request.status());
         checkOwnership(member, room.getAccommodation());
         updateRoom(room, request);
-
+        em.flush();
         em.refresh(room);
         return RoomInfoResponse.of(room);
     }
@@ -202,17 +204,20 @@ public class RoomCommandService implements RoomCommandUseCase {
 
     private void addRoomImages(Room room, List<RoomImageAddRequest> requests) {
         List<RoomImage> images = new ArrayList<>();
-        requests.forEach(roomImages -> images.add(RoomImage.builder()
-            .room(room)
-            .url(roomImages.url())
-            .build()));
+        for (RoomImageAddRequest request : requests) {
+            images.add(RoomImage.builder()
+                .room(room)
+                .url(request.url())
+                .build());
+        }
         roomQueryUseCase.saveRoomImages(images);
     }
 
     private List<RoomImage> getRoomImages(List<RoomImageDeleteRequest> requests) {
         List<RoomImage> images = new ArrayList<>();
-        requests.forEach(request -> images.add(roomQueryUseCase.findRoomImage(request.id())));
-
+        for (RoomImageDeleteRequest request : requests) {
+            images.add(roomQueryUseCase.findRoomImage(request.id()));
+        }
         return images;
     }
 
@@ -226,6 +231,16 @@ public class RoomCommandService implements RoomCommandUseCase {
         }
         if (!flag) {
             throw new InvalidRoomStatusException();
+        }
+    }
+
+    private void createRoomStock(Room room) {
+        for (int i = 0; i < 30; i++) {
+            roomQueryUseCase.saveRoomStock(RoomStock.builder()
+                .room(room)
+                .count(room.getAmount())
+                .date(LocalDate.now().plusDays(i))
+                .build());
         }
     }
 }

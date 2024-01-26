@@ -75,6 +75,11 @@ public class RoomQueryService implements RoomQueryUseCase {
     }
 
     @Override
+    public void saveRoomStock(RoomStock roomStock) {
+        roomStockRepository.save(roomStock);
+    }
+
+    @Override
     public List<RoomStock> findStockByRoom(Room room) {
         return roomStockRepository.findByRoom(room)
             .orElseThrow(RoomStockNotFoundException::new);

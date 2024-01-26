@@ -37,7 +37,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -55,43 +54,37 @@ public class ReservationService {
     private final RoomCommandUseCase roomCommandUseCase;
     private final ReservationStockService stockService;
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional
     public void create(Member currentMember, CreateReservationRequest request) {
-        Coupon coupon = null;
-
         Room room = roomRepository.findById(request.getRoomId())
             .orElseThrow(InvalidReservationInfoException::new);
-
         if (room.getStatus() != RoomStatus.SELLING) {
             throw new InvalidReservationInfoException();
         }
 
         /*
-         * 객실 재고 수정 및 예약 객실 생성
+         * 객실 재고 검증
          * */
-        decreaseRoomStock(room, request.getStartDate(), request.getEndDate());
-        int totalAmount = room.getPrice().getOffWeekDaysMinFee();
+        List<RoomStock> roomStocks = getRoomStock(room, request.getStartDate(),
+            request.getEndDate());
 
         /*
-         * 쿠폰 재고 수정
+         * 쿠폰 유효성 및 재고 검증
          * request.getCouponId() = null 인 경우 스킵
          * */
+        Coupon coupon = null;
         if (request.getCouponId() != null) {
-            // room - coupon 유효성 검사
+            // coupon 유효성 검사
             coupon = couponRepository.findByIdAndRoom(request.getCouponId(), room)
                 .orElseThrow(InvalidCouponException::new);
-
             if (coupon.getCouponStatus() != CouponStatus.ENABLE || coupon.getStock() < 1) {
                 throw new InvalidCouponException();
             }
-
-            // 쿠폰 재고 수정
-            coupon = decreaseCouponStock(coupon);
-
-            // 할인 금액 계산
-            totalAmount = DiscountType.makePaymentPrice(coupon.getDiscountType(),
-                room.getPrice().getOffWeekDaysMinFee(), coupon.getDiscount());
         }
+
+        // 할인 금액 계산
+        int totalAmount = getValidTotalAmount(request.getTotalPrice(),
+            room.getPrice().getOffWeekDaysMinFee(), coupon);
 
         /*
          * 예약 및 결제 저장
@@ -99,20 +92,23 @@ public class ReservationService {
         Reservation reservation = saveReservation(currentMember, request, room, totalAmount);
 
         // 쿠폰 사용 시 쿠폰 사용 내역 저장
-        if (Boolean.TRUE.equals(reservation.getIsCouponUsed())) {
+        if (coupon != null) {
             couponRedeemRepository.save(CouponRedeem.builder()
                 .coupon(coupon)
                 .reservation(reservation)
                 .build());
         }
-    }
 
-    @Transactional(propagation = Propagation.MANDATORY, rollbackFor = InvalidReservationInfoException.class)
-    public void decreaseRoomStock(Room room, LocalDate startDate, LocalDate endDate) {
-        // 객실 재고 검증 및 get
-        List<RoomStock> roomStocks = getRoomStock(room, startDate, endDate);
+        /*
+         * 쿠폰 재고 수정
+         * */
+        if (coupon != null) {
+            stockService.decreaseCouponStock(coupon.getId()); //lock
+        }
 
-        // 객실 락 획득 및 재고 수정
+        /*
+         * 객실 재고 수정
+         * */
         for (RoomStock roomStock : roomStocks) {
             stockService.decreaseRoomStock(roomStock.getId()); //lock
         }
@@ -135,29 +131,16 @@ public class ReservationService {
         return modifiableRoomStocks;
     }
 
-    @Transactional(propagation = Propagation.MANDATORY, rollbackFor = InvalidCouponException.class)
-    public Coupon decreaseCouponStock(Coupon coupon) {
-        if (coupon.getStock() < 1) {
-            throw new InvalidCouponException();
-        }
-        return stockService.decreaseCouponStock(coupon.getId()); //lock
-    }
+    private int getValidTotalAmount(int totalAmountRequest, int roomPrice, Coupon coupon) {
+        int totalAmount = (coupon == null) ? roomPrice
+            : DiscountType.makePaymentPrice(coupon.getDiscountType(), roomPrice,
+                coupon.getDiscount());
 
-    private Payment savePayment(
-        Member member, CreateReservationRequest request, int roomPrice, int totalAmount
-    ) {
-
-        if (totalAmount != request.getTotalPrice()) {
+        if (totalAmountRequest != totalAmount) {
             throw new PaymentFailureException();
         }
 
-        return paymentRepository.save(Payment.builder()
-            .member(member)
-            .payMethod(request.getPayMethod())
-            .roomPrice(roomPrice)
-            .discountAmount(roomPrice - totalAmount)
-            .totalAmount(totalAmount)
-            .build());
+        return totalAmount;
     }
 
     private Reservation saveReservation(
@@ -197,60 +180,80 @@ public class ReservationService {
             .build());
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    private Payment savePayment(
+        Member member, CreateReservationRequest request, int roomPrice, int totalAmount
+    ) {
+        return paymentRepository.save(Payment.builder()
+            .member(member)
+            .payMethod(request.getPayMethod())
+            .roomPrice(roomPrice)
+            .discountAmount(roomPrice - totalAmount)
+            .totalAmount(totalAmount)
+            .build());
+    }
+
+    @Transactional
     public void cancel(Member currentMember, Long reservationId) {
-        Reservation reservation = reservationRepository.findByIdAndMember(reservationId,
-                currentMember)
+        Reservation reservation = reservationRepository
+            .findByIdAndMember(reservationId, currentMember)
             .orElseThrow(NoSuchReservationException::new);
-
-        /*
-         * 객실 재고 증가
-         * */
-        increaseRoomStock(reservation.getReservationRoom());
-
-        /*
-         * 쿠폰 재고 증가 & 쿠폰 시용 내역 제거
-         * - 쿠폰 미사용 예약 내역 시 스킵
-         * */
-        if (reservation.getIsCouponUsed()) {
-            increaseCouponStock(reservation);
-        }
 
         /*
          * 예약 상태값 변경 ReservationStatus.CANCELLED
          * */
         reservation.updateStatus(ReservationStatus.CANCELLED);
         reservationRepository.save(reservation);
+
+        /*
+         * 쿠폰 사용 내역 제거 & 쿠폰 재고 증가
+         * - 쿠폰 미사용 예약 내역 시 스킵
+         * */
+        if (Boolean.TRUE.equals(reservation.getIsCouponUsed())) {
+            Coupon coupon = deleteCouponRedeem(reservation);
+            stockService.increaseCouponStock(coupon.getId());
+        }
+
+        /*
+         * 객실 재고 증가
+         * */
+        increaseRoomStock(reservation.getReservationRoom());
     }
 
-    @Transactional(propagation = Propagation.MANDATORY, rollbackFor = NoSuchReservationException.class)
-    public void increaseCouponStock(Reservation reservation) {
+    private Coupon deleteCouponRedeem(Reservation reservation) {
         CouponRedeem couponRedeem = couponRedeemRepository.findByReservation(reservation)
             .orElseThrow(NoSuchReservationException::new);
 
-        Coupon coupon = couponRedeem.getCoupon();
-        stockService.increaseCouponStock(coupon.getId());
-
         couponRedeemRepository.delete(couponRedeem);
+
+        return couponRedeem.getCoupon();
     }
 
-    @Transactional(propagation = Propagation.MANDATORY, rollbackFor = NoSuchReservationException.class)
-    public void increaseRoomStock(ReservationRoom reservationRoom) {
-        int daysCount =
-            Period.between(reservationRoom.getStartDate(), reservationRoom.getEndDate()).getDays()
-                + 1;
+    private void increaseRoomStock(ReservationRoom reservationRoom) {
+        List<RoomStock> roomStocks = getReservationRoomStock(
+            reservationRoom.getRoom(),
+            reservationRoom.getStartDate(),
+            reservationRoom.getEndDate()
+        );
 
-        List<RoomStock> roomStocks = roomCommandUseCase.getFilteredRoomStocksByDate(
-            reservationRoom.getRoom(), reservationRoom.getStartDate(),
-            reservationRoom.getEndDate());
+        for (RoomStock roomStock : roomStocks) {
+            stockService.increaseRoomStock(roomStock.getId()); //lock
+        }
+    }
+
+    private List<RoomStock> getReservationRoomStock(Room room, LocalDate startDate,
+        LocalDate endDate) {
+        int daysCount = Period.between(startDate, endDate).getDays() + 1;
+
+        List<RoomStock> roomStocks = roomCommandUseCase.getFilteredRoomStocksByDate(room,
+            startDate, endDate);
 
         if (roomStocks.size() != daysCount) {
             throw new NoSuchReservationRoomException();
         }
 
-        for (RoomStock roomStock : roomStocks) {
-            stockService.increaseRoomStock(roomStock.getId()); //lock
-        }
+        List<RoomStock> modifiableRoomStocks = new ArrayList<>(roomStocks);
+        modifiableRoomStocks.sort(Comparator.comparing(RoomStock::getDate));
+        return modifiableRoomStocks;
     }
 
     @Transactional(readOnly = true)

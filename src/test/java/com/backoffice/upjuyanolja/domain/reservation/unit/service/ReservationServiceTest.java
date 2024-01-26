@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
@@ -11,6 +12,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOptio
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponRedeem;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
@@ -380,7 +382,6 @@ class ReservationServiceTest {
             when(roomCommandUseCase.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
-            when(stockService.decreaseRoomStock(any(Long.class))).thenReturn(roomStock);
             when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
                 eq(notMatchedRoom))).thenThrow(
                 new InvalidCouponException());
@@ -412,7 +413,6 @@ class ReservationServiceTest {
             when(roomCommandUseCase.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
-            when(stockService.decreaseRoomStock(any(Long.class))).thenReturn(roomStock);
             when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
                 eq(mockRoom))).thenReturn(Optional.ofNullable(disabledCoupon));
 
@@ -441,7 +441,6 @@ class ReservationServiceTest {
             when(roomCommandUseCase.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
-            when(stockService.decreaseRoomStock(any(Long.class))).thenReturn(roomStock);
             when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
                 eq(mockRoom))).thenReturn(Optional.ofNullable(noStockCoupon));
 
@@ -477,13 +476,8 @@ class ReservationServiceTest {
             when(roomCommandUseCase.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
-            when(stockService.decreaseRoomStock(any(Long.class))).thenReturn(roomStock);
             when(couponRepository.findByIdAndRoom(any(Long.class),
                 any(Room.class))).thenReturn(Optional.ofNullable(mockCoupon));
-            when(stockService.decreaseCouponStock(any(Long.class))).thenReturn(mockCoupon);
-            ;
-            when(reservationRoomRepository.save(any(ReservationRoom.class))).thenReturn(
-                reservationRoom);
 
             // when
             // then
@@ -540,31 +534,6 @@ class ReservationServiceTest {
         }
 
         @Test
-        @DisplayName("객실 재고 증가 시 재고 정보가 없는 경우 NoSuchReservationRoomException")
-        void NoSuchReservationRoomException_noSuchRoomStock() {
-            // given
-            Reservation reservation = createReservation(
-                LocalDate.now(), LocalDate.now(),
-                0, true, ReservationStatus.RESERVED
-            );
-
-            when(reservationRepository.findByIdAndMember(any(Long.class),
-                any(Member.class))).thenReturn(
-                Optional.ofNullable(reservation));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
-                any(Room.class), any(LocalDate.class), any(LocalDate.class)
-            )).thenReturn(new ArrayList<>());
-
-            // when
-            // then
-            Throwable exception = assertThrows(NoSuchReservationRoomException.class, () -> {
-                reservationService.cancel(mockMember, defaultReservationId);
-            });
-            assertEquals("예약 숙소 정보를 찾을 수 없습니다.", exception.getMessage());
-
-        }
-
-        @Test
         @DisplayName("쿠폰 사용 정보가 없는 경우 NoSuchReservationException")
         void NoSuchReservationException_noSuchCouponRedeem() {
             // given
@@ -577,10 +546,6 @@ class ReservationServiceTest {
 
             when(reservationRepository.findByIdAndMember(any(Long.class), any(Member.class)))
                 .thenReturn(Optional.ofNullable(reservation));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
-                any(Room.class), any(LocalDate.class), any(LocalDate.class)
-            )).thenReturn(roomStockList);
-            when(stockService.increaseRoomStock(any(Long.class))).thenReturn(roomStock);
             when(couponRedeemRepository.findByReservation(eq(reservation))).thenThrow(
                 new NoSuchReservationException());
 
@@ -590,6 +555,41 @@ class ReservationServiceTest {
                 reservationService.cancel(mockMember, defaultReservationId);
             });
             assertEquals("예약 정보를 찾을 수 없습니다.", exception.getMessage());
+
+        }
+
+        @Test
+        @DisplayName("객실 재고 정보가 없는 경우 NoSuchReservationRoomException")
+        void NoSuchReservationRoomException_noSuchRoomStock() {
+            // given
+            Coupon coupon = createCoupon(1L, mockRoom, CouponStatus.ENABLE, 1);
+
+            Reservation reservation = createReservation(
+                LocalDate.now(), LocalDate.now(),
+                0, true, ReservationStatus.RESERVED
+            );
+
+            CouponRedeem couponRedeem = CouponRedeem.builder()
+                .reservation(reservation)
+                .coupon(coupon)
+                .build();
+
+            when(reservationRepository.findByIdAndMember(any(Long.class),
+                any(Member.class))).thenReturn(
+                Optional.ofNullable(reservation));
+            when(couponRedeemRepository.findByReservation(any(Reservation.class)))
+                .thenReturn(Optional.ofNullable(couponRedeem));
+            doNothing().when(couponRedeemRepository).delete(any(CouponRedeem.class));
+            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+                any(Room.class), any(LocalDate.class), any(LocalDate.class)
+            )).thenReturn(new ArrayList<>());
+
+            // when
+            // then
+            Throwable exception = assertThrows(NoSuchReservationRoomException.class, () -> {
+                reservationService.cancel(mockMember, defaultReservationId);
+            });
+            assertEquals("예약 숙소 정보를 찾을 수 없습니다.", exception.getMessage());
 
         }
     }

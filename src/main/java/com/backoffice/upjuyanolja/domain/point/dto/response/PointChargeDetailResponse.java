@@ -13,13 +13,13 @@ public record PointChargeDetailResponse(
     String name,
     long trade,
     long amount,
-    List<PointChargeReceiptResponse> receipt
+    PointChargeReceiptResponse receipt
 
 ) {
 
     public static PointChargeDetailResponse of(
         PointCharges pointCharges, String category, String type,
-        List<PointChargeReceiptResponse> receipt
+        PointChargeReceiptResponse receipt
     ) {
         return PointChargeDetailResponse.builder()
             .id(pointCharges.getId())
