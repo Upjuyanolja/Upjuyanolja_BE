@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.CouponStatisticsResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
@@ -41,6 +42,7 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
+import com.backoffice.upjuyanolja.domain.coupon.service.CouponStatisticsService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
@@ -90,6 +92,9 @@ class CouponBackofficeControllerTest {
 
     @MockBean
     private CouponBackofficeService couponBackofficeService;
+
+    @MockBean
+    private CouponStatisticsService couponStatisticsService;
 
     @MockBean
     private SecurityUtil securityUtil;
@@ -296,7 +301,47 @@ class CouponBackofficeControllerTest {
                 .andExpect(status().is(HttpStatus.OK.value()))
                 .andDo(print());
         }
+    }
 
+    @Nested
+    @DisplayName("쿠폰 통계 테스트")
+    class Context_couponStatisticse {
+
+        @DisplayName("쿠폰 현황 통계 테스트")
+        @Test
+        public void couponStatisticsTest() throws Exception {
+            // given
+            when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+
+            // when & Then
+            CouponStatisticsResponse mockResponse = createMockStatisticsResponse();
+
+            given(couponStatisticsService.getCouponStatistics(any(Long.TYPE)))
+                .willReturn(mockResponse);
+
+            // when & Then
+            mockMvc.perform(get("/api/coupons/backoffice/statistics/1"))
+                .andExpect(status().is(HttpStatus.OK.value()))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.accommodationId").isNumber())
+                .andExpect(jsonPath("$.total").isNumber())
+                .andExpect(jsonPath("$.used").isNumber())
+                .andExpect(jsonPath("$.stock").isNumber())
+                .andDo(print());
+
+            verify(couponStatisticsService, times(1))
+                .getCouponStatistics(any(Long.TYPE));
+        }
+    }
+
+    private CouponStatisticsResponse createMockStatisticsResponse() {
+        return CouponStatisticsResponse.builder()
+            .accommodationId(1L)
+            .total(500)
+            .used(300)
+            .stock(200)
+            .build();
     }
 
     private List<CouponDeleteRooms> createMockDeleteRooms() {
