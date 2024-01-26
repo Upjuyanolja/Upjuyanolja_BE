@@ -51,7 +51,12 @@ public class RoomController {
         @RequestParam(defaultValue = "0") int pageNum,
         @RequestParam(defaultValue = "10") int pageSize
     ) {
-        log.info("GET /backoffice-api/accommodations/{}/rooms", accommodationId);
+        log.info(
+            "GET /backoffice-api/accommodations/{}/rooms?pageNum={}&pageSize={}",
+            accommodationId,
+            pageNum,
+            pageSize
+        );
 
         RoomPageResponse response = roomCommandUseCase.getRooms(
             securityUtil.getCurrentMemberId(),
