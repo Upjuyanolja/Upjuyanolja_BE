@@ -11,6 +11,7 @@ import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargePageRespo
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeReceiptResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointSummaryResponse;
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointTotalBalanceResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.TossResponse;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.entity.PointCategory;
@@ -83,6 +84,13 @@ public class PointService {
             getTotalUsePoint(memberPoint, rangeDate),
             currentPoint
         );
+    }
+
+    @Transactional(readOnly = true)
+    public PointTotalBalanceResponse getPointTotalBalanceResponse(Long memberId){
+        Point memberPoint = getMemberPoint(memberId);
+
+        return PointTotalBalanceResponse.of(memberPoint.getTotalPointBalance());
     }
 
     @Transactional(readOnly = true)

@@ -1,9 +1,10 @@
 package com.backoffice.upjuyanolja.domain.point.controller;
 
 import com.backoffice.upjuyanolja.domain.point.dto.request.PointChargeRequest;
-import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargePageResponse;
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointSummaryResponse;
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointTotalBalanceResponse;
 import com.backoffice.upjuyanolja.domain.point.service.PointService;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import jakarta.validation.Valid;
@@ -45,6 +46,17 @@ public class PointController {
 
         PointSummaryResponse response = pointService.getPointSummaryResponse(
             securityUtil.getCurrentMemberId(), rangeDate
+        );
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/total")
+    public ResponseEntity<PointTotalBalanceResponse> getPointTotalBalance() {
+        log.info("GET /api/points/total");
+
+        PointTotalBalanceResponse response = pointService.getPointTotalBalanceResponse(
+            securityUtil.getCurrentMemberId()
         );
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
