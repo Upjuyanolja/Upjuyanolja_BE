@@ -66,6 +66,7 @@ public class CouponIssuance extends BaseTime {
         this.id = id;
         this.coupon = coupon;
         this.room = room;
+        this.pointUsage = pointUsage;
         this.quantity = quantity;
         this.amount = amount;
     }

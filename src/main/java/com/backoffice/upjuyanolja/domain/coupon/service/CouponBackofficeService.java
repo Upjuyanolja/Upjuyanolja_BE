@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
-import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddInfos;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
@@ -23,13 +22,10 @@ import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMa
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
-import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InvalidCouponInfoException;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponIssuanceRepository;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
-import com.backoffice.upjuyanolja.domain.point.entity.Point;
-import com.backoffice.upjuyanolja.domain.point.exception.PointNotFoundException;
-import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
+import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
 import com.backoffice.upjuyanolja.domain.point.service.PointService;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
@@ -68,6 +64,9 @@ public class CouponBackofficeService {
         final long totalPoints = couponMakeRequest.totalPoints();
         pointService.validatePoint(memberId, totalPoints);
 
+        // 업주의 보유 포인트 차감
+        PointUsage pointUsage = pointService.usePointForCoupon(memberId, totalPoints);
+
         List<CouponRoomsRequest> couponRooms = couponMakeRequest.rooms();
         List<Coupon> coupons = new ArrayList<>();
         List<CouponIssuance> couponIssuances = new ArrayList<>();
@@ -101,20 +100,14 @@ public class CouponBackofficeService {
                 log.info("신규 쿠폰 발급: {}, memberId: {}", quantity, memberId);
             }
             // 5. 쿠폰 발급 내역 배열 생성
-            couponIssuances.add(createCouponIssuance(room, coupon, quantity, amount));
+            couponIssuances.add(createCouponIssuance(room, coupon, pointUsage, quantity, amount));
         }
         // 6. 생성된 쿠폰 저장
         couponRepository.saveAll(coupons);
         // 7. 생성된 쿠폰 발급 내역 저장
         couponIssuanceRepository.saveAll(couponIssuances);
 
-        // 8. 업주의 보유 포인트 차감
-        // todo: 도메인이 다른 서비스를 트랜잭션 안에서 호출하는 게 좋은 설계일까 고민해 보기.
-        pointService.usePointForCoupon(
-            memberId, couponIssuances, totalPoints
-        );
-
-        // 9. 포인트 사용 이력 전달
+        // 8. 포인트 사용 이력 전달
         // Todo: 포인트 사용 내역 Point 도메인에 전달하기
         log.info("쿠폰 발급 성공. 금액: {}", totalPoints);
     }
@@ -152,6 +145,9 @@ public class CouponBackofficeService {
         final long totalPoints = couponAddRequest.totalPoints();
         pointService.validatePoint(memberId, totalPoints);
 
+        // 2. 업주의 보유 포인트 차감
+        PointUsage pointUsage = pointService.usePointForCoupon(memberId, totalPoints);
+
         List<Coupon> addCoupons = new ArrayList<>();
         List<CouponIssuance> addCouponIssuances = new ArrayList<>();
 
@@ -166,19 +162,14 @@ public class CouponBackofficeService {
                 int quantity = coupons.buyQuantity();
                 int amount = coupons.eachPoint();
 
-                addCouponIssuances.add((createCouponIssuance(room, coupon,quantity,amount)));
+                addCouponIssuances.add(
+                    (createCouponIssuance(room, coupon, pointUsage, quantity, amount)));
             }
         }
         couponRepository.saveAll(addCoupons);
-
         couponIssuanceRepository.saveAll(addCouponIssuances);
 
-        // 2. 업주의 보유 포인트 차감
-        pointService.usePointForCoupon(
-            memberId, addCouponIssuances, totalPoints
-        );
 
-        // Todo: 포인트 사용 내역 Point 도메인에 전달하기
         log.info("쿠폰 추가 발급 성공. 금액: {}", totalPoints);
     }
 
@@ -290,12 +281,14 @@ public class CouponBackofficeService {
     private CouponIssuance createCouponIssuance(
         final Room room,
         final Coupon coupon,
+        final PointUsage pointUsage,
         final int quantity,
         final int amount
     ) {
         return CouponIssuance.builder()
             .room(room)
             .coupon(coupon)
+            .pointUsage(pointUsage)
             .quantity(quantity)
             .amount(amount)
             .build();
