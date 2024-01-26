@@ -113,7 +113,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
             .willReturn(roomInfoResponse);
 
         // when then
-        mockMvc.perform(post("/api/rooms/{accommodationId}", 1L)
+        mockMvc.perform(post("/backoffice-api/accommodations/{accommodationId}/rooms", 1L)
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON))
             .andDo(restDoc.document(
@@ -268,7 +268,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
             .willReturn(roomPageResponse);
 
         // when then
-        mockMvc.perform(get("/api/rooms/list/{accommodationId}", 1L)
+        mockMvc.perform(get("/backoffice-api/accommodations/{accommodationId}/rooms", 1L)
                 .queryParam("pageNum", "0")
                 .queryParam("pageSize", "10"))
             .andDo(restDoc.document(
@@ -373,9 +373,12 @@ public class RoomControllerDocsTest extends RestDocsSupport {
             .willReturn(roomInfoResponse);
 
         // when then
-        mockMvc.perform(get("/api/rooms/{roomId}", 1L))
+        mockMvc.perform(get("/backoffice-api/accommodations/{accommodationId}/rooms/{roomId}",
+                1L,
+                1L))
             .andDo(restDoc.document(
                 pathParameters(
+                    parameterWithName("accommodationId").description("조회할 객실이 속한 숙소 식별자"),
                     parameterWithName("roomId").description("조회할 객실 식별자")
                 ),
                 responseFields(
@@ -472,11 +475,14 @@ public class RoomControllerDocsTest extends RestDocsSupport {
             .willReturn(roomInfoResponse);
 
         // when then
-        mockMvc.perform(put("/api/rooms/{roomId}", 1L)
+        mockMvc.perform(put("/backoffice-api/accommodations/{accommodationId}/rooms/{roomId}",
+                1L,
+                1L)
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON))
             .andDo(restDoc.document(
                 pathParameters(
+                    parameterWithName("accommodationId").description("수정할 객실이 속한 숙소 식별자"),
                     parameterWithName("roomId").description("수정할 객실 식별자")
                 ),
                 requestFields(
@@ -608,9 +614,12 @@ public class RoomControllerDocsTest extends RestDocsSupport {
             .willReturn(roomInfoResponse);
 
         // when then
-        mockMvc.perform(delete("/api/rooms/{roomId}", 1L))
+        mockMvc.perform(delete("/backoffice-api/accommodations/{accommodationId}/rooms/{roomId}",
+                1L,
+                1L))
             .andDo(restDoc.document(
                 pathParameters(
+                    parameterWithName("accommodationId").description("삭제할 객실이 속한 숙소 식별자"),
                     parameterWithName("roomId").description("삭제할 객실 식별자")
                 ),
                 responseFields(
