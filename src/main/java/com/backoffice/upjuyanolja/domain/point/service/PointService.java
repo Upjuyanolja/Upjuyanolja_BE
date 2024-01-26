@@ -231,14 +231,12 @@ public class PointService {
     }
 
     private PointUsage createPointUsage(
-        PointCharges pointCharges, Accommodation accommodation
+        Point point, long orderPrice
     ) {
         PointUsage pointUsage = PointUsage.builder()
-            .pointId(pointCharges.getPoint().getId())
-            .pointcharges(pointCharges)
-            .orderPrice(pointCharges.getChargePoint())
+            .point(point)
+            .orderPrice(orderPrice)
             .orderDate(LocalDateTime.now())
-            .accommodation(accommodation)
             .build();
 
         pointUsageRepository.save(pointUsage);
