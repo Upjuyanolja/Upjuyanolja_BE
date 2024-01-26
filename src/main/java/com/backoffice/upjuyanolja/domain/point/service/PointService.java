@@ -1,8 +1,7 @@
 package com.backoffice.upjuyanolja.domain.point.service;
 
 
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.point.dto.request.PointChargeRequest;
@@ -25,6 +24,7 @@ import com.backoffice.upjuyanolja.domain.point.exception.PointNotFoundException;
 import com.backoffice.upjuyanolja.domain.point.exception.TossApiErrorException;
 import com.backoffice.upjuyanolja.domain.point.exception.WrongRefundInfoException;
 import com.backoffice.upjuyanolja.domain.point.repository.PointChargesRepository;
+import com.backoffice.upjuyanolja.domain.point.repository.PointCouponIssuanceRepository;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRefundsRepository;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
 import com.backoffice.upjuyanolja.domain.point.repository.PointUsageRepository;
@@ -39,7 +39,6 @@ import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -59,8 +58,8 @@ public class PointService {
     private final PointChargesRepository pointChargesRepository;
     private final PointRefundsRepository pointRefundsRepository;
     private final PointUsageRepository pointUsageRepository;
+    private final PointCouponIssuanceRepository pointCouponIssuanceRepository;
 
-    private final AccommodationQueryUseCase accommodationQueryUseCase;
     private final MemberGetService memberGetService;
     private final ObjectMapper objectMapper;
 
@@ -87,7 +86,7 @@ public class PointService {
     }
 
     @Transactional(readOnly = true)
-    public PointTotalBalanceResponse getPointTotalBalanceResponse(Long memberId){
+    public PointTotalBalanceResponse getPointTotalBalanceResponse(Long memberId) {
         Point memberPoint = getMemberPoint(memberId);
 
         return PointTotalBalanceResponse.of(memberPoint.getTotalPointBalance());
@@ -154,13 +153,12 @@ public class PointService {
     }
 
     public void usePointForCoupon(
-        final Long memberId, final Long accommodationId, final long couponPrice
+        final Long memberId, final List<CouponIssuance> couponIssuances, final long couponPrice
     ) {
         Point memberPoint = getMemberPoint(memberId);
         List<PointCharges> pointCharges =
             pointChargesRepository.findByPointId(memberPoint.getId());
-        Accommodation couponAccommodation =
-            accommodationQueryUseCase.getAccommodationById(accommodationId);
+
         long resultPoint = 0;
 
         for (PointCharges pointCharge : pointCharges) {
@@ -176,7 +174,7 @@ public class PointService {
             }
         }
 
-        resultPoint =  memberPoint.getTotalPointBalance() - couponPrice;
+        resultPoint = memberPoint.getTotalPointBalance() - couponPrice;
         memberPoint.updatePointBalance(resultPoint);
     }
 
@@ -279,8 +277,8 @@ public class PointService {
         PointCharges pointCharges) {
 
         switch (pointCharges.getPointStatus()) {
-            case PAID :
-            case USED :
+            case PAID:
+            case USED:
                 return PointChargeReceiptResponse.of(
                     pointCharges.getOrderName(),
                     pointCharges.getChargeDate().toString(),
