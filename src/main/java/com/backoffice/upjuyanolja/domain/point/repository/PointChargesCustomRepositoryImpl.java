@@ -19,34 +19,39 @@ public class PointChargesCustomRepositoryImpl implements PointChargesCustomRepos
     private final QPointCharges qPointCharges = QPointCharges.pointCharges;
 
     @Override
-    public Long sumChargePointByPaidStatus(Point point) {
-        return query.select(qPointCharges.chargePoint.sum())
-            .from(qPointCharges)
-            .where(isPointPaidStatus(point))
-            .fetchFirst();
+    public Long sumTotalPointByStatus(Point point) {
+        return sumTotalPaidPoint(point) + sumTotalRemainedPoint(point);
+
     }
 
     @Override
-    public List<PointCharges> findByPointAndRefundableAndRangeDate(
-        Point point, YearMonth rangeDate
-    ) {
-        List<PointCharges> result = getPointCharges(point, rangeDate);
-        return result;
-    }
-
-    private List<PointCharges> getPointCharges(
+    public List<PointCharges> findByPointByStatusAndRangeDate(
         Point point, YearMonth rangeDate
     ) {
         return query.selectFrom(qPointCharges)
-            .where(isPointPaidStatus(point)
+            .where(isPointAvailableStatus(point)
                 .and(eqChargeDate(rangeDate))
             )
             .fetch();
     }
 
-    private BooleanExpression isPointPaidStatus(Point point) {
+    private Long sumTotalPaidPoint(Point point){
+        return query.select(qPointCharges.chargePoint.sum().nullif(0L))
+            .from(qPointCharges)
+            .where(qPointCharges.pointStatus.eq(PointStatus.PAID))
+            .fetchFirst();
+    }
+
+    private Long sumTotalRemainedPoint(Point point){
+        return query.select(qPointCharges.remainPoint.sum().nullif(0L))
+            .from(qPointCharges)
+            .where(qPointCharges.pointStatus.eq(PointStatus.REMAINED))
+            .fetchFirst();
+    }
+
+    private BooleanExpression isPointAvailableStatus(Point point) {
         return qPointCharges.point.eq(point)
-            .and(qPointCharges.pointStatus.eq(PointStatus.PAID));
+            .and(qPointCharges.pointStatus.in(PointStatus.PAID, PointStatus.REMAINED));
     }
 
     private BooleanExpression eqChargeDate(YearMonth rangeDate) {
