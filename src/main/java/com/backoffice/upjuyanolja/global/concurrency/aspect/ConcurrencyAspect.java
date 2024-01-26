@@ -43,6 +43,8 @@ public class ConcurrencyAspect {
                 throw new IllegalArgumentException();
             }
 
+            log.info("Redisson GetLock {}", lockName);
+
             // Proceed with the original method execution
             return transactionAspect.proceed(joinPoint);
         } finally {
