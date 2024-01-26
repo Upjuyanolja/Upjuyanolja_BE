@@ -147,7 +147,7 @@ public class RoomCommandService implements RoomCommandUseCase {
         validateRoomStatus(request.status());
         checkOwnership(member, room.getAccommodation());
         updateRoom(room, request);
-
+        em.flush();
         em.refresh(room);
         return RoomInfoResponse.of(room);
     }
@@ -204,17 +204,20 @@ public class RoomCommandService implements RoomCommandUseCase {
 
     private void addRoomImages(Room room, List<RoomImageAddRequest> requests) {
         List<RoomImage> images = new ArrayList<>();
-        requests.forEach(roomImages -> images.add(RoomImage.builder()
-            .room(room)
-            .url(roomImages.url())
-            .build()));
+        for (RoomImageAddRequest request : requests) {
+            images.add(RoomImage.builder()
+                .room(room)
+                .url(request.url())
+                .build());
+        }
         roomQueryUseCase.saveRoomImages(images);
     }
 
     private List<RoomImage> getRoomImages(List<RoomImageDeleteRequest> requests) {
         List<RoomImage> images = new ArrayList<>();
-        requests.forEach(request -> images.add(roomQueryUseCase.findRoomImage(request.id())));
-
+        for (RoomImageDeleteRequest request : requests) {
+            images.add(roomQueryUseCase.findRoomImage(request.id()));
+        }
         return images;
     }
 
