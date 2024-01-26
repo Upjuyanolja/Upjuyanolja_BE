@@ -100,4 +100,9 @@ public class PointCharges extends BaseTime {
         this.refundable = refundable;
     }
 
+    public void updateRemainPoint(long remainPoint) {
+        this.remainPoint = remainPoint;
+    }
+
+
 }
