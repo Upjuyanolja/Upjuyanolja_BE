@@ -111,7 +111,7 @@ public class CouponBackofficeService {
         // 8. 업주의 보유 포인트 차감
         // todo: 도메인이 다른 서비스를 트랜잭션 안에서 호출하는 게 좋은 설계일까 고민해 보기.
         pointService.usePointForCoupon(
-            memberId, couponMakeRequest.accommodationId(), couponMakeRequest.totalPoints()
+            memberId, couponIssuances, totalPoints
         );
 
         // 9. 포인트 사용 이력 전달
@@ -153,16 +153,29 @@ public class CouponBackofficeService {
         pointService.validatePoint(memberId, totalPoints);
 
         List<Coupon> addCoupons = new ArrayList<>();
+        List<CouponIssuance> addCouponIssuances = new ArrayList<>();
+
         for (var rooms : couponAddRequest.rooms()) {
             for (var coupons : rooms.coupons()) {
                 addCoupons.add(increaseCouponStock(coupons));
+
+                Room room = roomRepository.findById(rooms.roomId()).orElseThrow(
+                    InvalidCouponInfoException::new);
+                Coupon coupon = couponRepository.findById(coupons.couponId()).orElseThrow(
+                    InvalidCouponInfoException::new);
+                int quantity = coupons.buyQuantity();
+                int amount = coupons.eachPoint();
+
+                addCouponIssuances.add((createCouponIssuance(room, coupon,quantity,amount)));
             }
         }
         couponRepository.saveAll(addCoupons);
 
+        couponIssuanceRepository.saveAll(addCouponIssuances);
+
         // 2. 업주의 보유 포인트 차감
         pointService.usePointForCoupon(
-            memberId, couponAddRequest.accommodationId(), couponAddRequest.totalPoints()
+            memberId, addCouponIssuances, totalPoints
         );
 
         // Todo: 포인트 사용 내역 Point 도메인에 전달하기
