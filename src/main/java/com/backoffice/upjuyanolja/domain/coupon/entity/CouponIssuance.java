@@ -28,7 +28,7 @@ public class CouponIssuance extends BaseTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("쿠폰 발급 내역 식별자")
-    Long id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "coupon_id")
