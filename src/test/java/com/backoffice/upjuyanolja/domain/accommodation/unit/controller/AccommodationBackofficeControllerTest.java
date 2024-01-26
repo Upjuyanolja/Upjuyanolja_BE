@@ -5,13 +5,12 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.backoffice.upjuyanolja.domain.accommodation.controller.AccommodationController;
+import com.backoffice.upjuyanolja.domain.accommodation.controller.AccommodationBackofficeController;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationImageRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationOptionRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
@@ -20,8 +19,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationNameResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOptionResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageUrlResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
@@ -32,8 +29,6 @@ import com.backoffice.upjuyanolja.domain.room.dto.response.RoomOptionResponse;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.catalina.security.SecurityConfig;
 import org.junit.jupiter.api.DisplayName;
@@ -46,17 +41,16 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 @ActiveProfiles("test")
-@WebMvcTest(value = AccommodationController.class,
+@WebMvcTest(value = AccommodationBackofficeController.class,
     excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
         SecurityConfig.class,
         AuthenticationConfig.class})},
     excludeAutoConfiguration = SecurityAutoConfiguration.class)
-public class AccommodationControllerTest {
+public class AccommodationBackofficeControllerTest {
 
     @Autowired
     protected MockMvc mockMvc;
@@ -170,7 +164,7 @@ public class AccommodationControllerTest {
                 .willReturn(accommodationInfoResponse);
 
             // when then
-            mockMvc.perform(post("/api/accommodations")
+            mockMvc.perform(post("/backoffice-api/accommodations")
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -238,7 +232,7 @@ public class AccommodationControllerTest {
                 .willReturn(accommodationOwnershipResponse);
 
             // when then
-            mockMvc.perform(get("/api/accommodations/backoffice"))
+            mockMvc.perform(get("/backoffice-api/accommodations"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accommodations").isArray())
                 .andExpect(jsonPath("$.accommodations[0].id").isNumber())
@@ -246,79 +240,6 @@ public class AccommodationControllerTest {
                 .andDo(print());
 
             verify(accommodationCommandService, times(1)).getAccommodationOwnership(any(Long.TYPE));
-        }
-    }
-
-    @Nested
-    @DisplayName("saveImage()은")
-    class Context_saveImage {
-
-        @Test
-        @DisplayName("이미지를 저장할 수 있다.")
-        void _willSuccess() throws Exception {
-            // given
-            URL resource = getClass().getResource("/images/image_sample.jpg");
-
-            List<ImageUrlResponse> urls = new ArrayList<>();
-            urls.add(ImageUrlResponse.builder()
-                .url("https://aws/coupons/images/001")
-                .build());
-            urls.add(ImageUrlResponse.builder()
-                .url("https://aws/coupons/images/002")
-                .build());
-            urls.add(ImageUrlResponse.builder()
-                .url("https://aws/coupons/images/003")
-                .build());
-            urls.add(ImageUrlResponse.builder()
-                .url("https://aws/coupons/images/004")
-                .build());
-            ImageResponse imageResponse = ImageResponse.builder()
-                .urls(urls)
-                .build();
-
-            given(accommodationCommandService.saveImages(any(List.class)))
-                .willReturn(imageResponse);
-
-            // when then
-            mockMvc.perform(multipart("/api/accommodations/images")
-                    .file(new MockMultipartFile(
-                        "image1",
-                        "image_sample.jpg",
-                        "images/png",
-                        resource.openStream().readAllBytes()
-                    ))
-                    .file(new MockMultipartFile(
-                        "image2",
-                        "image_sample.jpg",
-                        "images/png",
-                        resource.openStream().readAllBytes()
-                    ))
-                    .file(new MockMultipartFile(
-                        "image3",
-                        "image_sample.jpg",
-                        "images/png",
-                        resource.openStream().readAllBytes()
-                    ))
-                    .file(new MockMultipartFile(
-                        "image4",
-                        "image_sample.jpg",
-                        "images/png",
-                        resource.openStream().readAllBytes()
-                    ))
-                    .file(new MockMultipartFile(
-                        "image5"
-                        , new byte[0])
-                    ))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.urls").isArray())
-                .andExpect(jsonPath("$.urls[0].url").isString())
-                .andExpect(jsonPath("$.urls[1].url").isString())
-                .andExpect(jsonPath("$.urls[2].url").isString())
-                .andExpect(jsonPath("$.urls[3].url").isString())
-                .andExpect(jsonPath("$.urls[4].url").doesNotExist())
-                .andDo(print());
-
-            verify(accommodationCommandService, times(1)).saveImages(any(List.class));
         }
     }
 }
