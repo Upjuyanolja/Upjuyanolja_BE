@@ -1,0 +1,18 @@
+POST http://localhost:8080/api/auth/owners/signin
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+  client.log(response.body.accessToken);
+  client.global.set("access_token",response.body.accessToken);
+%}
+
+###
+
+GET http://localhost:8080/api/points/total
+Accept: application/json
+Authorization: Bearer {{access_token}}
