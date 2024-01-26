@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.point.service;
 
 
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.point.dto.request.PointChargeRequest;
@@ -24,7 +23,6 @@ import com.backoffice.upjuyanolja.domain.point.exception.PointNotFoundException;
 import com.backoffice.upjuyanolja.domain.point.exception.TossApiErrorException;
 import com.backoffice.upjuyanolja.domain.point.exception.WrongRefundInfoException;
 import com.backoffice.upjuyanolja.domain.point.repository.PointChargesRepository;
-import com.backoffice.upjuyanolja.domain.point.repository.PointCouponIssuanceRepository;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRefundsRepository;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
 import com.backoffice.upjuyanolja.domain.point.repository.PointUsageRepository;
@@ -58,7 +56,6 @@ public class PointService {
     private final PointChargesRepository pointChargesRepository;
     private final PointRefundsRepository pointRefundsRepository;
     private final PointUsageRepository pointUsageRepository;
-    private final PointCouponIssuanceRepository pointCouponIssuanceRepository;
 
     private final MemberGetService memberGetService;
     private final ObjectMapper objectMapper;
@@ -137,7 +134,7 @@ public class PointService {
         TossResponse tossResponse = getTossRefundResponse(pointCharges.getPaymentKey());
 
         validatePointRefund(pointCharges);
-        updateChargePointRefundStatus(pointCharges);
+        updateChargePointStatus(pointCharges, PointStatus.CANCELED);
         updateTotalPointBalance(pointCharges.getPoint());
         createPointRefund(pointCharges, tossResponse);
 
@@ -152,30 +149,13 @@ public class PointService {
         }
     }
 
-    public void usePointForCoupon(
-        final Long memberId, final List<CouponIssuance> couponIssuances, final long couponPrice
-    ) {
+    public PointUsage usePointForCoupon(final Long memberId, final long totalPrice) {
         Point memberPoint = getMemberPoint(memberId);
-        List<PointCharges> pointCharges =
-            pointChargesRepository.findByPointId(memberPoint.getId());
+        PointUsage resultPointUsage = createPointUsage(memberPoint, totalPrice);
 
-        long resultPoint = 0;
+        useChargePointForCoupon(totalPrice, memberPoint.getId(), memberPoint);
 
-        for (PointCharges pointCharge : pointCharges) {
-            if (pointCharge.getPointStatus() != PointStatus.PAID ||
-                pointCharge.getPointStatus() != PointStatus.REMAINED) {
-                continue;
-            }
-            resultPoint += pointCharge.getChargePoint();
-            createPointUsage(memberPoint, pointCharge.getChargePoint());
-            updateChargePointUseStatus(pointCharge);
-            if (resultPoint >= couponPrice) {
-                break;
-            }
-        }
-
-        resultPoint = memberPoint.getTotalPointBalance() - couponPrice;
-        memberPoint.updatePointBalance(resultPoint);
+        return resultPointUsage;
     }
 
     private Point getMemberPoint(Long memberId) {
@@ -243,7 +223,7 @@ public class PointService {
     }
 
     private long getTotalChargePoint(Point point, YearMonth rangeDate) {
-        return pointChargesRepository.findByPointAndRefundableAndRangeDate(
+        return pointChargesRepository.findByPointByStatusAndRangeDate(
                 point, rangeDate
             ).stream()
             .mapToLong(PointCharges::getChargePoint)
@@ -259,18 +239,55 @@ public class PointService {
     }
 
     private void updateTotalPointBalance(Point point) {
-        long totalPoint = Optional.of(pointChargesRepository.sumChargePointByPaidStatus(point))
-            .orElse(0L);
+        long totalPoint =
+            Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L) +
+                Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point)).orElse(0L);
         point.updatePointBalance(totalPoint);
         pointRepository.save(point);
     }
 
-    private void updateChargePointRefundStatus(PointCharges pointCharges) {
-        pointCharges.updatePointStatus(PointStatus.CANCELED);
+    private void updateChargePointStatus(PointCharges pointCharges, PointStatus pointStatus) {
+        pointCharges.updatePointStatus(pointStatus);
+        pointCharges.updateRefundable(false);
     }
 
-    private void updateChargePointUseStatus(PointCharges pointCharges) {
-        pointCharges.updatePointStatus(PointStatus.USED);
+    private void updateChargeRemainPoint(PointCharges pointCharges, long totalPrice) {
+        long remainPoint = pointCharges.getChargePoint() - totalPrice;
+        pointCharges.updateRemainPoint(remainPoint);
+        pointChargesRepository.save(pointCharges);
+    }
+
+    private void useChargePointForCoupon(long totalPrice, Long pointChargeId, Point memberPoint) {
+        List<PointCharges> pointCharges =
+            pointChargesRepository.findByPointId(pointChargeId);
+        long resultPoint = memberPoint.getTotalPointBalance();
+
+        for (PointCharges pointCharge : pointCharges) {
+            if (resultPoint >= totalPrice) {
+                break;
+            }
+
+            switch (pointCharge.getPointStatus()) {
+                case PAID:
+                    resultPoint += pointCharge.getChargePoint();
+                    if (pointCharge.getChargePoint() > totalPrice) {
+                        updateChargePointStatus(pointCharge, PointStatus.REMAINED);
+                        updateChargeRemainPoint(pointCharge, totalPrice);
+                    }
+                    updateChargePointStatus(pointCharge, PointStatus.USED);
+                    break;
+                case REMAINED:
+                    resultPoint += pointCharge.getRemainPoint();
+                    if (totalPrice >= resultPoint) {
+                        updateChargePointStatus(pointCharge, PointStatus.USED);
+                        updateChargeRemainPoint(pointCharge, pointCharge.getRemainPoint());
+                    }
+                    updateChargeRemainPoint(pointCharge, (resultPoint - totalPrice));
+                    break;
+            }
+
+        }
+        updateTotalPointBalance(memberPoint);
     }
 
     private PointChargeReceiptResponse getPointChargeReceiptResponse(
@@ -304,12 +321,15 @@ public class PointService {
             case PAID:
                 results.add(PointCategory.CHARGE.getDescription());
                 results.add(PointType.POINT.getDescription());
+                break;
             case CANCELED:
                 results.add(PointCategory.REFUND.getDescription());
                 results.add(PointType.REFUND.getDescription());
+                break;
             case USED:
                 results.add(PointCategory.USE.getDescription());
                 results.add(PointType.POINT.getDescription());
+                break;
         }
         return results;
 
