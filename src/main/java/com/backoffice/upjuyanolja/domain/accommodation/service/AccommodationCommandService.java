@@ -215,7 +215,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                         room, getDiscountPrice(room),
                         !checkSoldOut(filterRooms, room),
                         getMinFilteredRoomStock(room, startDate, endDate),
-                        couponService.getSortedTotalCouponResponseInRoom(room)
+                        couponService.getEnableSortedTotalCouponResponseInRoom(room)
                     )
                 )
                 .toList()
@@ -229,7 +229,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
 
     private int getDiscountPrice(Room room) {
-        return couponService.getSortedTotalCouponResponseInRoom(room)
+        return couponService.getEnableSortedTotalCouponResponseInRoom(room)
             .stream()
             .findFirst()
             .map(coupon -> coupon.price())
