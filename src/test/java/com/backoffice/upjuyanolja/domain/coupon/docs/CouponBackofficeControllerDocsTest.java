@@ -15,9 +15,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.CouponStatisticsResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
@@ -43,6 +46,7 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
+import com.backoffice.upjuyanolja.domain.coupon.service.CouponStatisticsService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
@@ -79,6 +83,9 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private CouponBackofficeService couponBackofficeService;
+
+    @MockBean
+    private CouponStatisticsService couponStatisticsService;
 
     private final ConstraintDescriptions createCouponRequestDescriptions =
         new ConstraintDescriptions(CouponMakeRequest.class);
@@ -489,6 +496,47 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
             ));
     }
 
+    @DisplayName("쿠폰 현황 통계 테스트")
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void couponStatisticsTest() throws Exception {
+        // given
+        when(securityUtil.getCurrentMemberId()).thenReturn(1L);
+        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+
+        // when & Then
+        CouponStatisticsResponse mockResponse = createMockStatisticsResponse();
+
+        given(couponStatisticsService.getCouponStatistics(any(Long.TYPE)))
+            .willReturn(mockResponse);
+
+        mockMvc.perform(get("/api/coupons/backoffice/statistics/1"))
+            .andExpect(status().is(HttpStatus.OK.value()))
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andDo(restDoc.document(
+                responseFields(
+                    subsectionWithPath("accommodationId").type(JsonFieldType.NUMBER)
+                        .description("숙소 식별자"),
+                    subsectionWithPath("total").type(JsonFieldType.NUMBER)
+                        .description("발행 쿠폰 수"),
+                    subsectionWithPath("used").type(JsonFieldType.NUMBER)
+                        .description("사용 완료 쿠폰"),
+                    subsectionWithPath("stock").type(JsonFieldType.NUMBER)
+                        .description("현재 보유 쿠폰"))
+            ));
+
+        verify(couponStatisticsService, times(1))
+            .getCouponStatistics(any(Long.TYPE));
+    }
+
+    private CouponStatisticsResponse createMockStatisticsResponse() {
+        return CouponStatisticsResponse.builder()
+            .accommodationId(1L)
+            .total(500)
+            .used(300)
+            .stock(200)
+            .build();
+    }
     private List<CouponDeleteRooms> createMockDeleteCoupons() {
         List<CouponDeleteInfos> deleteInfos1 = List.of(
             new CouponDeleteInfos(1L),
