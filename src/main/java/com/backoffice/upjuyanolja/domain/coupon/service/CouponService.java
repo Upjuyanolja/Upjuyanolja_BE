@@ -32,6 +32,7 @@ public class CouponService {
 
         for (Room room : rooms) {
             List<CouponShortResponse> coupons = couponRepository.findByRoom(room).stream()
+                .filter(coupon -> coupon.getCouponStatus().equals(CouponStatus.ENABLE))
                 .map(coupon -> CouponShortResponse.of(coupon))
                 .toList();
 
