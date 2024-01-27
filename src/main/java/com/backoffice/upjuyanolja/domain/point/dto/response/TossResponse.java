@@ -7,8 +7,9 @@ public record TossResponse(
     String paymentKey,
     String orderId,
     long totalAmount,
-    String approvedAt,
-    String orderName
+    String requestedAt,
+    String orderName,
+    String method
 ) {
 
 }

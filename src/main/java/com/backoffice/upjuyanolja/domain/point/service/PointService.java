@@ -276,11 +276,12 @@ public class PointService {
             .point(point)
             .pointStatus(PointStatus.PAID)
             .paymentKey(tossResponse.paymentKey())
+            .paymentMethod(tossResponse.method())
             .orderName(tossResponse.orderId())
             .chargePoint(tossResponse.totalAmount())
             .remainPoint(0L)
-            .chargeDate(ZonedDateTime.parse(tossResponse.approvedAt()).toLocalDateTime())
-            .endDate(ZonedDateTime.parse(tossResponse.approvedAt()).toLocalDateTime().plusDays(7))
+            .chargeDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime())
+            .endDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime().plusDays(7))
             .refundable(true)
             .build();
 
@@ -294,7 +295,7 @@ public class PointService {
         PointRefunds pointRefunds = PointRefunds.builder()
             .pointId(pointCharges.getPoint().getId())
             .pointCharges(pointCharges)
-            .refundDate(ZonedDateTime.parse(tossResponse.approvedAt()).toLocalDateTime())
+            .refundDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime())
             .build();
 
         pointRefundsRepository.save(pointRefunds);
@@ -408,7 +409,8 @@ public class PointService {
                     pointCharges.getOrderName(),
                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
                         .format(pointCharges.getChargeDate()),
-                    pointCharges.getChargePoint()
+                    pointCharges.getChargePoint(),
+                    pointCharges.getPaymentMethod()
                 );
             case CANCELED:
                 PointRefunds pointRefund = pointRefundsRepository.findByPointCharges(pointCharges);
@@ -416,7 +418,8 @@ public class PointService {
                     pointCharges.getOrderName(),
                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
                         .format(pointRefund.getRefundDate()),
-                    pointCharges.getChargePoint()
+                    pointCharges.getChargePoint(),
+                    pointCharges.getPaymentMethod()
                 );
             default:
                 return PointChargeReceiptResponse.builder().build();
