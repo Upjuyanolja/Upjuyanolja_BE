@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.domain.accommodation.dto.response;
+package com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice;
 
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatistics;
 import lombok.Builder;

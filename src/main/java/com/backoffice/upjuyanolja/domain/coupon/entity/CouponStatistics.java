@@ -35,6 +35,7 @@ public class CouponStatistics extends BaseTime {
         name = "accommodation_id",
         unique = true,
         foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @Comment("숙소 식별자")
     private Accommodation accommodation;
 
     @Setter
