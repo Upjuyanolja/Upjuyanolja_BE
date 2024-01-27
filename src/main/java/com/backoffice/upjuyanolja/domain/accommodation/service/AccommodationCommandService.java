@@ -14,7 +14,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwner
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationImageNotExistsException;
-import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
@@ -84,6 +83,12 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     ) {
         Page<Accommodation> accommodations = accommodationRepository
             .searchPageByCategoryWithTypeAndName(category, keyword, pageable);
+
+        if (accommodations.isEmpty()) {
+            return AccommodationPageResponse.builder()
+                .accommodations(new ArrayList<>())
+                .build();
+        }
 
         return AccommodationPageResponse.of(
             new PageImpl<>(
