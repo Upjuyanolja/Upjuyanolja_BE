@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.point.dto.response;
 
 import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
+import java.time.format.DateTimeFormatter;
 import lombok.Builder;
 
 @Builder
@@ -16,7 +17,7 @@ public record PointChargeResponse(
     ) {
         return PointChargeResponse.builder()
             .orderId(pointCharges.getOrderName())
-            .tradeAt(pointCharges.getChargeDate().toString())
+            .tradeAt(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(pointCharges.getChargeDate()))
             .orderName(pointCharges.getChargePoint()+"원")
             .amount(pointCharges.getChargePoint())
             .build();

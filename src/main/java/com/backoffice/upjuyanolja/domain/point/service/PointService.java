@@ -47,6 +47,7 @@ import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
@@ -200,7 +201,7 @@ public class PointService {
                 "",
                 charge.trade(),
                 charge.amount(),
-                LocalDateTime.parse(charge.receipt().tradeAt()),
+                charge.receipt().tradeAt(),
                 charge.receipt()
             ));
         }
@@ -213,7 +214,7 @@ public class PointService {
                 usage.description(),
                 usage.trade(),
                 usage.amount(),
-                LocalDateTime.parse(usage.receipt().tradeAt()),
+                usage.receipt().tradeAt(),
                 usage.receipt()
             ));
         }
@@ -413,14 +414,14 @@ public class PointService {
             case REMAINED:
                 return PointChargeReceiptResponse.of(
                     pointCharges.getOrderName(),
-                    pointCharges.getChargeDate().toString(),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(pointCharges.getChargeDate()),
                     pointCharges.getChargePoint()
                 );
             case CANCELED:
                 PointRefunds pointRefund = pointRefundsRepository.findByPointCharges(pointCharges);
                 return PointChargeReceiptResponse.of(
                     pointCharges.getOrderName(),
-                    pointRefund.getRefundDate().toString(),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(pointRefund.getRefundDate()),
                     pointCharges.getChargePoint()
                 );
             default:
@@ -497,7 +498,8 @@ public class PointService {
         Map<Room, List<Coupon>> couponIssuancesMap, List<CouponIssuance> couponIssuances
     ) {
         return PointUsageReceiptResponse.of(
-            getPointUsageReceiptOrderId(), pointUsages.getOrderDate().toString(),
+            getPointUsageReceiptOrderId(),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(pointUsages.getOrderDate()),
             accommodationName,
             getPointUsageDetailReceiptResponse(couponIssuancesMap, couponIssuances)
         );
