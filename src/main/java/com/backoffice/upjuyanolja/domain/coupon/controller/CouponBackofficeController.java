@@ -1,12 +1,13 @@
 package com.backoffice.upjuyanolja.domain.coupon.controller;
 
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.CouponStatisticsResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponDeleteRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMakeRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponStatisticsResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.RevenueStatisticsResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponStatisticsService;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
@@ -37,6 +38,7 @@ public class CouponBackofficeController {
     private final CouponBackofficeService couponService;
     private final CouponStatisticsService couponStatisticsService;
     private final SecurityUtil securityUtil;
+    private final MemberGetService memberGetService;
 
     @GetMapping("/buy/{accommodationId}")
     public ResponseEntity<CouponMakeViewResponse> responseRoomsView(
@@ -131,7 +133,7 @@ public class CouponBackofficeController {
     }
 
     @GetMapping("/statistics/{accommodationId}")
-    public ResponseEntity<CouponStatisticsResponse> getStatistics(
+    public ResponseEntity<CouponStatisticsResponse> getCouponStatistics(
         @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
     ) {
         long currentMemberId = securityUtil.getCurrentMemberId();
@@ -143,4 +145,17 @@ public class CouponBackofficeController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
+    @GetMapping("/revenue/{accommodationId}")
+    public ResponseEntity<RevenueStatisticsResponse> getRevenueStatistics(
+        @PathVariable(name = "accommodationId") @Min(1) Long accommodationId
+    ) {
+        long currentMemberId = securityUtil.getCurrentMemberId();
+        couponService.validateAccommodationRequest(
+            accommodationId, currentMemberId);
+
+        String ownerName = memberGetService.getMember(currentMemberId).name();
+        RevenueStatisticsResponse result = couponStatisticsService
+            .getRevenueStatistics(accommodationId, ownerName);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
 }
