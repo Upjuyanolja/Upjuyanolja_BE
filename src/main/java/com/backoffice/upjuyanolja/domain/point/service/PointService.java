@@ -129,10 +129,10 @@ public class PointService {
 
     @Transactional(readOnly = true)
     public PointChargeResponse getDetailChargePointResponse(Long chargeId) {
-        PointCharges detailchargePoint = pointChargesRepository.findById(chargeId)
+        PointCharges detailChargePoint = pointChargesRepository.findById(chargeId)
             .orElseThrow(PointNotFoundException::new);
 
-        return PointChargeResponse.of(detailchargePoint);
+        return PointChargeResponse.of(detailChargePoint);
     }
 
     @Transactional(readOnly = true)
