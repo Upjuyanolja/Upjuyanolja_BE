@@ -1,7 +1,5 @@
 package com.backoffice.upjuyanolja.domain.point.dto.response;
 
-import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import lombok.Builder;
 
 @Builder
@@ -12,14 +10,12 @@ public record PointUsageCouponReceiptResponse(
 ) {
 
     public static PointUsageCouponReceiptResponse of(
-        CouponIssuance couponIssuance
+        String name, int count, int totalPrice
     ) {
-        Coupon coupon = couponIssuance.getCoupon();
-
         return PointUsageCouponReceiptResponse.builder()
-            .name(coupon.getDiscount() + "원 쿠폰 | " + coupon.getDiscount() / 10 + "p")
-            .count(couponIssuance.getQuantity())
-            .totalPrice(couponIssuance.getAmount())
+            .name(name)
+            .count(count)
+            .totalPrice(totalPrice)
             .build();
     }
 }
