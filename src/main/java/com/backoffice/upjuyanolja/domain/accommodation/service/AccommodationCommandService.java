@@ -20,6 +20,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.Accommoda
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase.AccommodationSaveRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
@@ -168,7 +169,10 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         List<CouponDetailResponse> rateResponses = new ArrayList<>();
 
         for (Room room : rooms) {
-            coupons = couponService.getCouponInRoom(room);
+            coupons = couponService.getCouponInRoom(room).stream()
+                .filter(coupon -> coupon.getCouponStatus().equals(CouponStatus.ENABLE))
+                .toList();
+
             List<CouponDetailResponse> flat = couponService.getSortedCouponResponseInRoom(
                 room, coupons, DiscountType.FLAT);
             List<CouponDetailResponse> rate = couponService.getSortedCouponResponseInRoom(
