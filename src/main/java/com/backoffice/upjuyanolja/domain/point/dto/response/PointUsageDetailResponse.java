@@ -1,6 +1,6 @@
 package com.backoffice.upjuyanolja.domain.point.dto.response;
 
-import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
+import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
 import lombok.Builder;
 
 @Builder
@@ -10,6 +10,7 @@ public record PointUsageDetailResponse(
     String type,
     String status,
     String name,
+    String description,
     long trade,
     long amount,
     PointUsageReceiptResponse receipt
@@ -17,17 +18,18 @@ public record PointUsageDetailResponse(
 ) {
 
     public static PointUsageDetailResponse of(
-        PointCharges pointCharges, String category, String type,
-        PointUsageReceiptResponse receipt
+        PointUsage pointUsage, String description,
+        long trade, long amount, PointUsageReceiptResponse receipt
     ) {
         return PointUsageDetailResponse.builder()
-            .id(pointCharges.getId())
-            .category(category)
-            .type(type)
-            .status(pointCharges.getPointStatus().getDescription())
+            .id(pointUsage.getId())
+            .category("사용")
+            .type("쿠폰")
+            .status("구매 확정")
             .name("할인 쿠폰 구매")
-            .trade(pointCharges.getChargePoint())
-            .amount(pointCharges.getChargePoint())
+            .description(description)
+            .trade(trade)
+            .amount(amount)
             .receipt(receipt)
             .build();
     }
