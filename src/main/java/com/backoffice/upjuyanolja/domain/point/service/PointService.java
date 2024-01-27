@@ -44,7 +44,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
@@ -53,7 +52,6 @@ import java.util.Base64;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -220,10 +218,9 @@ public class PointService {
             ));
         }
         pointTotalDetailResponses.sort(Comparator.comparing(PointTotalDetailResponse::date));
-        for (PointTotalDetailResponse response :pointTotalDetailResponses) {
-            result.add(PointTotalDetailResponse.from(id++,response));
+        for (PointTotalDetailResponse response : pointTotalDetailResponses) {
+            result.add(PointTotalDetailResponse.from(id++, response));
         }
-
 
         return PointTotalPageResponse.of(
             new PageImpl<>(
@@ -516,15 +513,16 @@ public class PointService {
         return couponIssuanceMaps.entrySet().stream()
             .map(entry -> PointUsageDetailReceiptResponse.of(
                     entry.getKey().getName(),
-                    getPointUsageCouponReceiptResponse(couponIssuances)
+                    getPointUsageCouponReceiptResponse(entry.getKey(), couponIssuances)
                 )
             )
             .toList();
     }
 
     private List<PointUsageCouponReceiptResponse> getPointUsageCouponReceiptResponse(
-        List<CouponIssuance> couponIssuances) {
+        Room room, List<CouponIssuance> couponIssuances) {
         return couponIssuances.stream()
+            .filter(couponIssuance -> couponIssuance.getRoom().equals(room))
             .map(couponIssuance -> {
                     Coupon coupon = couponIssuance.getCoupon();
                     return PointUsageCouponReceiptResponse.of(
