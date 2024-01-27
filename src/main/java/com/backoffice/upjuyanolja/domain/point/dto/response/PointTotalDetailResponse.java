@@ -13,7 +13,7 @@ public record PointTotalDetailResponse(
     String description,
     long trade,
     long amount,
-    LocalDateTime date,
+    String date,
     Object receipt
 
 ) {
@@ -21,7 +21,7 @@ public record PointTotalDetailResponse(
     public static PointTotalDetailResponse of(
         String category, String type, String status,
         String name, String description, long trade,
-        long amount, LocalDateTime date, Object receipt
+        long amount, String date, Object receipt
     ) {
         return PointTotalDetailResponse.builder()
             .category(category)
