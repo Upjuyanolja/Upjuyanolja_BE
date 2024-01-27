@@ -14,6 +14,8 @@ import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeReceiptRe
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointSummaryResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointTotalBalanceResponse;
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointTotalDetailResponse;
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointTotalPageResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointUsageCouponReceiptResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointUsageDetailReceiptResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointUsageDetailResponse;
@@ -42,11 +44,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -142,39 +146,90 @@ public class PointService {
             pageable);
 
         return PointUsagePageResponse.of(new PageImpl<>(
-            pointUsages.stream()
-                .map(pointUsage -> {
-                        List<CouponIssuance> couponIssuances =
-                            couponIssuanceGetService.getCouponIssuanceByPointUsage(pointUsage);
-                        if(couponIssuances.isEmpty()){
-                            return PointUsageDetailResponse.builder().build();
-                        }
-                        Map<Room, List<Coupon>> couponIssuancesMap =
-                            createCouponIssuancesMap(couponIssuances);
-                        CouponIssuance selectCouponIssuance = couponIssuances.get(0);
-                        String accommodationName =
-                            accommodationCommandService
-                                .findAccommodationByRoomId(selectCouponIssuance.getRoom().getId())
-                                .getName();
+                pointUsages.stream()
+                    .map(pointUsage -> {
+                            List<CouponIssuance> couponIssuances =
+                                couponIssuanceGetService.getCouponIssuanceByPointUsage(pointUsage);
+                            if (couponIssuances.isEmpty()) {
+                                return PointUsageDetailResponse.builder().build();
+                            }
+                            Map<Room, List<Coupon>> couponIssuancesMap =
+                                createCouponIssuancesMap(couponIssuances);
+                            CouponIssuance selectCouponIssuance = couponIssuances.get(0);
+                            String accommodationName =
+                                accommodationCommandService
+                                    .findAccommodationByRoomId(selectCouponIssuance.getRoom().getId())
+                                    .getName();
 
-                        return PointUsageDetailResponse.of(
-                            pointUsage,
-                            getPointUsageDescription(
-                                selectCouponIssuance, couponIssuancesMap.keySet().size(),
-                                accommodationName
-                            ),
-                            getPointUsageTrade(couponIssuances),
-                            pointUsage.getOrderPrice(),
-                            getPointUsageReceiptResponse(
-                                pointUsage, accommodationName,
-                                couponIssuancesMap, couponIssuances
-                            )
-                        );
-                    }
-                )
-                .toList(),
-            pageable,
-            pointUsages.getTotalElements()
+                            return PointUsageDetailResponse.of(
+                                pointUsage,
+                                getPointUsageDescription(
+                                    selectCouponIssuance, couponIssuancesMap.keySet().size(),
+                                    accommodationName
+                                ),
+                                getPointUsageTrade(couponIssuances),
+                                pointUsage.getOrderPrice(),
+                                getPointUsageReceiptResponse(
+                                    pointUsage, accommodationName,
+                                    couponIssuancesMap, couponIssuances
+                                )
+                            );
+                        }
+                    )
+                    .toList(),
+                pageable,
+                pointUsages.getTotalElements()
+            )
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public PointTotalPageResponse getTotalPointPageResponse(Long memberId, Pageable pageable) {
+        Long pointId = getMemberPoint(memberId).getId();
+        PointChargePageResponse chargePageResponse = getPointChargePageResponse(memberId,
+            pageable);
+        PointUsagePageResponse usagePageResponse = getPointUsagePageResponse(memberId, pageable);
+        List<PointTotalDetailResponse> pointTotalDetailResponses = new ArrayList<>();
+        List<PointTotalDetailResponse> result = new ArrayList<>();
+        long id = 1;
+
+        for (PointChargeDetailResponse charge : chargePageResponse.histories()) {
+            pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+                charge.category(),
+                charge.type(),
+                charge.status(),
+                charge.name(),
+                "",
+                charge.trade(),
+                charge.amount(),
+                LocalDateTime.parse(charge.receipt().tradeAt()),
+                charge.receipt()
+            ));
+        }
+        for (PointUsageDetailResponse usage : usagePageResponse.histories()) {
+            pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+                usage.category(),
+                usage.type(),
+                usage.status(),
+                usage.name(),
+                usage.description(),
+                usage.trade(),
+                usage.amount(),
+                LocalDateTime.parse(usage.receipt().tradeAt()),
+                usage.receipt()
+            ));
+        }
+        pointTotalDetailResponses.sort(Comparator.comparing(PointTotalDetailResponse::date));
+        for (PointTotalDetailResponse response :pointTotalDetailResponses) {
+            result.add(PointTotalDetailResponse.from(id++,response));
+        }
+
+
+        return PointTotalPageResponse.of(
+            new PageImpl<>(
+                result,
+                pageable,
+                result.size()
             )
         );
     }
@@ -393,6 +448,10 @@ public class PointService {
                 results.add(PointCategory.USE.getDescription());
                 results.add(PointType.POINT.getDescription());
                 break;
+            case REMAINED:
+                results.add(PointCategory.CHARGE.getDescription());
+                results.add(PointType.POINT.getDescription());
+                break;
         }
         return results;
 
@@ -442,7 +501,8 @@ public class PointService {
     ) {
         return PointUsageReceiptResponse.of(
             getPointUsageReceiptOrderId(), pointUsages.getOrderDate().toString(),
-            accommodationName, getPointUsageDetailReceiptResponse(couponIssuancesMap, couponIssuances)
+            accommodationName,
+            getPointUsageDetailReceiptResponse(couponIssuancesMap, couponIssuances)
         );
     }
 
@@ -453,9 +513,9 @@ public class PointService {
     private List<PointUsageDetailReceiptResponse> getPointUsageDetailReceiptResponse(
         Map<Room, List<Coupon>> couponIssuanceMaps, List<CouponIssuance> couponIssuances
     ) {
-        return couponIssuanceMaps.entrySet ().stream ()
+        return couponIssuanceMaps.entrySet().stream()
             .map(entry -> PointUsageDetailReceiptResponse.of(
-                entry.getKey().getName(),
+                    entry.getKey().getName(),
                     getPointUsageCouponReceiptResponse(couponIssuances)
                 )
             )
