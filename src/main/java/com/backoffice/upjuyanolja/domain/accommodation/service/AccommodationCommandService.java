@@ -84,6 +84,12 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         Page<Accommodation> accommodations = accommodationRepository
             .searchPageByCategoryWithTypeAndName(category, keyword, pageable);
 
+        if (accommodations.isEmpty()) {
+            return AccommodationPageResponse.builder()
+                .accommodations(new ArrayList<>())
+                .build();
+        }
+
         return AccommodationPageResponse.of(
             new PageImpl<>(
                 accommodations.stream()
