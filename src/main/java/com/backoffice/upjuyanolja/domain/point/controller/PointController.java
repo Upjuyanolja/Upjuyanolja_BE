@@ -5,6 +5,8 @@ import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargePageRespo
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointSummaryResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointTotalBalanceResponse;
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointTotalPageResponse;
+import com.backoffice.upjuyanolja.domain.point.dto.response.PointUsagePageResponse;
 import com.backoffice.upjuyanolja.domain.point.service.PointService;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import jakarta.validation.Valid;
@@ -51,9 +53,9 @@ public class PointController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/total")
+    @GetMapping("/totalBalance")
     public ResponseEntity<PointTotalBalanceResponse> getPointTotalBalance() {
-        log.info("GET /api/points/total");
+        log.info("GET /api/points/totalBalance");
 
         PointTotalBalanceResponse response = pointService.getPointTotalBalanceResponse(
             securityUtil.getCurrentMemberId()
@@ -82,6 +84,32 @@ public class PointController {
         log.info("Get /api/points/charges/{chargeId}");
 
         PointChargeResponse response = pointService.getDetailChargePointResponse(chargeId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/usages")
+    public ResponseEntity<PointUsagePageResponse> getUsagePoints(
+        @PageableDefault(page = 0, size = 4) Pageable pageable
+    ) {
+        log.info("Get /api/points/usages");
+
+        PointUsagePageResponse response = pointService.getPointUsagePageResponse(
+            securityUtil.getCurrentMemberId(), pageable
+        );
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/total")
+    public ResponseEntity<PointTotalPageResponse> getTotalPoints(
+        @PageableDefault(page = 0, size = 4) Pageable pageable
+    ) {
+        log.info("Get /api/points/total");
+
+        PointTotalPageResponse response = pointService.getTotalPointPageResponse(
+            securityUtil.getCurrentMemberId(), pageable
+        );
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

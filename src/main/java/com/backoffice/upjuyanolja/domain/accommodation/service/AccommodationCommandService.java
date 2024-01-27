@@ -196,7 +196,8 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     public AccommodationDetailResponse findAccommodationWithRooms(
         Long accommodationId, LocalDate startDate, LocalDate endDate
     ) {
-        Accommodation accommodation = findAccommodationById(accommodationId);
+        Accommodation accommodation = accommodationQueryUseCase.getAccommodationById(
+            accommodationId);
 
         List<Room> filterRooms = getFilteredRoomsByDate(
             accommodation.getRooms(), startDate, endDate
@@ -216,12 +217,11 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         );
     }
 
-    private Accommodation findAccommodationById(Long accommodationId) {
-        Accommodation accommodation =
-            accommodationRepository.findById(accommodationId)
-                .orElseThrow(AccommodationNotFoundException::new);
-        return accommodation;
+    @Transactional(readOnly = true)
+    public Accommodation findAccommodationByRoomId(long roomId) {
+        return roomQueryService.findRoomById(roomId).getAccommodation();
     }
+
 
     private int getDiscountPrice(Room room) {
         return couponService.getSortedTotalCouponResponseInRoom(room)
