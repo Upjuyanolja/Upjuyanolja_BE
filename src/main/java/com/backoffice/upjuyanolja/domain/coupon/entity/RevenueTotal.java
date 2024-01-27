@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.coupon.entity;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
@@ -10,23 +9,25 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.AccessLevel;
+import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.Comment;
 
 @Getter
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CouponStatistics extends BaseTime {
+@NoArgsConstructor
+@Table(name = "revenue_total", indexes = @Index(name = "idx_accommodation_id",
+    columnList = "accommodation_id"))
+public class RevenueTotal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Comment("쿠폰 사용량 통계 식별자")
+    @Comment("일주일 간 매출 합계 식별자")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -38,33 +39,36 @@ public class CouponStatistics extends BaseTime {
     @Comment("숙소 식별자")
     private Accommodation accommodation;
 
-    @Setter
-    @Column(nullable = false)
-    @Comment("발행 쿠폰")
-    private long total;
+    @Column(nullable = false, name = "coupon_revenue")
+    @Comment("쿠폰 사용 매출 합계")
+    private long couponTotal;
 
-    @Setter
-    @Column(nullable = false)
-    @Comment("사용 완료 쿠폰")
-    private long used;
+    @Column(nullable = false, name = "normal revenue")
+    @Comment("쿠폰 미사용 매출 합계")
+    private long regularTotal;
 
-    @Setter
-    @Column(nullable = false)
-    @Comment("현재 보유 쿠폰")
-    private long stock;
+    @Column(name = "growth_rate")
+    @Comment("매출 상승 비율")
+    private double growthRate;
 
     @Builder
-    public CouponStatistics(
+    public RevenueTotal(
         Long id,
         Accommodation accommodation,
-        long total,
-        long used,
-        long stock
+        long couponTotal,
+        long regularTotal,
+        double growthRate
     ) {
         this.id = id;
         this.accommodation = accommodation;
-        this.total = total;
-        this.used = used;
-        this.stock = stock;
+        this.couponTotal = couponTotal;
+        this.regularTotal = regularTotal;
+        this.growthRate = growthRate;
     }
+
+    public RevenueTotal updateGrowthRate(double growthRate) {
+        this.growthRate = growthRate;
+        return this;
+    }
+
 }

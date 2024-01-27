@@ -1,0 +1,40 @@
+POST {{owner-login-api}}
+Content-Type: application/json
+
+{
+  "email": "{{owner1-email}}",
+  "password": "{{owner1-password}}"
+}
+
+> {%
+  client.log(response.body.accessToken);
+  client.global.set("access_token", response.body.accessToken);
+%}
+
+###
+
+GET http://localhost:8080/api/coupons/backoffice/revenue/1
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
+###
+
+GET http://localhost:8080/api/coupons/backoffice/revenue/test/1
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
+###
+
+POST {{member-login-api}}
+Content-Type: application/json
+
+{
+  "email": "{{member-email}}",
+  "password": "{{member-password}}"
+}
+
+> {%
+  client.log(response.body.data.accessToken);
+  client.global.set("access_token",response.body.data.accessToken)
+%}
+

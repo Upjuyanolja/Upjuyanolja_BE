@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.domain.coupon.dto;
+package com.backoffice.upjuyanolja.domain.coupon.dto.statistics;
 
 public interface CouponStatisticsInterface {
     Long getId();
