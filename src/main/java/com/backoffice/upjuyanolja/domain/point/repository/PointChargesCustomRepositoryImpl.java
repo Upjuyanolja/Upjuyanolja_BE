@@ -2,6 +2,7 @@ package com.backoffice.upjuyanolja.domain.point.repository;
 
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
+import com.backoffice.upjuyanolja.domain.point.entity.PointStatus;
 import com.backoffice.upjuyanolja.domain.point.entity.QPointCharges;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,34 +19,36 @@ public class PointChargesCustomRepositoryImpl implements PointChargesCustomRepos
     private final QPointCharges qPointCharges = QPointCharges.pointCharges;
 
     @Override
-    public Long sumChargePointByRefundable(Point point) {
+    public Long sumTotalPaidPoint(Point point){
         return query.select(qPointCharges.chargePoint.sum())
             .from(qPointCharges)
-            .where(isPointRefundable(point))
+            .where(qPointCharges.pointStatus.eq(PointStatus.PAID))
             .fetchFirst();
     }
 
     @Override
-    public List<PointCharges> findByPointAndRefundableAndRangeDate(
-        Point point, YearMonth rangeDate
-    ) {
-        List<PointCharges> result = getPointCharges(point, rangeDate);
-        return result;
+    public Long sumTotalRemainedPoint(Point point){
+        return query.select(qPointCharges.remainPoint.sum())
+            .from(qPointCharges)
+            .where(qPointCharges.pointStatus.eq(PointStatus.REMAINED))
+            .fetchFirst();
     }
 
-    private List<PointCharges> getPointCharges(
+    @Override
+    public List<PointCharges> findByPointByStatusAndRangeDate(
         Point point, YearMonth rangeDate
     ) {
         return query.selectFrom(qPointCharges)
-            .where(isPointRefundable(point)
+            .where(isPointAvailableStatus(point)
                 .and(eqChargeDate(rangeDate))
             )
             .fetch();
     }
 
-    private BooleanExpression isPointRefundable(Point point) {
+
+    private BooleanExpression isPointAvailableStatus(Point point) {
         return qPointCharges.point.eq(point)
-            .and(qPointCharges.refundable.isTrue());
+            .and(qPointCharges.pointStatus.in(PointStatus.PAID, PointStatus.REMAINED));
     }
 
     private BooleanExpression eqChargeDate(YearMonth rangeDate) {
