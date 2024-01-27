@@ -25,7 +25,7 @@ public interface CouponStatisticsRepository extends JpaRepository<CouponStatisti
         + "               left join reservation rv on rr.id = rv.reservation_room_id "
         + "               left join coupon_redeem cr on rv.id = cr.reservation_id "
         + "               left join room r on rr.room_id = r.ID "
-        + "               left join accommodation ac on r.accomodation_id = ac.id "
+        + "               left join accommodation ac on r.accommodation_id = ac.id "
         + "      where rv.is_coupon_used = true "
         + "      group by ac.id) u "
         + "     on t.id = u.id", nativeQuery = true)
