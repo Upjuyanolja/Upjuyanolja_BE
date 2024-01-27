@@ -50,6 +50,12 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public boolean existsById(Long accommodationId) {
+        return accommodationRepository.existsById(accommodationId);
+    }
+
+    @Override
     public AccommodationOwnership saveOwnership(Member member, Accommodation accommodation) {
         return accommodationOwnershipRepository.save(AccommodationOwnership.builder()
             .accommodation(accommodation)
@@ -74,7 +80,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     @Override
     @Transactional(readOnly = true)
     public Category getCategoryByName(String name) {
-        return categoryRepository.findCategoryByName(name)
+        return categoryRepository.findCategoryByNameAndIdGreaterThan(name, 4L)
             .orElseThrow(WrongCategoryException::new);
     }
 

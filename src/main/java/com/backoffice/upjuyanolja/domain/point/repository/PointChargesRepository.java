@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.point.repository;
 
 import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PointChargesRepository extends JpaRepository<PointCharges, Long>,
     PointChargesCustomRepository {
 
-    Page<PointCharges> findByPointId(Long pointId, Pageable pageable);
+    Page<PointCharges> findPageByPointId(Long pointId, Pageable pageable);
+
+    List<PointCharges> findByPointId(Long pointId);
 
 }

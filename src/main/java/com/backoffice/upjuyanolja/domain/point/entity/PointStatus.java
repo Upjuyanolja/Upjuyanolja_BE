@@ -8,6 +8,7 @@ import lombok.Getter;
 public enum PointStatus {
 
     USED("구매 확정"),
+    REMAINED("잔액 존재"),
     PAID("결제 완료"),
     CANCELED("취소 완료");
 
