@@ -1,8 +1,9 @@
 package com.backoffice.upjuyanolja.domain.coupon.repository;
 
-import com.backoffice.upjuyanolja.domain.coupon.dto.CouponStatisticsInterface;
+import com.backoffice.upjuyanolja.domain.coupon.dto.statistics.CouponStatisticsInterface;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatistics;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -29,4 +30,6 @@ public interface CouponStatisticsRepository extends JpaRepository<CouponStatisti
         + "      group by ac.id) u "
         + "     on t.id = u.id", nativeQuery = true)
     List<CouponStatisticsInterface> createStatistics();
+
+    Optional<CouponStatistics> findByAccommodationId(Long accommodationId);
 }
