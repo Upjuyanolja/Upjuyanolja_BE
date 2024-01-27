@@ -55,7 +55,7 @@ public class PointController {
 
     @GetMapping("/totalBalance")
     public ResponseEntity<PointTotalBalanceResponse> getPointTotalBalance() {
-        log.info("GET /api/points/totalBalance");
+        log.info("GET /api/points/total-balance");
 
         PointTotalBalanceResponse response = pointService.getPointTotalBalanceResponse(
             securityUtil.getCurrentMemberId()
