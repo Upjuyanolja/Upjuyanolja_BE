@@ -51,7 +51,7 @@ public class AuthenticationConfig {
                 .permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/accommodations/**")
                 .permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/coupons/")
+                .requestMatchers(HttpMethod.GET, "/api/coupons/**")
                 .permitAll()
                 .requestMatchers("/api/reservations/**")
                 .hasRole("USER")
