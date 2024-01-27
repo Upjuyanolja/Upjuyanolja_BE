@@ -53,7 +53,7 @@ public class PointController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/totalBalance")
+    @GetMapping("/total-balance")
     public ResponseEntity<PointTotalBalanceResponse> getPointTotalBalance() {
         log.info("GET /api/points/total-balance");
 
