@@ -14,7 +14,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwner
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationImageNotExistsException;
-import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
@@ -210,7 +209,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                         room, getDiscountPrice(room),
                         !checkSoldOut(filterRooms, room),
                         getMinFilteredRoomStock(room, startDate, endDate),
-                        couponService.getSortedTotalCouponResponseInRoom(room)
+                        couponService.getEnableSortedTotalCouponResponseInRoom(room)
                     )
                 )
                 .toList()
@@ -224,7 +223,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
 
     private int getDiscountPrice(Room room) {
-        return couponService.getSortedTotalCouponResponseInRoom(room)
+        return couponService.getEnableSortedTotalCouponResponseInRoom(room)
             .stream()
             .findFirst()
             .map(coupon -> coupon.price())
