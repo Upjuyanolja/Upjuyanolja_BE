@@ -80,7 +80,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     @Override
     @Transactional(readOnly = true)
     public Category getCategoryByName(String name) {
-        return categoryRepository.findCategoryByName(name)
+        return categoryRepository.findCategoryByNameAndIdGreaterThan(name, 4L)
             .orElseThrow(WrongCategoryException::new);
     }
 
