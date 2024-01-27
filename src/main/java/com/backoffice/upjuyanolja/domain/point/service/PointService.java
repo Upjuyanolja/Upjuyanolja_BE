@@ -112,72 +112,44 @@ public class PointService {
     @Transactional(readOnly = true)
     public PointChargePageResponse getPointChargePageResponse(Long memberId, Pageable pageable) {
         Long pointId = getMemberPoint(memberId).getId();
-        Page<PointCharges> pointCharges = pointChargesRepository.findPageByPointId(pointId,
+        Page<PointCharges> pagePointCharges = pointChargesRepository.findPageByPointId(pointId,
             pageable);
+        List<PointCharges> pointCharges = new ArrayList<>();
+        for (PointCharges pointCharge : pagePointCharges) {
+            pointCharges.add(pointCharge);
+        }
 
         return PointChargePageResponse.of(new PageImpl<>(
-                pointCharges.stream()
-                    .map(pointCharge -> PointChargeDetailResponse.of(
-                            pointCharge, getPointChargeCategoryAndType(pointCharge).get(0),
-                            getPointChargeCategoryAndType(pointCharge).get(1),
-                            getPointChargeReceiptResponse(pointCharge)
-                        )
-                    )
-                    .toList(),
+                getPointChargeDetailResponses(pointCharges),
                 pageable,
-                pointCharges.getTotalElements()
+                pagePointCharges.getTotalElements()
             )
         );
     }
 
     @Transactional(readOnly = true)
     public PointChargeResponse getDetailChargePointResponse(Long chargeId) {
-        PointCharges detailchargePoint = pointChargesRepository.findById(chargeId)
+        PointCharges detailChargePoint = pointChargesRepository.findById(chargeId)
             .orElseThrow(PointNotFoundException::new);
 
-        return PointChargeResponse.of(detailchargePoint);
+        return PointChargeResponse.of(detailChargePoint);
     }
 
     @Transactional(readOnly = true)
     public PointUsagePageResponse getPointUsagePageResponse(Long memberId, Pageable pageable) {
         Long pointId = getMemberPoint(memberId).getId();
-        Page<PointUsage> pointUsages = pointUsageRepository.findPageByPointId(pointId,
-            pageable);
+        Page<PointUsage> pagePointUsages = pointUsageRepository.findPageByPointId(
+            pointId, pageable
+        );
+        List<PointUsage> pointUsages = new ArrayList<>();
+        for (PointUsage pointusage : pagePointUsages) {
+            pointUsages.add(pointusage);
+        }
 
         return PointUsagePageResponse.of(new PageImpl<>(
-                pointUsages.stream()
-                    .map(pointUsage -> {
-                            List<CouponIssuance> couponIssuances =
-                                couponIssuanceGetService.getCouponIssuanceByPointUsage(pointUsage);
-                            if (couponIssuances.isEmpty()) {
-                                return PointUsageDetailResponse.builder().build();
-                            }
-                            Map<Room, List<Coupon>> couponIssuancesMap =
-                                createCouponIssuancesMap(couponIssuances);
-                            CouponIssuance selectCouponIssuance = couponIssuances.get(0);
-                            String accommodationName =
-                                accommodationCommandService
-                                    .findAccommodationByRoomId(selectCouponIssuance.getRoom().getId())
-                                    .getName();
-
-                            return PointUsageDetailResponse.of(
-                                pointUsage,
-                                getPointUsageDescription(
-                                    selectCouponIssuance, couponIssuancesMap.keySet().size(),
-                                    accommodationName
-                                ),
-                                getPointUsageTrade(couponIssuances),
-                                pointUsage.getOrderPrice(),
-                                getPointUsageReceiptResponse(
-                                    pointUsage, accommodationName,
-                                    couponIssuancesMap, couponIssuances
-                                )
-                            );
-                        }
-                    )
-                    .toList(),
+                getPointUsageDetailResponses(pointUsages),
                 pageable,
-                pointUsages.getTotalElements()
+                pagePointUsages.getTotalElements()
             )
         );
     }
@@ -185,14 +157,14 @@ public class PointService {
     @Transactional(readOnly = true)
     public PointTotalPageResponse getTotalPointPageResponse(Long memberId, Pageable pageable) {
         Long pointId = getMemberPoint(memberId).getId();
-        PointChargePageResponse chargePageResponse = getPointChargePageResponse(memberId,
-            pageable);
-        PointUsagePageResponse usagePageResponse = getPointUsagePageResponse(memberId, pageable);
+        List<PointChargeDetailResponse> chargeDetailResponses =
+            getPointChargeDetailResponses(pointChargesRepository.findByPointId(pointId));
+        List<PointUsageDetailResponse> usageDetailResponses =
+            getPointUsageDetailResponses(pointUsageRepository.findByPointId(pointId));
         List<PointTotalDetailResponse> pointTotalDetailResponses = new ArrayList<>();
         List<PointTotalDetailResponse> result = new ArrayList<>();
-        long id = 1;
 
-        for (PointChargeDetailResponse charge : chargePageResponse.histories()) {
+        for (PointChargeDetailResponse charge : chargeDetailResponses) {
             pointTotalDetailResponses.add(PointTotalDetailResponse.of(
                 charge.category(),
                 charge.type(),
@@ -205,7 +177,7 @@ public class PointService {
                 charge.receipt()
             ));
         }
-        for (PointUsageDetailResponse usage : usagePageResponse.histories()) {
+        for (PointUsageDetailResponse usage : usageDetailResponses) {
             pointTotalDetailResponses.add(PointTotalDetailResponse.of(
                 usage.category(),
                 usage.type(),
@@ -219,15 +191,22 @@ public class PointService {
             ));
         }
         pointTotalDetailResponses.sort(Comparator.comparing(PointTotalDetailResponse::date));
-        for (PointTotalDetailResponse response : pointTotalDetailResponses) {
-            result.add(PointTotalDetailResponse.from(id++, response));
+
+        int startIndex = pageable.getPageNumber() * pageable.getPageSize();
+        int endIndex = Math.min(startIndex + pageable.getPageSize(),
+            pointTotalDetailResponses.size());
+
+        for (int i = startIndex; i < endIndex; i++) {
+            result.add(PointTotalDetailResponse.from(i+1, pointTotalDetailResponses.get(i)));
         }
+
+        long total = pointTotalDetailResponses.size();
 
         return PointTotalPageResponse.of(
             new PageImpl<>(
                 result,
                 pageable,
-                result.size()
+                total
             )
         );
     }
@@ -405,6 +384,19 @@ public class PointService {
         updateTotalPointBalance(memberPoint);
     }
 
+    private List<PointChargeDetailResponse> getPointChargeDetailResponses(
+        List<PointCharges> pointCharges
+    ) {
+        return pointCharges.stream()
+            .map(pointCharge -> PointChargeDetailResponse.of(
+                    pointCharge, getPointChargeCategoryAndType(pointCharge).get(0),
+                    getPointChargeCategoryAndType(pointCharge).get(1),
+                    getPointChargeReceiptResponse(pointCharge)
+                )
+            )
+            .toList();
+    }
+
     private PointChargeReceiptResponse getPointChargeReceiptResponse(
         PointCharges pointCharges) {
 
@@ -414,14 +406,16 @@ public class PointService {
             case REMAINED:
                 return PointChargeReceiptResponse.of(
                     pointCharges.getOrderName(),
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(pointCharges.getChargeDate()),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+                        .format(pointCharges.getChargeDate()),
                     pointCharges.getChargePoint()
                 );
             case CANCELED:
                 PointRefunds pointRefund = pointRefundsRepository.findByPointCharges(pointCharges);
                 return PointChargeReceiptResponse.of(
                     pointCharges.getOrderName(),
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(pointRefund.getRefundDate()),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+                        .format(pointRefund.getRefundDate()),
                     pointCharges.getChargePoint()
                 );
             default:
@@ -453,6 +447,41 @@ public class PointService {
         }
         return results;
 
+    }
+
+    private List<PointUsageDetailResponse> getPointUsageDetailResponses(
+        List<PointUsage> pointUsages) {
+        return pointUsages.stream()
+            .map(pointUsage -> {
+                    List<CouponIssuance> couponIssuances =
+                        couponIssuanceGetService.getCouponIssuanceByPointUsage(pointUsage);
+                    if (couponIssuances.isEmpty()) {
+                        return PointUsageDetailResponse.builder().build();
+                    }
+                    Map<Room, List<Coupon>> couponIssuancesMap =
+                        createCouponIssuancesMap(couponIssuances);
+                    CouponIssuance selectCouponIssuance = couponIssuances.get(0);
+                    String accommodationName =
+                        accommodationCommandService
+                            .findAccommodationByRoomId(selectCouponIssuance.getRoom().getId())
+                            .getName();
+
+                    return PointUsageDetailResponse.of(
+                        pointUsage,
+                        getPointUsageDescription(
+                            selectCouponIssuance, couponIssuancesMap.keySet().size(),
+                            accommodationName
+                        ),
+                        getPointUsageTrade(couponIssuances),
+                        pointUsage.getOrderPrice(),
+                        getPointUsageReceiptResponse(
+                            pointUsage, accommodationName,
+                            couponIssuancesMap, couponIssuances
+                        )
+                    );
+                }
+            )
+            .toList();
     }
 
     private Map<Room, List<Coupon>> createCouponIssuancesMap(
