@@ -199,7 +199,7 @@
 
 - BE: https://api.couponcenter.net/docs/index.html
 - FE
-    - 빨리 잡아! 쿠폰 센터 (B2B Self-coupon Admin 서비스): // TODO 배포 후 업데이트
+    - 빨리 잡아! 쿠폰 센터 (B2B Self-coupon Admin 서비스): https://www.couponcenter.net/
     - 빨리 잡아! (숙소 예약 서비스): https://fast-catch-front-end-gold.vercel.app/
 
 ### 🪄 실행 가이드
