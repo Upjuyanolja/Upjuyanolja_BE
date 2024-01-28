@@ -6,8 +6,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -17,7 +15,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponStatisticsResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
@@ -39,6 +36,7 @@ import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMa
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageRooms;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponRoomsResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponStatisticsResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.RevenueInfo;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.RevenueStatisticsResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
@@ -47,6 +45,7 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponStatisticsService;
+import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
@@ -76,7 +75,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -343,8 +341,16 @@ class CouponBackofficeControllerTest {
         @Test
         public void revenueStatisticsTest() throws Exception {
             // given
-            when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-            when(memberGetService.getMemberById(any(Long.TYPE))).thenReturn(mockMember);
+            MemberInfoResponse memberInfoResponse = MemberInfoResponse.builder()
+                .memberId(1L)
+                .email("test@mail.com")
+                .name("test")
+                .phoneNumber("010-1234-1234")
+                .build();
+
+            given(securityUtil.getCurrentMemberId()).willReturn(1L);
+            given(memberGetService.getMember(any(Long.TYPE))).willReturn(memberInfoResponse);
+            String mockName = mockMember.getName();
 
             // when & Then
             RevenueStatisticsResponse mockResponse = createMockRevenueResponse();
@@ -357,39 +363,12 @@ class CouponBackofficeControllerTest {
                 .andExpect(status().is(HttpStatus.OK.value()))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.accommodationId").isNumber())
-                .andExpect(jsonPath("$.revenue[]").isArray())
-                .andExpect(jsonPath("$.revenue[].revenueDate").isString())
-                .andExpect(jsonPath("$.revenue[].conponRevenue").isNumber())
-                .andExpect(jsonPath("$.revenue[].normalRevenue").isNumber())
-                .andExpect(jsonPath("$.revenue[].coupon").isNumber())
-                .andDo(print());
-
-            verify(couponStatisticsService, times(1))
-                .getRevenueStatistics(any(Long.TYPE), any(String.class));
-
-
-
-            given(couponStatisticsService.getRevenueStatistics(any(Long.TYPE), any(String.class)))
-                .willReturn(mockResponse);
-
-            mockMvc.perform(get("/api/coupons/backoffice/revenue/1"))
-                .andExpect(status().is(HttpStatus.OK.value()))
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andDo(restDoc.document(
-                    responseFields(
-                        subsectionWithPath("accommodationId").type(JsonFieldType.NUMBER)
-                            .description("숙소 식별자"),
-                        subsectionWithPath("revenue").type(JsonFieldType.ARRAY)
-                            .description("매출 통계 배열"),
-                        subsectionWithPath("revenue[].revenueDate").type(JsonFieldType.STRING)
-                            .description("매출 일자"),
-                        subsectionWithPath("revenue[].couponRevenue").type(JsonFieldType.NUMBER)
-                            .description("쿠폰 사용 매출"),
-                        subsectionWithPath("revenue[].normalRevenue").type(JsonFieldType.NUMBER)
-                            .description("쿠폰 미사용 매출"),
-                        subsectionWithPath("couponMessage").type(JsonFieldType.STRING)
-                            .description("쿠폰 메시지").optional())
-                ));
+                .andExpect(jsonPath("$.revenue").isArray())
+                .andExpect(jsonPath("$.revenue[0].revenueDate").isString())
+                .andExpect(jsonPath("$.revenue[0].couponRevenue").isNumber())
+                .andExpect(jsonPath("$.revenue[0].normalRevenue").isNumber())
+                .andExpect(jsonPath("$.couponMessage").isString())
+                    .andDo(print());
 
             verify(couponStatisticsService, times(1))
                 .getRevenueStatistics(any(Long.TYPE), any(String.class));
