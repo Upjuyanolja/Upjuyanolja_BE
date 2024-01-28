@@ -31,6 +31,7 @@ import com.backoffice.upjuyanolja.domain.point.entity.PointType;
 import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
 import com.backoffice.upjuyanolja.domain.point.exception.PaymentAuthorizationFailedException;
 import com.backoffice.upjuyanolja.domain.point.exception.PointNotFoundException;
+import com.backoffice.upjuyanolja.domain.point.exception.PointTradeFailedException;
 import com.backoffice.upjuyanolja.domain.point.exception.TossApiErrorException;
 import com.backoffice.upjuyanolja.domain.point.exception.WrongRefundInfoException;
 import com.backoffice.upjuyanolja.domain.point.repository.PointChargesRepository;
@@ -217,7 +218,9 @@ public class PointService {
 
         validatePointChargeRequest(request, tossResponse);
         PointCharges chargePoint = createPointCharge(memberPoint, tossResponse);
-        updateTotalPointBalance(memberPoint);
+
+        long totalBalance = memberPoint.getTotalPointBalance() + chargePoint.getChargePoint();
+        updateTotalPointBalance(memberPoint, totalBalance);
 
         return PointChargeResponse.of(chargePoint);
     }
@@ -225,11 +228,16 @@ public class PointService {
     public void refundPoint(Long chargeId) {
         PointCharges pointCharges = pointChargesRepository.findById(chargeId)
             .orElseThrow(PointNotFoundException::new);
+        Point memberPoint = pointCharges.getPoint();
         TossResponse tossResponse = getTossRefundResponse(pointCharges.getPaymentKey());
 
         validatePointRefund(pointCharges);
         updateChargePointStatus(pointCharges, PointStatus.CANCELED);
-        updateTotalPointBalance(pointCharges.getPoint());
+
+        long totalBalance = memberPoint.getTotalPointBalance() - pointCharges.getChargePoint();
+//        validatePointChargeStatus(memberPoint, totalBalance);
+        updateTotalPointBalance(memberPoint, totalBalance);
+
         createPointRefund(pointCharges, tossResponse);
 
     }
@@ -333,14 +341,10 @@ public class PointService {
             .sum();
     }
 
-    private void updateTotalPointBalance(Point point) {
-        long totalPoint =
-            Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L) +
-                Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point)).orElse(0L);
-        point.updatePointBalance(totalPoint);
+    private void updateTotalPointBalance(Point point, long totalBalance) {
+        point.updatePointBalance(totalBalance);
         pointRepository.save(point);
     }
-
     private void updateChargePointStatus(PointCharges pointCharges, PointStatus pointStatus) {
         pointCharges.updatePointStatus(pointStatus);
         pointCharges.updateRefundable(false);
@@ -382,7 +386,10 @@ public class PointService {
             }
 
         }
-        updateTotalPointBalance(memberPoint);
+
+        long totalBalance = memberPoint.getTotalPointBalance() - totalPrice;
+//        validatePointChargeStatus(memberPoint, totalBalance);
+        updateTotalPointBalance(memberPoint, totalBalance);
     }
 
     private List<PointChargeDetailResponse> getPointChargeDetailResponses(
@@ -647,6 +654,15 @@ public class PointService {
         if (pointCharges.getChargePoint() > point.getTotalPointBalance() ||
             pointCharges.getPointStatus() != PointStatus.PAID) {
             throw new WrongRefundInfoException();
+        }
+    }
+
+    private void validatePointChargeStatus(Point point, long totalBalance) {
+        long correctBalance =
+            Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L) +
+                Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point)).orElse(0L);
+        if(totalBalance != correctBalance){
+            throw new PointTradeFailedException();
         }
     }
 
