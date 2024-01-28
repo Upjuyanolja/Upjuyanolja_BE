@@ -235,7 +235,7 @@ public class PointService {
         updateChargePointStatus(pointCharges, PointStatus.CANCELED);
 
         long totalBalance = memberPoint.getTotalPointBalance() - pointCharges.getChargePoint();
-//        validatePointChargeStatus(memberPoint, totalBalance);
+        validatePointChargeStatus(memberPoint, totalBalance);
         updateTotalPointBalance(memberPoint, totalBalance);
 
         createPointRefund(pointCharges, tossResponse);
@@ -348,10 +348,10 @@ public class PointService {
     private void updateChargePointStatus(PointCharges pointCharges, PointStatus pointStatus) {
         pointCharges.updatePointStatus(pointStatus);
         pointCharges.updateRefundable(false);
+        pointChargesRepository.save(pointCharges);
     }
 
-    private void updateChargeRemainPoint(PointCharges pointCharges, long totalPrice) {
-        long remainPoint = pointCharges.getChargePoint() - totalPrice;
+    private void updateChargeRemainPoint(PointCharges pointCharges, long remainPoint) {
         pointCharges.updateRemainPoint(remainPoint);
         pointChargesRepository.save(pointCharges);
     }
@@ -359,7 +359,7 @@ public class PointService {
     private void useChargePointForCoupon(long totalPrice, Long pointChargeId, Point memberPoint) {
         List<PointCharges> pointCharges =
             pointChargesRepository.findByPointId(pointChargeId);
-        long resultPoint = memberPoint.getTotalPointBalance();
+        long resultPoint = 0;
 
         for (PointCharges pointCharge : pointCharges) {
             if (resultPoint >= totalPrice) {
@@ -369,9 +369,10 @@ public class PointService {
             switch (pointCharge.getPointStatus()) {
                 case PAID:
                     resultPoint += pointCharge.getChargePoint();
-                    if (pointCharge.getChargePoint() > totalPrice) {
+                    if (resultPoint > totalPrice) {
                         updateChargePointStatus(pointCharge, PointStatus.REMAINED);
-                        updateChargeRemainPoint(pointCharge, totalPrice);
+                        updateChargeRemainPoint(pointCharge, resultPoint - totalPrice);
+                        continue;
                     }
                     updateChargePointStatus(pointCharge, PointStatus.USED);
                     break;
@@ -379,16 +380,17 @@ public class PointService {
                     resultPoint += pointCharge.getRemainPoint();
                     if (totalPrice >= resultPoint) {
                         updateChargePointStatus(pointCharge, PointStatus.USED);
-                        updateChargeRemainPoint(pointCharge, pointCharge.getRemainPoint());
+                        updateChargeRemainPoint(pointCharge, 0);
+                        continue;
                     }
-                    updateChargeRemainPoint(pointCharge, (resultPoint - totalPrice));
+                    updateChargeRemainPoint(pointCharge, resultPoint - totalPrice);
                     break;
             }
 
         }
 
         long totalBalance = memberPoint.getTotalPointBalance() - totalPrice;
-//        validatePointChargeStatus(memberPoint, totalBalance);
+        validatePointChargeStatus(memberPoint, totalBalance);
         updateTotalPointBalance(memberPoint, totalBalance);
     }
 
@@ -658,6 +660,9 @@ public class PointService {
     }
 
     private void validatePointChargeStatus(Point point, long totalBalance) {
+        Long l = Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L);
+        Long l1 = Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point))
+            .orElse(0L);
         long correctBalance =
             Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L) +
                 Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point)).orElse(0L);
