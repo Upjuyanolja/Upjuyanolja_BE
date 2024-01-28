@@ -43,17 +43,18 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -251,7 +252,8 @@ public class PointService {
 
     public PointUsage usePointForCoupon(final Long memberId, final long totalPrice) {
         Point memberPoint = getMemberPoint(memberId);
-        PointUsage resultPointUsage = createPointUsage(memberPoint, totalPrice);
+        PointUsage resultPointUsage =
+            createPointUsage(memberPoint, totalPrice, getPointUsageReceiptOrderId());
 
         useChargePointForCoupon(totalPrice, memberPoint.getId(), memberPoint);
 
@@ -310,11 +312,12 @@ public class PointService {
     }
 
     private PointUsage createPointUsage(
-        Point point, long orderPrice
+        Point point, long orderPrice, String orderName
     ) {
         PointUsage pointUsage = PointUsage.builder()
             .point(point)
             .orderPrice(orderPrice)
+            .orderName(orderName)
             .orderDate(LocalDateTime.now())
             .build();
 
@@ -512,15 +515,15 @@ public class PointService {
         Map<Room, List<Coupon>> couponIssuancesMap, List<CouponIssuance> couponIssuances
     ) {
         return PointUsageReceiptResponse.of(
-            getPointUsageReceiptOrderId(),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(pointUsages.getOrderDate()),
+            pointUsages,
             accommodationName,
             getPointUsageDetailReceiptResponse(couponIssuancesMap, couponIssuances)
         );
     }
 
     private String getPointUsageReceiptOrderId() {
-        return "O-" + ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
+        return "O-" + new SimpleDateFormat("yyyyMMDDHHmmss")
+            .format(Calendar.getInstance().getTime());
     }
 
     private List<PointUsageDetailReceiptResponse> getPointUsageDetailReceiptResponse(
