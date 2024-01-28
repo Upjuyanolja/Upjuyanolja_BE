@@ -17,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -110,8 +111,13 @@ public class Coupon extends BaseTime {
         this.stock -= quantity;
 
         if (stock == 0) {
-            setupDeleted();
+            setupSoldOut();
         }
+        return this;
+    }
+
+    private Coupon setupSoldOut() {
+        this.couponStatus = CouponStatus.SOLD_OUT;
         return this;
     }
 
@@ -132,16 +138,12 @@ public class Coupon extends BaseTime {
         return this;
     }
 
-    public Coupon setupDeleted() {
-        this.couponStatus = CouponStatus.DELETED;
-        return this;
+    @Override
+    public void delete(LocalDateTime currentTime) {
+        super.delete(currentTime);
     }
 
-    /**
-     * Grouping을 위한 hashCode & equals override. id로 같은 객체인지 비교.
-     * @param o
-     * @return
-     */
+    // Grouping을 위한 hashCode & equals override.
     @Override
     public boolean equals(Object o) {
         if (this == o) {

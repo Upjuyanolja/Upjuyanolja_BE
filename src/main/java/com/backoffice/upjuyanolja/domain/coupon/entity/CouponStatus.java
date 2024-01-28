@@ -8,8 +8,7 @@ public enum CouponStatus {
 
     ENABLE("발급 중"),
     DISABLE("발급 중지"),
-    SOLD_OUT("소진"),
-    DELETED("삭제");
+    SOLD_OUT("소진");
 
     private final String description;
 
@@ -17,11 +16,8 @@ public enum CouponStatus {
         this.description = description;
     }
 
-    public static final Predicate<CouponStatus> isDeletedCoupon =
-        (status) -> status.equals(DELETED);
-
     public static final Predicate<CouponStatus> isRedeemCoupon = (status) -> {
-        if (status.equals(SOLD_OUT) || status.equals(DELETED)) {
+        if (status.equals(SOLD_OUT)) {
             return false;
         }
         return true;

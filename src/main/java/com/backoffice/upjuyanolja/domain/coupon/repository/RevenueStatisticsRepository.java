@@ -13,19 +13,23 @@ public interface RevenueStatisticsRepository extends JpaRepository<RevenueStatis
     String revenueSQL = """
         select ac.id         as id,
                py.created_at as revenueDate,
-               coalesce(sum(case when py.discount_amount = 0 then py.total_amount else 0 end),
-                        0)   as regularRevenue,
                coalesce(sum(case when py.discount_amount != 0 then py.total_amount else 0 end),
-                        0)   as couponRevenue
+                        0)   as couponRevenue,
+               coalesce(sum(case when py.discount_amount = 0 then py.total_amount else 0 end),
+                        0)   as regularRevenue
         from reservation_room rr
                  left join reservation rv on rr.id = rv.reservation_room_id
                  left join payment py on rv.payment_id = py.id
-                 left join room rm on rr.room_id = rm.ID
-                 left join accommodation ac on rm.accommodation_id = ac.ID
+                 left join room rm on rr.room_id = rm.id
+                 left join accommodation ac on rm.accommodation_id = ac.id
+                 left join coupon cp on cp.room_id = rm.id
         where py.created_at between :startDate and :endDate
           and rv.status = 'SERVICED'
+          and rm.deleted_at is null
+          and ac.deleted_at is null
+          and cp.deleted_at is null
         group by ac.id, py.created_at
-        order by id, revenueDate
+        order by ac.id, py.created_at
         """;
     @Query(value = revenueSQL, nativeQuery = true)
     List<RevenueStatisticsInterface> createRevenueStatistics(
