@@ -22,6 +22,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
+import com.backoffice.upjuyanolja.domain.room.exception.CanNotDeleteLastRoomException;
 import com.backoffice.upjuyanolja.domain.room.exception.DuplicateRoomNameException;
 import com.backoffice.upjuyanolja.domain.room.exception.InvalidRoomStatusException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomImageNotExistsException;
@@ -170,6 +171,9 @@ public class RoomCommandService implements RoomCommandUseCase {
         Member member = memberGetService.getMemberById(memberId);
         Room room = roomQueryUseCase.findRoomById(roomId);
         checkOwnership(member, room.getAccommodation());
+        if (isLastRoom(room)) {
+            throw new CanNotDeleteLastRoomException();
+        }
         room.delete(LocalDateTime.now());
         return RoomInfoResponse.of(room);
     }
@@ -242,5 +246,9 @@ public class RoomCommandService implements RoomCommandUseCase {
                 .date(LocalDate.now().plusDays(i))
                 .build());
         }
+    }
+
+    private boolean isLastRoom(Room room) {
+        return room.getAccommodation().getRooms().size() == 1;
     }
 }
