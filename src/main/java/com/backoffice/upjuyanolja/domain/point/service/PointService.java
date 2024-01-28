@@ -23,11 +23,9 @@ import com.backoffice.upjuyanolja.domain.point.dto.response.PointUsagePageRespon
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointUsageReceiptResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.TossResponse;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
-import com.backoffice.upjuyanolja.domain.point.entity.PointCategory;
 import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
 import com.backoffice.upjuyanolja.domain.point.entity.PointRefunds;
 import com.backoffice.upjuyanolja.domain.point.entity.PointStatus;
-import com.backoffice.upjuyanolja.domain.point.entity.PointType;
 import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
 import com.backoffice.upjuyanolja.domain.point.exception.PaymentAuthorizationFailedException;
 import com.backoffice.upjuyanolja.domain.point.exception.PointNotFoundException;
@@ -198,7 +196,7 @@ public class PointService {
             pointTotalDetailResponses.size());
 
         for (int i = startIndex; i < endIndex; i++) {
-            result.add(PointTotalDetailResponse.from(i+1, pointTotalDetailResponses.get(i)));
+            result.add(PointTotalDetailResponse.from(i + 1, pointTotalDetailResponses.get(i)));
         }
 
         long total = pointTotalDetailResponses.size();
@@ -345,6 +343,7 @@ public class PointService {
         point.updatePointBalance(totalBalance);
         pointRepository.save(point);
     }
+
     private void updateChargePointStatus(PointCharges pointCharges, PointStatus pointStatus) {
         pointCharges.updatePointStatus(pointStatus);
         pointCharges.updateRefundable(false);
@@ -399,9 +398,7 @@ public class PointService {
     ) {
         return pointCharges.stream()
             .map(pointCharge -> PointChargeDetailResponse.of(
-                    pointCharge, getPointChargeCategoryAndType(pointCharge).get(0),
-                    getPointChargeCategoryAndType(pointCharge).get(1),
-                    getPointChargeReceiptResponse(pointCharge)
+                    pointCharge, getPointChargeReceiptResponse(pointCharge)
                 )
             )
             .toList();
@@ -436,30 +433,6 @@ public class PointService {
 
     }
 
-    private List<String> getPointChargeCategoryAndType(PointCharges pointCharges) {
-        List<String> results = new ArrayList<>();
-
-        switch (pointCharges.getPointStatus()) {
-            case PAID:
-                results.add(PointCategory.CHARGE.getDescription());
-                results.add(PointType.POINT.getDescription());
-                break;
-            case CANCELED:
-                results.add(PointCategory.REFUND.getDescription());
-                results.add(PointType.REFUND.getDescription());
-                break;
-            case USED:
-                results.add(PointCategory.USE.getDescription());
-                results.add(PointType.POINT.getDescription());
-                break;
-            case REMAINED:
-                results.add(PointCategory.CHARGE.getDescription());
-                results.add(PointType.POINT.getDescription());
-                break;
-        }
-        return results;
-
-    }
 
     private List<PointUsageDetailResponse> getPointUsageDetailResponses(
         List<PointUsage> pointUsages) {
@@ -666,7 +639,7 @@ public class PointService {
         long correctBalance =
             Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L) +
                 Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point)).orElse(0L);
-        if(totalBalance != correctBalance){
+        if (totalBalance != correctBalance) {
             throw new PointTradeFailedException();
         }
     }
