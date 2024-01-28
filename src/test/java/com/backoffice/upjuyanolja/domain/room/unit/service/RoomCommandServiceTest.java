@@ -15,7 +15,8 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
-import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
@@ -48,6 +49,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -70,7 +72,10 @@ public class RoomCommandServiceTest {
     private MemberGetService memberGetService;
 
     @Mock
-    private AccommodationQueryUseCase accommodationQueryUseCase;
+    private AccommodationRepository accommodationRepository;
+
+    @Mock
+    private AccommodationOwnershipRepository accommodationOwnershipRepository;
 
     @Mock
     private RoomQueryUseCase roomQueryUseCase;
@@ -203,11 +208,13 @@ public class RoomCommandServiceTest {
                 .build();
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
-            given(accommodationQueryUseCase.getAccommodationById(any(Long.TYPE)))
-                .willReturn(accommodation);
-            given(accommodationQueryUseCase.existsOwnershipByMemberAndAccommodation(
-                any(Member.class),
-                any(Accommodation.class)))
+            given(accommodationRepository.findById(any(Long.TYPE)))
+                .willReturn(Optional.of(accommodation));
+            given(accommodationOwnershipRepository
+                .existsAccommodationOwnershipByMemberAndAccommodation(
+                    any(Member.class),
+                    any(Accommodation.class)
+                ))
                 .willReturn(true);
             given(roomQueryUseCase
                 .existsRoomByNameAndAccommodation(any(String.class), any(Accommodation.class)))
@@ -236,10 +243,11 @@ public class RoomCommandServiceTest {
             assertThat(result.option().internet()).isEqualTo(true);
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
-            verify(accommodationQueryUseCase, times(1)).getAccommodationById(any(Long.TYPE));
-            verify(accommodationQueryUseCase, times(1)).existsOwnershipByMemberAndAccommodation(
-                any(Member.class),
-                any(Accommodation.class));
+            verify(accommodationRepository, times(1)).findById(any(Long.TYPE));
+            verify(accommodationOwnershipRepository, times(1))
+                .existsAccommodationOwnershipByMemberAndAccommodation(
+                    any(Member.class),
+                    any(Accommodation.class));
             verify(roomQueryUseCase, times(1)).existsRoomByNameAndAccommodation(any(String.class),
                 any(Accommodation.class));
             verify(roomQueryUseCase, times(1)).saveRoom(any(Accommodation.class), any(Room.class));
@@ -310,11 +318,12 @@ public class RoomCommandServiceTest {
                 .build();
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
-            given(accommodationQueryUseCase.getAccommodationById(any(Long.TYPE)))
-                .willReturn(accommodation);
-            given(accommodationQueryUseCase.existsOwnershipByMemberAndAccommodation(
-                any(Member.class),
-                any(Accommodation.class)))
+            given(accommodationRepository.findById(any(Long.TYPE)))
+                .willReturn(Optional.of(accommodation));
+            given(
+                accommodationOwnershipRepository.existsAccommodationOwnershipByMemberAndAccommodation(
+                    any(Member.class),
+                    any(Accommodation.class)))
                 .willReturn(false);
 
             // when
@@ -326,10 +335,11 @@ public class RoomCommandServiceTest {
             assertEquals(exception.getMessage(), "숙소의 업주가 아닙니다.");
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
-            verify(accommodationQueryUseCase, times(1)).getAccommodationById(any(Long.TYPE));
-            verify(accommodationQueryUseCase, times(1)).existsOwnershipByMemberAndAccommodation(
-                any(Member.class),
-                any(Accommodation.class));
+            verify(accommodationRepository, times(1)).findById(any(Long.TYPE));
+            verify(accommodationOwnershipRepository, times(1))
+                .existsAccommodationOwnershipByMemberAndAccommodation(
+                    any(Member.class),
+                    any(Accommodation.class));
             verify(roomQueryUseCase, never()).existsRoomByNameAndAccommodation(any(String.class),
                 any(Accommodation.class));
             verify(roomQueryUseCase, never()).saveRoom(any(Accommodation.class), any(Room.class));
@@ -453,7 +463,6 @@ public class RoomCommandServiceTest {
             given(roomQueryUseCase.saveRoom(any(Accommodation.class), any(Room.class))).willReturn(
                 room);
             given(roomQueryUseCase.saveRoomImages(any(List.class))).willReturn(List.of(roomImage));
-            //doNothing().when(em).refresh(any(Room.class));
 
             // when
             RoomInfoResponse result = roomCommandService.saveRoom(accommodation,
@@ -709,11 +718,12 @@ public class RoomCommandServiceTest {
             );
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
-            given(accommodationQueryUseCase.getAccommodationById(any(Long.TYPE)))
-                .willReturn(accommodation);
-            given(accommodationQueryUseCase.existsOwnershipByMemberAndAccommodation(
-                any(Member.class),
-                any(Accommodation.class)))
+            given(accommodationRepository.findById(any(Long.TYPE)))
+                .willReturn(Optional.of(accommodation));
+            given(accommodationOwnershipRepository
+                .existsAccommodationOwnershipByMemberAndAccommodation(
+                    any(Member.class),
+                    any(Accommodation.class)))
                 .willReturn(true);
             given(roomQueryUseCase.findAllByAccommodationId(any(Long.TYPE), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(savedRoom)));
@@ -753,9 +763,9 @@ public class RoomCommandServiceTest {
             assertThat(result.rooms().get(0).coupons()).isNotEmpty();
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
-            verify(accommodationQueryUseCase, times(1)).getAccommodationById(any(Long.TYPE));
-            verify(accommodationQueryUseCase, times(1))
-                .existsOwnershipByMemberAndAccommodation(
+            verify(accommodationRepository, times(1)).findById(any(Long.TYPE));
+            verify(accommodationOwnershipRepository, times(1))
+                .existsAccommodationOwnershipByMemberAndAccommodation(
                     any(Member.class),
                     any(Accommodation.class)
                 );
@@ -855,9 +865,10 @@ public class RoomCommandServiceTest {
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(room);
-            given(accommodationQueryUseCase.existsOwnershipByMemberAndAccommodation(
-                any(Member.class),
-                any(Accommodation.class)))
+            given(accommodationOwnershipRepository
+                .existsAccommodationOwnershipByMemberAndAccommodation(
+                    any(Member.class),
+                    any(Accommodation.class)))
                 .willReturn(true);
             given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(room);
 
@@ -884,8 +895,9 @@ public class RoomCommandServiceTest {
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
             verify(roomQueryUseCase, times(1)).findRoomById(any(Long.TYPE));
-            verify(accommodationQueryUseCase, times(1))
-                .existsOwnershipByMemberAndAccommodation(any(Member.class),
+            verify(accommodationOwnershipRepository, times(1))
+                .existsAccommodationOwnershipByMemberAndAccommodation(
+                    any(Member.class),
                     any(Accommodation.class));
         }
     }
@@ -1027,9 +1039,10 @@ public class RoomCommandServiceTest {
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(room);
-            given(accommodationQueryUseCase.existsOwnershipByMemberAndAccommodation(
-                any(Member.class),
-                any(Accommodation.class)))
+            given(accommodationOwnershipRepository
+                .existsAccommodationOwnershipByMemberAndAccommodation(
+                    any(Member.class),
+                    any(Accommodation.class)))
                 .willReturn(true);
             given(roomQueryUseCase.saveRoomImages(any(List.class)))
                 .willReturn(List.of(roomImage2, roomImage3));
@@ -1058,9 +1071,11 @@ public class RoomCommandServiceTest {
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
             verify(roomQueryUseCase, times(1)).findRoomById(any(Long.TYPE));
-            verify(accommodationQueryUseCase, times(1))
-                .existsOwnershipByMemberAndAccommodation(any(Member.class),
-                    any(Accommodation.class));
+            verify(accommodationOwnershipRepository, times(1))
+                .existsAccommodationOwnershipByMemberAndAccommodation(
+                    any(Member.class),
+                    any(Accommodation.class)
+                );
             verify(roomQueryUseCase, times(1)).saveRoomImages(any(List.class));
             verify(roomQueryUseCase, times(1)).findRoomImage(any(Long.TYPE));
             verify(roomQueryUseCase, times(1)).deleteRoomImages(any(List.class));
@@ -1147,9 +1162,10 @@ public class RoomCommandServiceTest {
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(roomQueryUseCase.findRoomById(any(Long.TYPE))).willReturn(room);
-            given(accommodationQueryUseCase.existsOwnershipByMemberAndAccommodation(
-                any(Member.class),
-                any(Accommodation.class)))
+            given(accommodationOwnershipRepository
+                .existsAccommodationOwnershipByMemberAndAccommodation(
+                    any(Member.class),
+                    any(Accommodation.class)))
                 .willReturn(true);
 
             // when
@@ -1175,8 +1191,9 @@ public class RoomCommandServiceTest {
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
             verify(roomQueryUseCase, times(1)).findRoomById(any(Long.TYPE));
-            verify(accommodationQueryUseCase, times(1))
-                .existsOwnershipByMemberAndAccommodation(any(Member.class),
+            verify(accommodationOwnershipRepository, times(1))
+                .existsAccommodationOwnershipByMemberAndAccommodation(
+                    any(Member.class),
                     any(Accommodation.class));
         }
     }

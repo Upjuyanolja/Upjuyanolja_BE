@@ -6,7 +6,7 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
-import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddInfos;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponDeleteRequest;
@@ -35,11 +35,8 @@ import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,7 +52,7 @@ public class CouponBackofficeService {
     private final RoomRepository roomRepository;
     private final CouponIssuanceRepository couponIssuanceRepository;
 
-    private final AccommodationQueryUseCase accommodationQueryUseCase;
+    private final AccommodationQueryService accommodationQueryService;
     private final PointService pointService;
 
     // 쿠폰 만들기 View Response
@@ -295,7 +292,7 @@ public class CouponBackofficeService {
             throw new NotOwnerException();
         }
 
-        if (!accommodationQueryUseCase.existsById(accommodationId)) {
+        if (!accommodationQueryService.existsById(accommodationId)) {
             log.info("숙소의 정보를 찾을 수 없습니다. id: {}", accommodationId);
             throw new AccommodationNotFoundException();
         }

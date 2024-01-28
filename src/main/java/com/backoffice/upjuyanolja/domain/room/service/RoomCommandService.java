@@ -1,7 +1,9 @@
 package com.backoffice.upjuyanolja.domain.room.service;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
@@ -48,7 +50,8 @@ public class RoomCommandService implements RoomCommandUseCase {
 
     private final MemberGetService memberGetService;
     private final RoomQueryUseCase roomQueryUseCase;
-    private final AccommodationQueryUseCase accommodationQueryUseCase;
+    private final AccommodationRepository accommodationRepository;
+    private final AccommodationOwnershipRepository accommodationOwnershipRepository;
     private final EntityManager em;
     private final CouponService couponService;
 
@@ -59,8 +62,8 @@ public class RoomCommandService implements RoomCommandUseCase {
         RoomRegisterRequest request
     ) {
         Member member = memberGetService.getMemberById(memberId);
-        Accommodation accommodation = accommodationQueryUseCase
-            .getAccommodationById(accommodationId);
+        Accommodation accommodation = accommodationRepository.findById(accommodationId)
+            .orElseThrow(AccommodationNotFoundException::new);
         checkOwnership(member, accommodation);
 
         return saveRoom(accommodation, request);
@@ -105,8 +108,8 @@ public class RoomCommandService implements RoomCommandUseCase {
     @Override
     public RoomPageResponse getRooms(long memberId, long accommodationId, Pageable pageable) {
         Member member = memberGetService.getMemberById(memberId);
-        Accommodation accommodation = accommodationQueryUseCase
-            .getAccommodationById(accommodationId);
+        Accommodation accommodation = accommodationRepository.findById(accommodationId)
+            .orElseThrow(AccommodationNotFoundException::new);
         checkOwnership(member, accommodation);
         List<RoomsInfoResponse> rooms = new ArrayList<>();
         Page<Room> roomPage = roomQueryUseCase.findAllByAccommodationId(accommodationId, pageable);
@@ -185,8 +188,8 @@ public class RoomCommandService implements RoomCommandUseCase {
     }
 
     private void checkOwnership(Member member, Accommodation accommodation) {
-        if (!accommodationQueryUseCase
-            .existsOwnershipByMemberAndAccommodation(member, accommodation)) {
+        if (!accommodationOwnershipRepository
+            .existsAccommodationOwnershipByMemberAndAccommodation(member, accommodation)) {
             throw new NotOwnerException();
         }
     }
