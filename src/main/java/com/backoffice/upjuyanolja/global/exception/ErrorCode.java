@@ -58,7 +58,7 @@ public enum ErrorCode {
     PAYMENT_AUTHORIZATION_FAILED(HttpStatus.BAD_REQUEST, 6001, "결제 승인에 실패 했습니다."),
     WRONG_REFUND_INFO(HttpStatus.BAD_REQUEST, 6002, "포인트 환불 요청 정보가 잘못 됐습니다."),
     POINT_NOT_FOUND(HttpStatus.NOT_FOUND, 6003, "포인트 정보를 찾을 수 없습니다."),
-    POINT_INSUFFICIENT(HttpStatus.NOT_FOUND, 6004, "포인트 잔액이 부족합니다."),
+    POINT_INSUFFICIENT(HttpStatus.BAD_REQUEST, 6004, "포인트 잔액이 부족합니다."),
     POINT_TRADE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 6005, "포인트 거래 중 에러가 발생 했습니다."),
 
     // OpenAPI
