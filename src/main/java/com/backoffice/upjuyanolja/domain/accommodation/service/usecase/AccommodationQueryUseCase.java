@@ -26,16 +26,4 @@ public interface AccommodationQueryUseCase {
     );
 
     AccommodationOwnershipResponse getAccommodationOwnership(long memberId);
-
-    @Builder
-    record AccommodationSaveRequest(
-        String name,
-        Address address,
-        String description,
-        Category category,
-        String thumbnail,
-        AccommodationOption option
-    ) {
-
-    }
 }
