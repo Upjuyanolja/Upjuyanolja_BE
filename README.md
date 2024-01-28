@@ -19,9 +19,7 @@
     - [📡 API 설계](#-API-설계)
 - [4. CI/CD](#4-cicd)
     - [🛠️ Jenkins CI/CD 아키텍처](#-jenkins-cicd-아키텍처)
-- [5. 에러 해결](#5-에러-해결)
-- [6. 회고](#6-회고)
-- [7. API 문서](#7-API-문서)
+- [5. API 문서](#5-API-문서)
 
 ---
 
@@ -95,13 +93,14 @@
       - 서버 관리<br />
       - CI<br />
       - REST Docs<br />
-      - 회원 정보 조회, 이메일 중복 검사<br />
-      - 숙소, 객실 관리 기능<br />
+      - 회원 정보 조회, 이메일 중복 검사, 로그아웃 API<br />
+      - 숙소, 객실 관리 API<br />
+      - S3 이미지 저장 API<br />
     </td>
     <td align="left">
       - 서브 모듈 도입<br />
       - 결제 기능<br />
-      - 포인트 기능<br />>
+      - 포인트 기능<br />
       - 숙소 예약 서비스(빨리 잡아!)의 숙소 조회 기능<br />
     </td>
     <td align="left">
@@ -120,7 +119,7 @@
 
 ### 💁🏻 소개
 
-// TODO 서비스 화면 추가
+> ![](src/main/resources/images/main.jpg)
 > B2B Self-coupon Admin(Backoffice) Service
 
 ### 🎯 목적
@@ -140,56 +139,57 @@
 
 - **빨리 잡아! 쿠폰 센터 서비스 기능** (B2B Self-coupon Admin 서비스)
     - 회원
-        - 업주 회원 가입 `개발 완료`
-        - 업주 회원 가입 시 이메일 인증번호 요청/검증 `개발 완료`
-        - 업주 로그인 `개발 완료`
+        - 업주 회원 가입
+        - 업주 회원 가입 시 이메일 인증번호 요청/검증
+        - 업주 로그인
     - 숙소/객실 관리
-        - 숙소 등록 `개발 완료`
-        - 보유 숙소 목록 조회 `개발 완료`
-        - 객실 추가 등록 `개발 완료`
-        - 객실 목록 조회 `개발 완료`
-        - 객실 상세 조회 `개발 완료`
-        - 객실 수정 `개발 완료`
-        - 객실 삭제 `개발 완료`
+        - 숙소 등록
+        - 보유 숙소 목록 조회
+        - 객실 추가 등록
+        - 객실 목록 조회
+        - 객실 상세 조회
+        - 객실 수정
+        - 객실 삭제
     - 포인트
-        - 포인트 충전 `개발 중`
-        - 포인트 결제 취소 `개발 중`
-        - 포인트 요약 조회 `개발 중`
-        - 전체 포인트 내역 조회 `개발 중`
-        - 포인트 충전 내역 조회 `개발 중`
-        - 포인트 사용 내역 조회 `개발 중`
-        - 포인트 결제 취소 영수증 조회 `개발 중`
+        - 포인트 충전
+        - 포인트 결제 취소
+        - 포인트 요약 조회
+        - 전체 포인트 내역 조회
+        - 포인트 충전 내역 조회
+        - 포인트 사용 내역 조회
+        - 포인트 결제 취소 영수증 조회
     - 쿠폰
-        - 쿠폰 만들기 `개발 중`
-        - 쿠폰 만들기 정보 조회 `개발 중`
-        - 쿠폰 추가 구매 `개발 중`
-        - 쿠폰 관리 화면 조회 `개발 중`
-        - 쿠폰 수정 `개발 중`
-        - 쿠폰 삭제 `개발 중`
-        - 쿠폰 현황 통계 `개발 중`
-        - 일자별 매출 통계 `개발 중`
+        - 쿠폰 만들기
+        - 쿠폰 만들기 정보 조회
+        - 쿠폰 추가 구매
+        - 쿠폰 관리 화면 조회
+        - 쿠폰 수정
+        - 쿠폰 삭제
+        - 쿠폰 현황 통계
+        - 일자별 매출 통계
 - **빨리 잡아! 서비스 기능** (숙박 예약 서비스)
     - 회원
-        - 회원 가입 `개발 완료`
-        - 이메일 중복 검사 `개발 완료`
-        - 로그인 `개발 완료`
-        - 토큰 재발급 `개발 완료`
-        - 내 정보 조회 `개발 완료`
-        - 로그아웃 `개발 완료`
+        - 회원 가입
+        - 이메일 중복 검사
+        - 로그인
+        - 토큰 재발급
+        - 내 정보 조회
+        - 로그아웃
     - 슥소
-        - 숙소 목록 조회 `개발 완료`
-        - 숙소 상세 조회 `개발 완료`
+        - 숙소 목록 조회
+        - 숙소 상세 조회
     - 예약
-        - 예약 `개발 중`
-        - 예약 취소 `개발 중`
-        - 예약 내역 조회 `개발 완료`
-        - 예약 취소 내역 조회 `개발 완료`
+        - 예약
+        - 예약 취소
+        - 예약 내역 조회
+        - 예약 취소 내역 조회
     - 쿠폰
-        - 숙소 쿠폰 목록 조회 `개발 완료`
+        - 숙소 쿠폰 목록 조회
 
 ### ⏰ 개발 기간
 
-2023-12-18 ~ 2023-1-30
+- 2023-12-18 ~ 2023-01-29: 기능 개발
+- 2023-01-20 ~ : 리팩토링 및 고도화
 
 ### 📅 일정
 
@@ -199,7 +199,7 @@
 
 - BE: https://api.couponcenter.net/docs/index.html
 - FE
-    - 빨리 잡아! 쿠폰 센터 (B2B Self-coupon Admin 서비스): // TODO 배포 후 업데이트
+    - 빨리 잡아! 쿠폰 센터 (B2B Self-coupon Admin 서비스): https://www.couponcenter.net/
     - 빨리 잡아! (숙소 예약 서비스): https://fast-catch-front-end-gold.vercel.app/
 
 ### 🪄 실행 가이드
@@ -238,28 +238,31 @@ cd Upjuyanolja
 >     properties:
 >       hibernate:
 >         default_batch_fetch_size: 100
+>   data:
+>     redis:
+>       host: localhost
+>       port: 6379
 > 
-> data:
->   redis:
->     host: localhost
->     port: 6379
-> 
-> mail:
->   host: smtp.gmail.com
->   port: 587
->   username: ${MAIL_URERNAME}
->   password: ${MAIL_PASSWORD}
->   properties:
->     mail:
->       smtp:
->         auth: true
->         starttls:
->           enable: true
->           required: true
->         connectiontimeout: 5000
->         timeout: 5000
->         writetimeout: 5000
->   auth-code-expiration-millis: ${CODE_EXPIRE_TIME}
+>   mail:
+>     host: smtp.gmail.com
+>     port: 587
+>     username: ${MAIL_URERNAME}
+>     password: ${MAIL_PASSWORD}
+>     properties:
+>       mail:
+>         smtp:
+>           auth: true
+>           starttls:
+>             enable: true
+>             required: true
+>           connectiontimeout: 5000
+>           timeout: 5000
+>           writetimeout: 5000
+>     auth-code-expiration-millis: ${CODE_EXPIRE_TIME}
+>   servlet:
+>     multipart:
+>       maxFileSize: 10MB
+>       maxRequestSize: 30MB
 > 
 > jwt:
 >   secret: ${JWT_SECRET}
@@ -268,6 +271,32 @@ cd Upjuyanolja
 > 
 > open-api:
 >   service-key: ${API_SERVICE_KEY}
+> 
+> coupon:
+>   constraints:
+>     min-flat-amount: 1000
+>     max-flat-amount: 50000
+>     min-discount-rate: 1
+>     max-discount-rate: 50
+>     day-limit: -1
+> 
+> point:
+>   toss:
+>     url: https://api.tosspayments.com/v1/payments/
+>     secret-key: ${TOSS_SECRETE_KEY}
+>
+> cloud:
+>   aws:
+>     s3:
+>       bucket: coupon-center-bucket
+>     credentials:
+>       access-key: ${S3_ACCESS_KEY}
+>       secret-key: ${S3_SECRET_KEY}
+>     region:
+>       static: ap-northeast-2
+>       auto: false
+>     stack:
+>       auto: false
 >
 
 3. Docker 컨테이너 실행
@@ -285,7 +314,13 @@ gradle bootJar
 ```
 
 5. 테스트 계정
-   // TODO 테스트 계정 생성 후 공유
+
+- 업주
+    - email: yowner@gmail.com
+    - password: Qwer1234
+- 회원
+    - email: yuser@gmail.com
+    - password: Qwer1234
 
 ---
 
@@ -306,6 +341,7 @@ gradle bootJar
     - Json
     - Jasypt
     - Spring Mail
+    - Spring Cloud
 - `application.yaml`, `applicaion-local.yaml`, `application-prod.yaml`, `.env` 파일은 LMS에서 확인하실 수
   있습니다!
 
@@ -332,106 +368,11 @@ gradle bootJar
 
 ### 🛠️ Jenkins CI/CD 아키텍처
 
-> ![](src/main/resources/images/cicd.png)
+> ![](src/main/resources/images/cicd.jpg)
 
 ---
 
-## 5. 에러 해결
-
-### 📌 주요 에러
-
-// TODO 에러와 해결 작성
-
-> #### < OO 에러 >
->
-> #### < 에러 해결 >
->
-
-## 6. 회고
-
-<details>
-<summary>정의정</summary>
-<div markdown="1">
-
-- **느낀 점**
-    - 미작성
-
-- **프로젝트를 하면서 잘했던 점**
-    - 미작성
-
-- **프로젝트를 진행하면서 힘들었던 점**
-    - 미작성
-
-</div>
-</details>
-
-<details>
-<summary>김현아</summary>
-<div markdown="1">
-
-- **느낀 점**
-    - 미작성
-
-- **프로젝트를 하면서 잘했던 점**
-    - 미작성
-
-- **프로젝트를 진행하면서 힘들었던 점**
-    - 미작성
-
-</div>
-</details>
-
-<details>
-<summary>차동민</summary>
-<div markdown="1">
-
-- **느낀 점**
-    - 미작성
-
-- **프로젝트를 하면서 잘했던 점**
-    - 미작성
-
-- **프로젝트를 진행하면서 힘들었던 점**
-    - 미작성
-
-</div>
-</details>
-
-<details>
-<summary>이지상</summary>
-<div markdown="1">
-
-- **느낀 점**
-    - 미작성
-
-- **프로젝트를 하면서 잘했던 점**
-    - 미작성
-
-- **프로젝트를 진행하면서 힘들었던 점**
-    - 미작성
-
-</div>
-</details>
-
-<details>
-<summary>엄채원</summary>
-<div markdown="1">
-
-- **느낀 점**
-    - 미작성
-
-- **프로젝트를 하면서 잘했던 점**
-    - 미작성
-
-- **프로젝트를 진행하면서 힘들었던 점**
-    - 미작성
-
-</div>
-</details>
-
-## 7. API 문서
+## 5. API 문서
 
 ※ Spring REST Docs로 문서화했습니다.
-
-// TODO API 문서 캡처본 추가
-// 현재는 서버에서 확인하실 수 있습니다! https://api.couponcenter.net/docs/index.html
+https://api.couponcenter.net/docs/index.html
