@@ -39,6 +39,7 @@ public enum ErrorCode {
     ROOM_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, 3005, "객실 이미지 정보를 찾을 수 없습니다."),
     ROOM_NOT_EXISTS(HttpStatus.BAD_REQUEST, 3006, "객실을 1개 이상 등록해야 합니다."),
     ROOM_IMAGE_NOT_EXISTS(HttpStatus.BAD_REQUEST, 3007, "객실 이미지를 1개 이상 등록해야 합니다."),
+    LAST_ROOM(HttpStatus.BAD_REQUEST, 3008, "마지막 객실은 삭제할 수 없습니다."),
 
     // Reservation
     RESERVATION_PAYMENT_FAILED(HttpStatus.BAD_REQUEST, 4000, "결제에 실패 했습니다."),

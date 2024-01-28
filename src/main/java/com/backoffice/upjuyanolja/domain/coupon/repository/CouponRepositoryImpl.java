@@ -1,25 +1,13 @@
 package com.backoffice.upjuyanolja.domain.coupon.repository;
 
-import static com.querydsl.core.group.GroupBy.sum;
-
 import com.backoffice.upjuyanolja.domain.accommodation.entity.QAccommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.QAccommodationOwnership;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.AccommodationResponse;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeQueryDto;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageQueryDto;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponRoomsResponse;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatistics;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.QCoupon;
-import com.backoffice.upjuyanolja.domain.coupon.entity.QCouponIssuance;
-import com.backoffice.upjuyanolja.domain.coupon.entity.QCouponRedeem;
-import com.backoffice.upjuyanolja.domain.reservation.entity.QReservation;
-import com.backoffice.upjuyanolja.domain.reservation.entity.QReservationRoom;
 import com.backoffice.upjuyanolja.domain.room.entity.QRoom;
 import com.backoffice.upjuyanolja.domain.room.entity.QRoomPrice;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -36,29 +24,18 @@ public class CouponRepositoryImpl implements CouponRepositoryCustom {
     QCoupon qCoupon = QCoupon.coupon;
 
     @Override
-    public CouponMakeViewResponse findRoomsByAccommodationId(Long accommodationId) {
-
-        AccommodationResponse accommodationResponse = queryFactory.
-            select(Projections.constructor(AccommodationResponse.class,
-                qAccommodation.id, qAccommodation.name
-            ))
-            .from(qAccommodation)
-            .where(qAccommodation.id.eq(accommodationId))
-            .fetchOne();
-
-        List<CouponRoomsResponse> roomListRespons = queryFactory
-            .select(Projections.constructor(
-                CouponRoomsResponse.class,
-                qRoom.id,
-                qRoom.name,
-                qRoomPrice.offWeekDaysMinFee.as("roomPrice")
+    public List<CouponMakeQueryDto> findRoomsByAccommodationId(Long accommodationId) {
+        return queryFactory.select(Projections.constructor(CouponMakeQueryDto.class,
+                qAccommodation.id, qAccommodation.name, qRoom.id, qRoom.name,
+                qRoomPrice.offWeekDaysMinFee
             ))
             .from(qRoom)
-            .join(qRoomPrice).on(qRoom.price.id.eq(qRoomPrice.id))
-            .where(qRoom.accommodation.id.eq(accommodationId))
-            .fetch();
-
-        return CouponMakeViewResponse.of(accommodationResponse, roomListRespons);
+            .leftJoin(qAccommodation).on(qRoom.accommodation.id.eq(qAccommodation.id))
+            .innerJoin(qRoomPrice).on(qRoom.price.id.eq(qRoomPrice.id))
+            .where(qAccommodation.id.eq(accommodationId)
+                .and(qAccommodation.deletedAt.isNull()
+                    .and(qRoom.deletedAt.isNull()))
+            ).fetch();
     }
 
     /**
@@ -72,10 +49,10 @@ public class CouponRepositoryImpl implements CouponRepositoryCustom {
     @Override
     public boolean existsAccommodationIdByMemberId(Long accommodationId, Long memberId) {
         return queryFactory.selectOne()
-            .from(qOwnership)
-            .where(qOwnership.member.id.eq(memberId)
-                .and(qOwnership.accommodation.id.eq(accommodationId)))
-            .fetchOne() != null;
+                   .from(qOwnership)
+                   .where(qOwnership.member.id.eq(memberId)
+                       .and(qOwnership.accommodation.id.eq(accommodationId)))
+                   .fetchOne() != null;
     }
 
     @Override
@@ -93,7 +70,9 @@ public class CouponRepositoryImpl implements CouponRepositoryCustom {
             .join(qAccommodation).on(qRoom.accommodation.id.eq(qAccommodation.id))
             .join(qRoomPrice).on(qRoom.price.id.eq(qRoomPrice.id))
             .where(qAccommodation.id.eq(accommodationId)
-                .and(qCoupon.couponStatus.ne(CouponStatus.DELETED)))
+                .and(qAccommodation.deletedAt.isNull()
+                    .and(qRoom.deletedAt.isNull()))
+                .and(qCoupon.deletedAt.isNull()))
             .orderBy(qRoom.id.asc())
             .fetch();
     }
