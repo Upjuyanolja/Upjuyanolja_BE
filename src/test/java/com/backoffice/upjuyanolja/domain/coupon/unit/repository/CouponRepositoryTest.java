@@ -17,6 +17,7 @@ import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAdd
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyInfos;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyRooms;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeQueryDto;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageQueryDto;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
@@ -127,17 +128,12 @@ class CouponRepositoryTest {
         @DisplayName("View에 응답해줄 데이터를 테스트한다.")
         public void makeCouponTest() throws Exception {
             // given
-            CouponMakeViewResponse response = couponRepository
+            List<CouponMakeQueryDto> response = couponRepository
                 .findRoomsByAccommodationId(1L);
 
             // when& Then
-            assertThat(response.accommodationName()).isEqualTo("그랜드 하얏트 제주");
-            assertThat(response.rooms().size()).isEqualTo(3);
-            response.rooms().forEach(room -> {
-                assertThat(room.roomId()).isGreaterThan(0);
-                assertThat(room.roomName()).isNotBlank();
-                assertThat(room.roomPrice()).isNotNull();
-            });
+            assertThat(response.get(0).accommodationName()).isEqualTo("그랜드 하얏트 제주");
+            assertThat(response.size()).isEqualTo(3);
         }
 
         @DisplayName("업주의 id로 등록되어 있는 숙소가 있는지 검증한다.")
@@ -299,9 +295,7 @@ class CouponRepositoryTest {
             createCoupon(
                 couponIds.get(1), room, DiscountType.RATE, CouponStatus.ENABLE, 10, 20),
             createCoupon(
-                couponIds.get(2), room, DiscountType.FLAT, CouponStatus.SOLD_OUT, 1000, 0),
-            createCoupon(
-                couponIds.get(3), room, DiscountType.RATE, CouponStatus.DELETED, 30, 0)
+                couponIds.get(2), room, DiscountType.FLAT, CouponStatus.SOLD_OUT, 1000, 0)
         );
         couponRepository.saveAll(coupons);
         return coupons;

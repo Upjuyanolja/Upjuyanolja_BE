@@ -15,10 +15,12 @@ import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponMod
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponModifyRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponRoomsRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponInfo;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeQueryDto;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMakeViewResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageQueryDto;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageRooms;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponRoomsResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
@@ -31,9 +33,13 @@ import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -54,7 +60,29 @@ public class CouponBackofficeService {
 
     // 쿠폰 만들기 View Response
     public CouponMakeViewResponse getRoomsByAccommodation(Long accommodationId) {
-        return couponRepository.findRoomsByAccommodationId(accommodationId);
+
+        List<CouponMakeQueryDto> result = couponRepository.findRoomsByAccommodationId(
+            accommodationId);
+        if (result.isEmpty()) {
+            return null;
+        }
+        List<CouponRoomsResponse> rooms = new ArrayList<>();
+        for (CouponMakeQueryDto dto : result) {
+            rooms.add(createRoomResponse(dto));
+        }
+        return CouponMakeViewResponse.builder()
+            .accommodationId(result.get(0).accommodationId())
+            .accommodationName(result.get(0).accommodationName())
+            .rooms(rooms)
+            .build();
+    }
+
+    private CouponRoomsResponse createRoomResponse(CouponMakeQueryDto dto) {
+        return CouponRoomsResponse.builder()
+            .roomId(dto.roomId())
+            .roomName(dto.roomName())
+            .roomPrice(dto.roomPrice())
+            .build();
     }
 
     // 쿠폰 만들기
@@ -169,7 +197,6 @@ public class CouponBackofficeService {
         couponRepository.saveAll(addCoupons);
         couponIssuanceRepository.saveAll(addCouponIssuances);
 
-
         log.info("쿠폰 추가 발급 성공. 금액: {}", totalPoints);
     }
 
@@ -196,13 +223,13 @@ public class CouponBackofficeService {
             }
         }
         couponRepository.saveAll(deleteCoupons);
-        log.info("쿠폰 삭제 성공.");
+        log.info("쿠폰 삭제 처리 성공.");
     }
 
     private Coupon setupDelete(Long couponId) {
         Coupon coupon = couponRepository.findById(couponId).orElseThrow(
             InvalidCouponInfoException::new);
-        coupon.setupDeleted();
+        coupon.delete(LocalDateTime.now());
         return coupon;
     }
 
@@ -214,7 +241,6 @@ public class CouponBackofficeService {
         return coupon;
     }
 
-
     private Coupon modifyCoupon(final CouponModifyInfos modifyCoupons, LocalDate endDate) {
         long couponId = modifyCoupons.couponId();
         Coupon coupon = couponRepository.findById(couponId).orElseThrow(
@@ -225,7 +251,8 @@ public class CouponBackofficeService {
             modifyCoupons.discount(),
             modifyCoupons.dayLimit(),
             endDate,
-            modifyCoupons.couponType());
+            modifyCoupons.couponType()
+        );
         return coupon;
     }
 
@@ -263,7 +290,8 @@ public class CouponBackofficeService {
         if (!couponRepository.existsAccommodationIdByMemberId(
             accommodationId, currentMemberId)) {
             log.info("숙소의 업주가 아닙니다. 업주의 id: {}, 숙소의 id: {}",
-                currentMemberId, accommodationId);
+                currentMemberId, accommodationId
+            );
             throw new NotOwnerException();
         }
 
@@ -272,7 +300,7 @@ public class CouponBackofficeService {
             throw new AccommodationNotFoundException();
         }
     }
-    
+
     // 발행 이력이 있는 쿠폰이라면 재고 수량을 업데이트 한다.
     private Coupon updateCouponStock(final Coupon coupon, final int quantity) {
         return coupon.increaseCouponStock(quantity);

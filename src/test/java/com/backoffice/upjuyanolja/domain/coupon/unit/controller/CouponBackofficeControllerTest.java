@@ -15,7 +15,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponStatisticsResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
@@ -37,12 +36,16 @@ import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponMa
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponManageRooms;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponRoomsResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponStatisticsResponse;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.RevenueInfo;
+import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.RevenueStatisticsResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponStatisticsService;
+import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
@@ -333,6 +336,61 @@ class CouponBackofficeControllerTest {
             verify(couponStatisticsService, times(1))
                 .getCouponStatistics(any(Long.TYPE));
         }
+
+        @DisplayName("일주일 매출 통계 테스트")
+        @Test
+        public void revenueStatisticsTest() throws Exception {
+            // given
+            MemberInfoResponse memberInfoResponse = MemberInfoResponse.builder()
+                .memberId(1L)
+                .email("test@mail.com")
+                .name("test")
+                .phoneNumber("010-1234-1234")
+                .build();
+
+            given(securityUtil.getCurrentMemberId()).willReturn(1L);
+            given(memberGetService.getMember(any(Long.TYPE))).willReturn(memberInfoResponse);
+            String mockName = mockMember.getName();
+
+            // when & Then
+            RevenueStatisticsResponse mockResponse = createMockRevenueResponse();
+
+            given(couponStatisticsService.getRevenueStatistics(any(Long.TYPE), any(String.class)))
+                .willReturn(mockResponse);
+
+            // when & Then
+            mockMvc.perform(get("/api/coupons/backoffice/revenue/1"))
+                .andExpect(status().is(HttpStatus.OK.value()))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.accommodationId").isNumber())
+                .andExpect(jsonPath("$.revenue").isArray())
+                .andExpect(jsonPath("$.revenue[0].revenueDate").isString())
+                .andExpect(jsonPath("$.revenue[0].couponRevenue").isNumber())
+                .andExpect(jsonPath("$.revenue[0].normalRevenue").isNumber())
+                .andExpect(jsonPath("$.couponMessage").isString())
+                    .andDo(print());
+
+            verify(couponStatisticsService, times(1))
+                .getRevenueStatistics(any(Long.TYPE), any(String.class));
+        }
+    }
+
+    private RevenueStatisticsResponse createMockRevenueResponse() {
+        List<RevenueInfo> infos = List.of(
+            new RevenueInfo("1/19", 800000L, 400000L),
+            new RevenueInfo("1/20", 0L, 300000L),
+            new RevenueInfo("1/21", 900000L, 200000L),
+            new RevenueInfo("1/22", 200000L, 100000L),
+            new RevenueInfo("1/23", 300000L, 150000L),
+            new RevenueInfo("1/24", 600000L, 400000L),
+            new RevenueInfo("1/25", 700000L, 500000L),
+            new RevenueInfo("1/26", 100000L, 100000L)
+        );
+        return RevenueStatisticsResponse.builder()
+            .accommodationId(1L)
+            .revenue(infos)
+            .couponMessage("김업주님. 쿠폰 발급 후 매출이 100% 늘어났어요!")
+            .build();
     }
 
     private CouponStatisticsResponse createMockStatisticsResponse() {
@@ -501,9 +559,7 @@ class CouponBackofficeControllerTest {
             createCoupon(
                 couponIds.get(1), room, DiscountType.RATE, CouponStatus.ENABLE, 10, 20),
             createCoupon(
-                couponIds.get(2), room, DiscountType.FLAT, CouponStatus.SOLD_OUT, 1000, 0),
-            createCoupon(
-                couponIds.get(3), room, DiscountType.RATE, CouponStatus.DELETED, 30, 0)
+                couponIds.get(2), room, DiscountType.FLAT, CouponStatus.SOLD_OUT, 1000, 0)
         );
         return coupons;
     }
@@ -524,7 +580,6 @@ class CouponBackofficeControllerTest {
             .stock(stock)
             .build();
     }
-
 
     private CouponMakeViewResponse makeCouponViewResponse() {
         List<CouponRoomsResponse> roomResponses = new ArrayList<>();
