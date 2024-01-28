@@ -10,61 +10,61 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.Comment;
 
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CouponStatistics extends BaseTime {
+@Table(name = "revenue_statistics", indexes = @Index(name = "idx_accommodation_and_revenue_date",
+    columnList = "accommodation_id, revenue_date"))
+public class RevenueStatistics extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Comment("쿠폰 사용량 통계 식별자")
+    @Comment("일자별 매출 식별자")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
         nullable = false,
         name = "accommodation_id",
-        unique = true,
         foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @Comment("숙소 식별자")
     private Accommodation accommodation;
 
-    @Setter
-    @Column(nullable = false)
-    @Comment("발행 쿠폰")
-    private long total;
+    @Column(nullable = false, name = "revenue_date")
+    @Comment("매출 일자")
+    private LocalDate revenueDate;
 
-    @Setter
-    @Column(nullable = false)
-    @Comment("사용 완료 쿠폰")
-    private long used;
+    @Column(nullable = false, name = "coupon_revenue")
+    @Comment("쿠폰 사용 매출")
+    private long couponRevenue;
 
-    @Setter
-    @Column(nullable = false)
-    @Comment("현재 보유 쿠폰")
-    private long stock;
+    @Column(nullable = false, name = "normal revenue")
+    @Comment("쿠폰 미사용 매출")
+    private long regularRevenue;
 
     @Builder
-    public CouponStatistics(
+    public RevenueStatistics(
         Long id,
         Accommodation accommodation,
-        long total,
-        long used,
-        long stock
+        LocalDate revenueDate,
+        long couponRevenue,
+        long regularRevenue
     ) {
         this.id = id;
         this.accommodation = accommodation;
-        this.total = total;
-        this.used = used;
-        this.stock = stock;
+        this.revenueDate = revenueDate;
+        this.couponRevenue = couponRevenue;
+        this.regularRevenue = regularRevenue;
     }
 }

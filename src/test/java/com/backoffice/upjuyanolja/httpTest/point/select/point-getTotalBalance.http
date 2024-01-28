@@ -13,6 +13,6 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:8080/api/points/total
+GET http://localhost:8080/api/points/total-balance
 Accept: application/json
 Authorization: Bearer {{access_token}}

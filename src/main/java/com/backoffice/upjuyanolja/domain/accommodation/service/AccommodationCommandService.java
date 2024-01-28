@@ -14,13 +14,13 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwner
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationImageNotExistsException;
-import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase.AccommodationSaveRequest;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
@@ -84,6 +84,12 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     ) {
         Page<Accommodation> accommodations = accommodationRepository
             .searchPageByCategoryWithTypeAndName(category, keyword, pageable);
+
+        if (accommodations.isEmpty()) {
+            return AccommodationPageResponse.builder()
+                .accommodations(new ArrayList<>())
+                .build();
+        }
 
         return AccommodationPageResponse.of(
             new PageImpl<>(
@@ -163,7 +169,10 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         List<CouponDetailResponse> rateResponses = new ArrayList<>();
 
         for (Room room : rooms) {
-            coupons = couponService.getCouponInRoom(room);
+            coupons = couponService.getCouponInRoom(room).stream()
+                .filter(coupon -> coupon.getCouponStatus().equals(CouponStatus.ENABLE))
+                .toList();
+
             List<CouponDetailResponse> flat = couponService.getSortedCouponResponseInRoom(
                 room, coupons, DiscountType.FLAT);
             List<CouponDetailResponse> rate = couponService.getSortedCouponResponseInRoom(
@@ -210,7 +219,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                         room, getDiscountPrice(room),
                         !checkSoldOut(filterRooms, room),
                         getMinFilteredRoomStock(room, startDate, endDate),
-                        couponService.getSortedTotalCouponResponseInRoom(room)
+                        couponService.getEnableSortedTotalCouponResponseInRoom(room)
                     )
                 )
                 .toList()
@@ -224,7 +233,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
 
     private int getDiscountPrice(Room room) {
-        return couponService.getSortedTotalCouponResponseInRoom(room)
+        return couponService.getEnableSortedTotalCouponResponseInRoom(room)
             .stream()
             .findFirst()
             .map(coupon -> coupon.price())

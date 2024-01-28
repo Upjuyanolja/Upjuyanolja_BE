@@ -6,15 +6,19 @@ import lombok.Builder;
 public record PointChargeReceiptResponse(
     String orderId,
     String tradeAt,
-    long amount
+    long amount,
+    String method
 
 ) {
 
-    public static PointChargeReceiptResponse of(String orderId, String tradeAt, long amount) {
+    public static PointChargeReceiptResponse of(
+        String orderId, String tradeAt, long amount, String method
+    ) {
         return PointChargeReceiptResponse.builder()
             .orderId(orderId)
             .tradeAt(tradeAt)
             .amount(amount)
+            .method(method)
             .build();
     }
 }

@@ -111,7 +111,7 @@ include::{snippets}/coupon-backoffice-controller-docs-test/modify-coupon-request
 
 == 쿠폰 현황 통계
 
-쿠폰 현환 통계 API
+쿠폰 현황 통계 API
 
 === HttpRequest
 
@@ -121,3 +121,19 @@ include::{snippets}/coupon-backoffice-controller-docs-test/coupon-statistics-tes
 
 include::{snippets}/coupon-backoffice-controller-docs-test/coupon-statistics-test/http-response.adoc[]
 include::{snippets}/coupon-backoffice-controller-docs-test/coupon-statistics-test/response-fields.adoc[]
+
+
+[[Statistics-Revenue]]
+
+== 일주일 매출 현황 통계
+
+최근 일주일 매출 현황 통계 API
+
+=== HttpRequest
+
+include::{snippets}/coupon-backoffice-controller-docs-test/revenue-statistics-test/http-request.adoc[]
+
+=== HttpResponse
+
+include::{snippets}/coupon-backoffice-controller-docs-test/revenue-statistics-test/http-response.adoc[]
+include::{snippets}/coupon-backoffice-controller-docs-test/revenue-statistics-test/response-fields.adoc[]

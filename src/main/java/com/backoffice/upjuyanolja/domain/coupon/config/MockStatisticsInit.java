@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.global.scheduler;
+package com.backoffice.upjuyanolja.domain.coupon.config;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
@@ -20,23 +20,42 @@ import java.util.Map;
 import java.util.Map.Entry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.annotation.Transactional;
 
+
 @Slf4j
-@EnableScheduling
+@Configuration
 @RequiredArgsConstructor
 @Transactional
-public class CouponStatisticsScheduler {
+@Profile("prod")
+public class MockStatisticsInit {
 
     private final CouponStatisticsRepository couponStatisticsRepository;
     private final RevenueStatisticsRepository revenueStatisticsRepository;
     private final RevenueTotalRepository revenueTotalRepository;
     private final AccommodationRepository accommodationRepository;
 
-    // 매일 새벽 2시에 통계 쿼리 실행
-    @Scheduled(cron = "0 0 2 * * *", zone = "Asia/Seoul")
+    // Todo: 테스트용. 발표 끝나면 파일 삭제
+    @Bean
+    ApplicationRunner init() {
+        return new ApplicationRunner() {
+            @Override
+            public void run(ApplicationArguments args) throws Exception {
+                if (!couponStatisticsRepository.existsById(1L)) {
+                    makeCouponStatistics();
+                }
+                if (!revenueStatisticsRepository.existsById(1L)) {
+                    createRevenueStatistics();
+                }
+            }
+        };
+    }
+
     public void makeCouponStatistics() {
         List<CouponStatisticsInterface> result = couponStatisticsRepository.createStatistics();
         List<CouponStatistics> statisticsList = new ArrayList<>();
@@ -58,8 +77,6 @@ public class CouponStatisticsScheduler {
             .build();
     }
 
-    // startDate: 일주일 전 - 1일 / endDate : 오늘 날짜 - 1일
-    @Scheduled(cron = "0 30 2 * * *", zone = "Asia/Seoul")
     public void createRevenueStatistics() {
         // 1. 최근 일주일 일자별 통계를 구한다.
         LocalDate now = LocalDate.now(ZoneId.of("Asia/Seoul"));
@@ -95,19 +112,21 @@ public class CouponStatisticsScheduler {
         log.info("매출 합계 통계 생성 성공. 총 {}건.", revenueTotals.size());
     }
 
-    private RevenueTotal getRevenueSum(Entry<Accommodation, long[]> totals) {
+    private static RevenueTotal getRevenueSum(Entry<Accommodation, long[]> totals) {
         Accommodation accommodation = totals.getKey();
         long[] value = totals.getValue();
         long couponTotal = value[0];
         long regularTotal = value[1];
         long difference = couponTotal - regularTotal;
         double growthRate = ((regularTotal + difference) / regularTotal) * 100.0;
-        return RevenueTotal.builder()
+        log.info("매출 상승 비율: {}", growthRate);
+        RevenueTotal revenueSum = RevenueTotal.builder()
             .accommodation(accommodation)
             .couponTotal(couponTotal)
             .regularTotal(regularTotal)
             .growthRate(growthRate)
             .build();
+        return revenueSum;
     }
 
     private RevenueStatistics createRevenueStatistics(
@@ -121,3 +140,4 @@ public class CouponStatisticsScheduler {
             .build();
     }
 }
+

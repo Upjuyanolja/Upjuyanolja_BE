@@ -42,6 +42,10 @@ public class PointCharges extends BaseTime {
     private String orderName;
 
     @Column(nullable = false)
+    @Comment("결제 수단")
+    private String paymentMethod;
+
+    @Column(nullable = false)
     @Comment("충전 포인트")
     private long chargePoint;
 
@@ -73,6 +77,7 @@ public class PointCharges extends BaseTime {
         PointStatus pointStatus,
         String paymentKey,
         String orderName,
+        String paymentMethod,
         long chargePoint,
         long remainPoint,
         LocalDateTime chargeDate,
@@ -83,6 +88,7 @@ public class PointCharges extends BaseTime {
         this.id = id;
         this.pointStatus = pointStatus;
         this.paymentKey = paymentKey;
+        this.paymentMethod = paymentMethod;
         this.orderName = orderName;
         this.chargePoint = chargePoint;
         this.remainPoint = remainPoint;

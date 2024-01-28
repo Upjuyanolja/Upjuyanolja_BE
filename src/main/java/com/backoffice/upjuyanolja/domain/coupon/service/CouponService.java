@@ -4,6 +4,7 @@ import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponAccommodation
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponShortResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
+import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
@@ -31,6 +32,7 @@ public class CouponService {
 
         for (Room room : rooms) {
             List<CouponShortResponse> coupons = couponRepository.findByRoom(room).stream()
+                .filter(coupon -> coupon.getCouponStatus().equals(CouponStatus.ENABLE))
                 .map(coupon -> CouponShortResponse.of(coupon))
                 .toList();
 
@@ -86,7 +88,7 @@ public class CouponService {
     }
 
     @Transactional(readOnly = true)
-    public List<CouponDetailResponse> getSortedTotalCouponResponseInRoom(Room room) {
+    public List<CouponDetailResponse> getEnableSortedTotalCouponResponseInRoom(Room room) {
         List<Coupon> roomCoupons = couponRepository.findByRoom(room);
         int roomPrice = room.getPrice().getOffWeekDaysMinFee();
 
@@ -100,6 +102,7 @@ public class CouponService {
         );
 
         return roomCoupons.stream()
+            .filter(coupon -> coupon.getCouponStatus().equals(CouponStatus.ENABLE))
             .map(coupon -> {
                 int discountedPrice = DiscountType.makePaymentPrice(
                     coupon.getDiscountType(), roomPrice, coupon.getDiscount()
