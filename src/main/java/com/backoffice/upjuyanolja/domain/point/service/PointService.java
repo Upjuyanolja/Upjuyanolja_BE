@@ -240,7 +240,9 @@ public class PointService {
 
         validatePointChargeRequest(request, tossResponse);
         PointCharges chargePoint = createPointCharge(memberPoint, tossResponse);
-        updateTotalPointBalance(memberPoint);
+
+        long totalBalance = memberPoint.getTotalPointBalance() + chargePoint.getChargePoint();
+        updateTotalPointBalance(memberPoint, totalBalance);
 
         return PointChargeResponse.of(chargePoint);
     }
@@ -248,11 +250,15 @@ public class PointService {
     public void refundPoint(Long chargeId) {
         PointCharges pointCharges = pointChargesRepository.findById(chargeId)
             .orElseThrow(PointNotFoundException::new);
+        Point memberPoint = pointCharges.getPoint();
         TossResponse tossResponse = getTossRefundResponse(pointCharges.getPaymentKey());
 
         validatePointRefund(pointCharges);
         updateChargePointStatus(pointCharges, PointStatus.CANCELED);
-        updateTotalPointBalance(pointCharges.getPoint());
+
+        long totalBalance = memberPoint.getTotalPointBalance() - pointCharges.getChargePoint();
+        updateTotalPointBalance(memberPoint, totalBalance);
+
         createPointRefund(pointCharges, tossResponse);
 
     }
@@ -355,10 +361,14 @@ public class PointService {
             .sum();
     }
 
-    private void updateTotalPointBalance(Point point) {
-        long totalPoint =
-            Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L) +
-                Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point)).orElse(0L);
+//    private void updateTotalPointBalance(Point point) {
+//        long totalPoint =
+//            Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L) +
+//                Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point)).orElse(0L);
+//        point.updatePointBalance(totalPoint);
+//        pointRepository.save(point);
+//    }
+    private void updateTotalPointBalance(Point point, long totalPoint) {
         point.updatePointBalance(totalPoint);
         pointRepository.save(point);
     }
@@ -404,7 +414,9 @@ public class PointService {
             }
 
         }
-        updateTotalPointBalance(memberPoint);
+
+        long totalBlance = memberPoint.getTotalPointBalance() - totalPrice;
+        updateTotalPointBalance(memberPoint, totalBlance);
     }
 
     private PointChargeReceiptResponse getPointChargeReceiptResponse(
