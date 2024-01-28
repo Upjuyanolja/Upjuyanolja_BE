@@ -178,9 +178,11 @@ public class PointService {
         List<PointUsageDetailResponse> usageDetailResponses
     ) {
         List<PointTotalDetailResponse> result = new ArrayList<>();
+        long id = 1;
 
         for (PointChargeDetailResponse charge : chargeDetailResponses) {
             result.add(PointTotalDetailResponse.of(
+                id++,
                 charge.category(),
                 charge.type(),
                 charge.status(),
@@ -194,6 +196,7 @@ public class PointService {
         }
         for (PointUsageDetailResponse usage : usageDetailResponses) {
             result.add(PointTotalDetailResponse.of(
+                id++,
                 usage.category(),
                 usage.type(),
                 usage.status(),
@@ -214,17 +217,13 @@ public class PointService {
     private List<PointTotalDetailResponse> getPageOfList(
         Pageable pageable, List<PointTotalDetailResponse> pointTotalDetailResponses
     ) {
-        List<PointTotalDetailResponse> result = new ArrayList<>();
-
         int startIndex = pageable.getPageNumber() * pageable.getPageSize();
-        int endIndex = Math.min(startIndex + pageable.getPageSize(),
-            pointTotalDetailResponses.size());
+        int endIndex = Math.min(
+            startIndex + pageable.getPageSize(),
+            pointTotalDetailResponses.size()
+        );
 
-        for (int i = startIndex; i < endIndex; i++) {
-            result.add(PointTotalDetailResponse.from(i + 1, pointTotalDetailResponses.get(i)));
-        }
-
-        return result;
+        return pointTotalDetailResponses.subList(startIndex, endIndex);
     }
 
     public PointChargeResponse chargePoint(Long memberId, PointChargeRequest request) {
