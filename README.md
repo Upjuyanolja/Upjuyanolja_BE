@@ -95,6 +95,7 @@
       - REST Docs<br />
       - 회원 정보 조회, 이메일 중복 검사<br />
       - 숙소, 객실 관리 기능<br />
+      - S3 이미지 저장 기능<br />
     </td>
     <td align="left">
       - 서브 모듈 도입<br />
@@ -188,7 +189,7 @@
 ### ⏰ 개발 기간
 
 - 2023-12-18 ~ 2023-01-29: 기능 개발
-- 2023-01-20 ~ : 리팩토링 및 고도화 
+- 2023-01-20 ~ : 리팩토링 및 고도화
 
 ### 📅 일정
 
@@ -296,8 +297,7 @@ cd Upjuyanolja
 >       auto: false
 >     stack:
 >       auto: false
-> 
-
+>
 
 3. Docker 컨테이너 실행
 
@@ -314,12 +314,13 @@ gradle bootJar
 ```
 
 5. 테스트 계정
+
 - 업주
-  - email: yowner@gmail.com
-  - password: Qwer1234
+    - email: yowner@gmail.com
+    - password: Qwer1234
 - 회원
-  - email: yuser@gmail.com
-  - password: Qwer1234
+    - email: yuser@gmail.com
+    - password: Qwer1234
 
 ---
 
