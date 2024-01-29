@@ -396,7 +396,6 @@ public class PointService {
         }
 
         long totalBalance = memberPoint.getTotalPointBalance() - totalPrice;
-        validatePointChargeStatus(memberPoint, totalBalance);
         updateTotalPointBalance(memberPoint, totalBalance);
     }
 
@@ -636,15 +635,6 @@ public class PointService {
         if (pointCharges.getChargePoint() > point.getTotalPointBalance() ||
             pointCharges.getPointStatus() != PointStatus.PAID) {
             throw new WrongRefundInfoException();
-        }
-    }
-
-    private void validatePointChargeStatus(Point point, long totalBalance) {
-        long correctBalance =
-            Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L) +
-                Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point)).orElse(0L);
-        if (totalBalance != correctBalance) {
-            throw new PointTradeFailedException();
         }
     }
 
