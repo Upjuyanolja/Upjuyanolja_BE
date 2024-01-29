@@ -51,6 +51,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -119,6 +120,8 @@ public class PointService {
             pointCharges.add(pointCharge);
         }
 
+        pointCharges.sort((p1, p2) -> Long.compare(p2.getId(), p1.getId()));
+
         return PointChargePageResponse.of(new PageImpl<>(
                 getPointChargeDetailResponses(pointCharges),
                 pageable,
@@ -145,6 +148,8 @@ public class PointService {
         for (PointUsage pointusage : pagePointUsages) {
             pointUsages.add(pointusage);
         }
+
+        pointUsages.sort((p1, p2) -> Long.compare(p2.getId(), p1.getId()));
 
         return PointUsagePageResponse.of(new PageImpl<>(
                 getPointUsageDetailResponses(pointUsages),
