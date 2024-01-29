@@ -89,14 +89,22 @@ public class ReservationService {
             room.getPrice().getOffWeekDaysMinFee(), coupon);
 
         /*
-         * 객실 재고 수정
+         * 객실 재고 차감
          * */
-        for (RoomStock roomStock : roomStocks) {
-            stockService.decreaseRoomStock(roomStock.getId()); //lock
+        int index = 0;
+        try {
+            for (RoomStock roomStock : roomStocks) {
+                stockService.decreaseRoomStock(roomStock.getId()); //lock
+                index++;
+            }
+        } catch (Exception e) {
+            for (int i = 0; i < index; i++) {
+                stockService.increaseRoomStock(roomStocks.get(i).getId());
+            }
         }
 
         /*
-         * 쿠폰 재고 수정
+         * 쿠폰 재고 차감
          * */
         if (coupon != null) {
             stockService.decreaseCouponStock(coupon.getId()); //lock
@@ -104,15 +112,26 @@ public class ReservationService {
 
         /*
          * 예약 및 결제 저장
+         * 예외 발생 시 보상트랜잭션(재고 롤백) 수행
          * */
-        Reservation reservation = saveReservation(currentMember, request, room, totalAmount);
+        try {
+            Reservation reservation = saveReservation(currentMember, request, room, totalAmount);
 
-        // 쿠폰 사용 시 쿠폰 사용 내역 저장
-        if (coupon != null) {
-            couponRedeemRepository.save(CouponRedeem.builder()
-                .coupon(coupon)
-                .reservation(reservation)
-                .build());
+            // 쿠폰 사용 시 쿠폰 사용 내역 저장
+            if (coupon != null) {
+                couponRedeemRepository.save(CouponRedeem.builder()
+                    .coupon(coupon)
+                    .reservation(reservation)
+                    .build());
+            }
+        } catch (Exception e) {
+            for (RoomStock roomStock : roomStocks) {
+                stockService.increaseRoomStock(roomStock.getId()); //lock
+            }
+
+            if (coupon != null) {
+                stockService.increaseCouponStock(coupon.getId()); //lock
+            }
         }
     }
 
