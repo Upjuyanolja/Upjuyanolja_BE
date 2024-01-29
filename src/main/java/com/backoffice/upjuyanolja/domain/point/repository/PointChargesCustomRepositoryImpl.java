@@ -48,7 +48,7 @@ public class PointChargesCustomRepositoryImpl implements PointChargesCustomRepos
 
     private BooleanExpression isPointAvailableStatus(Point point) {
         return qPointCharges.point.eq(point)
-            .and(qPointCharges.pointStatus.in(PointStatus.PAID, PointStatus.REMAINED));
+            .and(qPointCharges.pointStatus.ne(PointStatus.CANCELED));
     }
 
     private BooleanExpression eqChargeDate(YearMonth rangeDate) {

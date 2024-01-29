@@ -24,11 +24,9 @@ import com.backoffice.upjuyanolja.domain.point.dto.response.PointUsagePageRespon
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointUsageReceiptResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.TossResponse;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
-import com.backoffice.upjuyanolja.domain.point.entity.PointCategory;
 import com.backoffice.upjuyanolja.domain.point.entity.PointCharges;
 import com.backoffice.upjuyanolja.domain.point.entity.PointRefunds;
 import com.backoffice.upjuyanolja.domain.point.entity.PointStatus;
-import com.backoffice.upjuyanolja.domain.point.entity.PointType;
 import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
 import com.backoffice.upjuyanolja.domain.point.exception.PaymentAuthorizationFailedException;
 import com.backoffice.upjuyanolja.domain.point.exception.PointNotFoundException;
@@ -46,17 +44,19 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -122,6 +122,8 @@ public class PointService {
             pointCharges.add(pointCharge);
         }
 
+        pointCharges.sort((p1, p2) -> Long.compare(p2.getId(), p1.getId()));
+
         return PointChargePageResponse.of(new PageImpl<>(
                 getPointChargeDetailResponses(pointCharges),
                 pageable,
@@ -149,6 +151,8 @@ public class PointService {
             pointUsages.add(pointusage);
         }
 
+        pointUsages.sort((p1, p2) -> Long.compare(p2.getId(), p1.getId()));
+
         return PointUsagePageResponse.of(new PageImpl<>(
                 getPointUsageDetailResponses(pointUsages),
                 pageable,
@@ -169,6 +173,7 @@ public class PointService {
 
         for (PointChargeDetailResponse charge : chargeDetailResponses) {
             pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+                charge.id(),
                 charge.category(),
                 charge.type(),
                 charge.status(),
@@ -182,6 +187,7 @@ public class PointService {
         }
         for (PointUsageDetailResponse usage : usageDetailResponses) {
             pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+                usage.id(),
                 usage.category(),
                 usage.type(),
                 usage.status(),
@@ -199,15 +205,11 @@ public class PointService {
         int endIndex = Math.min(startIndex + pageable.getPageSize(),
             pointTotalDetailResponses.size());
 
-        for (int i = startIndex; i < endIndex; i++) {
-            result.add(PointTotalDetailResponse.from(i + 1, pointTotalDetailResponses.get(i)));
-        }
-
         long total = pointTotalDetailResponses.size();
 
         return PointTotalPageResponse.of(
             new PageImpl<>(
-                result,
+                pointTotalDetailResponses.subList(startIndex,endIndex),
                 pageable,
                 total
             )
@@ -237,7 +239,6 @@ public class PointService {
         updateChargePointStatus(pointCharges, PointStatus.CANCELED);
 
         long totalBalance = memberPoint.getTotalPointBalance() - pointCharges.getChargePoint();
-//        validatePointChargeStatus(memberPoint, totalBalance);
         updateTotalPointBalance(memberPoint, totalBalance);
 
         createPointRefund(pointCharges, tossResponse);
@@ -255,7 +256,8 @@ public class PointService {
 
     public PointUsage usePointForCoupon(final Long memberId, final long totalPrice) {
         Point memberPoint = getMemberPoint(memberId);
-        PointUsage resultPointUsage = createPointUsage(memberPoint, totalPrice);
+        PointUsage resultPointUsage =
+            createPointUsage(memberPoint, totalPrice, getPointUsageReceiptOrderId());
 
         useChargePointForCoupon(totalPrice, memberPoint.getId(), memberPoint);
 
@@ -314,11 +316,12 @@ public class PointService {
     }
 
     private PointUsage createPointUsage(
-        Point point, long orderPrice
+        Point point, long orderPrice, String orderName
     ) {
         PointUsage pointUsage = PointUsage.builder()
             .point(point)
             .orderPrice(orderPrice)
+            .orderName(orderName)
             .orderDate(LocalDateTime.now())
             .build();
 
@@ -351,10 +354,10 @@ public class PointService {
     private void updateChargePointStatus(PointCharges pointCharges, PointStatus pointStatus) {
         pointCharges.updatePointStatus(pointStatus);
         pointCharges.updateRefundable(false);
+        pointChargesRepository.save(pointCharges);
     }
 
-    private void updateChargeRemainPoint(PointCharges pointCharges, long totalPrice) {
-        long remainPoint = pointCharges.getChargePoint() - totalPrice;
+    private void updateChargeRemainPoint(PointCharges pointCharges, long remainPoint) {
         pointCharges.updateRemainPoint(remainPoint);
         pointChargesRepository.save(pointCharges);
     }
@@ -362,7 +365,7 @@ public class PointService {
     private void useChargePointForCoupon(long totalPrice, Long pointChargeId, Point memberPoint) {
         List<PointCharges> pointCharges =
             pointChargesRepository.findByPointId(pointChargeId);
-        long resultPoint = memberPoint.getTotalPointBalance();
+        long resultPoint = 0;
 
         for (PointCharges pointCharge : pointCharges) {
             if (resultPoint >= totalPrice) {
@@ -372,9 +375,10 @@ public class PointService {
             switch (pointCharge.getPointStatus()) {
                 case PAID:
                     resultPoint += pointCharge.getChargePoint();
-                    if (pointCharge.getChargePoint() > totalPrice) {
+                    if (resultPoint > totalPrice) {
                         updateChargePointStatus(pointCharge, PointStatus.REMAINED);
-                        updateChargeRemainPoint(pointCharge, totalPrice);
+                        updateChargeRemainPoint(pointCharge, resultPoint - totalPrice);
+                        continue;
                     }
                     updateChargePointStatus(pointCharge, PointStatus.USED);
                     break;
@@ -382,16 +386,17 @@ public class PointService {
                     resultPoint += pointCharge.getRemainPoint();
                     if (totalPrice >= resultPoint) {
                         updateChargePointStatus(pointCharge, PointStatus.USED);
-                        updateChargeRemainPoint(pointCharge, pointCharge.getRemainPoint());
+                        updateChargeRemainPoint(pointCharge, 0);
+                        continue;
                     }
-                    updateChargeRemainPoint(pointCharge, (resultPoint - totalPrice));
+                    updateChargeRemainPoint(pointCharge, resultPoint - totalPrice);
                     break;
             }
 
         }
 
         long totalBalance = memberPoint.getTotalPointBalance() - totalPrice;
-//        validatePointChargeStatus(memberPoint, totalBalance);
+        validatePointChargeStatus(memberPoint, totalBalance);
         updateTotalPointBalance(memberPoint, totalBalance);
     }
 
@@ -400,9 +405,7 @@ public class PointService {
     ) {
         return pointCharges.stream()
             .map(pointCharge -> PointChargeDetailResponse.of(
-                    pointCharge, getPointChargeCategoryAndType(pointCharge).get(0),
-                    getPointChargeCategoryAndType(pointCharge).get(1),
-                    getPointChargeReceiptResponse(pointCharge)
+                    pointCharge, getPointChargeReceiptResponse(pointCharge)
                 )
             )
             .toList();
@@ -437,30 +440,6 @@ public class PointService {
 
     }
 
-    private List<String> getPointChargeCategoryAndType(PointCharges pointCharges) {
-        List<String> results = new ArrayList<>();
-
-        switch (pointCharges.getPointStatus()) {
-            case PAID:
-                results.add(PointCategory.CHARGE.getDescription());
-                results.add(PointType.POINT.getDescription());
-                break;
-            case CANCELED:
-                results.add(PointCategory.REFUND.getDescription());
-                results.add(PointType.REFUND.getDescription());
-                break;
-            case USED:
-                results.add(PointCategory.USE.getDescription());
-                results.add(PointType.POINT.getDescription());
-                break;
-            case REMAINED:
-                results.add(PointCategory.CHARGE.getDescription());
-                results.add(PointType.POINT.getDescription());
-                break;
-        }
-        return results;
-
-    }
 
     private List<PointUsageDetailResponse> getPointUsageDetailResponses(
         List<PointUsage> pointUsages) {
@@ -540,15 +519,15 @@ public class PointService {
         Map<Room, List<Coupon>> couponIssuancesMap, List<CouponIssuance> couponIssuances
     ) {
         return PointUsageReceiptResponse.of(
-            getPointUsageReceiptOrderId(),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(pointUsages.getOrderDate()),
+            pointUsages,
             accommodationName,
             getPointUsageDetailReceiptResponse(couponIssuancesMap, couponIssuances)
         );
     }
 
     private String getPointUsageReceiptOrderId() {
-        return "O-" + ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
+        return "O-" + new SimpleDateFormat("yyyyMMDDHHmmss")
+            .format(Calendar.getInstance().getTime());
     }
 
     private List<PointUsageDetailReceiptResponse> getPointUsageDetailReceiptResponse(
