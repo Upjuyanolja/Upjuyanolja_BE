@@ -32,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Configuration
 @RequiredArgsConstructor
 @Transactional
-@Profile("prod")
+@Profile("local")
 public class MockStatisticsInit {
 
     private final CouponStatisticsRepository couponStatisticsRepository;
