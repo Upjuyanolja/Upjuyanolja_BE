@@ -16,7 +16,10 @@ import static org.springframework.restdocs.request.RequestDocumentation.pathPara
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.restdocs.snippet.Attributes.key;
 
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
+import com.backoffice.upjuyanolja.domain.reservation.service.ReservationService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageAddRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageDeleteRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
@@ -29,6 +32,7 @@ import com.backoffice.upjuyanolja.domain.room.dto.response.RoomOptionResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomsInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
+import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
 import java.util.List;
@@ -49,7 +53,19 @@ public class RoomControllerDocsTest extends RestDocsSupport {
     private RoomCommandUseCase roomCommandUseCase;
 
     @MockBean
+    private RoomQueryUseCase roomQueryUseCase;
+
+    @MockBean
     private SecurityUtil securityUtil;
+
+    @MockBean
+    private AccommodationCommandService accommodationCommandService;
+
+    @MockBean
+    private AccommodationQueryService accommodationQueryService;
+
+    @MockBean
+    private ReservationService reservationService;
 
     private final ConstraintDescriptions roomRegisterRequestDescriptions = new ConstraintDescriptions(
         RoomRegisterRequest.class);
@@ -263,7 +279,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
             .build();
 
         given(securityUtil.getCurrentMemberId()).willReturn(1L);
-        given(roomCommandUseCase
+        given(roomQueryUseCase
             .getRooms(any(Long.TYPE), any(Long.TYPE), any(Pageable.class)))
             .willReturn(roomPageResponse);
 
@@ -338,7 +354,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
                 )
             ));
 
-        verify(roomCommandUseCase, times(1))
+        verify(roomQueryUseCase, times(1))
             .getRooms(any(Long.TYPE), any(Long.TYPE), any(Pageable.class));
     }
 
@@ -369,7 +385,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
             .build();
 
         given(securityUtil.getCurrentMemberId()).willReturn(1L);
-        given(roomCommandUseCase.getRoom(any(Long.TYPE), any(Long.TYPE)))
+        given(roomQueryUseCase.getRoom(any(Long.TYPE), any(Long.TYPE)))
             .willReturn(roomInfoResponse);
 
         // when then
@@ -418,7 +434,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
                 )
             ));
 
-        verify(roomCommandUseCase, times(1)).getRoom(any(Long.TYPE), any(Long.TYPE));
+        verify(roomQueryUseCase, times(1)).getRoom(any(Long.TYPE), any(Long.TYPE));
     }
 
     @Test
@@ -526,7 +542,7 @@ public class RoomControllerDocsTest extends RestDocsSupport {
                     fieldWithPath("deleteImages").description("삭제할 객실 이미지 배열"),
                     fieldWithPath("deleteImages[].id").description("객실 이미지 식별자")
                         .attributes(key("constraints")
-                            .value(roomImageAddDescriptions.descriptionsForProperty(
+                            .value(roomImageDeleteDescriptions.descriptionsForProperty(
                                 "id"))),
                     fieldWithPath("option").description("객실 옵션"),
                     fieldWithPath("option.airCondition").description("객실 에어컨 여부")

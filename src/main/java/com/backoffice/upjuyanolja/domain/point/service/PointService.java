@@ -2,6 +2,7 @@ package com.backoffice.upjuyanolja.domain.point.service;
 
 
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
@@ -76,6 +77,7 @@ public class PointService {
     private final PointUsageRepository pointUsageRepository;
 
     private final AccommodationCommandService accommodationCommandService;
+    private final AccommodationQueryService accommodationQueryService;
     private final CouponIssuanceGetService couponIssuanceGetService;
     private final MemberGetService memberGetService;
 
@@ -199,7 +201,6 @@ public class PointService {
         int startIndex = pageable.getPageNumber() * pageable.getPageSize();
         int endIndex = Math.min(startIndex + pageable.getPageSize(),
             pointTotalDetailResponses.size());
-
 
         long total = pointTotalDetailResponses.size();
 
@@ -449,7 +450,7 @@ public class PointService {
                         createCouponIssuancesMap(couponIssuances);
                     CouponIssuance selectCouponIssuance = couponIssuances.get(0);
                     String accommodationName =
-                        accommodationCommandService
+                        accommodationQueryService
                             .findAccommodationByRoomId(selectCouponIssuance.getRoom().getId())
                             .getName();
 

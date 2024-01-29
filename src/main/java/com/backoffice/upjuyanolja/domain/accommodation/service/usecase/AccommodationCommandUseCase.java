@@ -17,19 +17,4 @@ public interface AccommodationCommandUseCase {
         long memberId,
         AccommodationRegisterRequest request
     );
-
-    AccommodationPageResponse findAccommodations(
-        String Category,
-        boolean onlyHasCoupon,
-        String keyword,
-        Pageable pageable
-    );
-
-    AccommodationDetailResponse findAccommodationWithRooms(
-        Long accommodationId,
-        LocalDate startDate,
-        LocalDate endDate
-    );
-
-    AccommodationOwnershipResponse getAccommodationOwnership(long memberId);
 }

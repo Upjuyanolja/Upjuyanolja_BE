@@ -8,6 +8,7 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,12 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class CouponService {
 
     private final CouponRepository couponRepository;
-    private final RoomQueryUseCase roomQueryUseCase;
+    private final RoomRepository roomRepository;
 
     @Transactional(readOnly = true)
     public List<CouponAccommodationResponse> findCouponResponseInAccommodation(Long accommodationId) {
         List<CouponAccommodationResponse> responses = new ArrayList<>();
-        List<Room> rooms = roomQueryUseCase.findByAccommodationId(accommodationId);
+        List<Room> rooms = roomRepository.findByAccommodationId(accommodationId);
 
         for (Room room : rooms) {
             List<CouponShortResponse> coupons = couponRepository.findByRoom(room).stream()

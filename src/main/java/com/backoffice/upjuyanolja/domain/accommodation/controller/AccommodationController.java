@@ -2,7 +2,7 @@ package com.backoffice.upjuyanolja.domain.accommodation.controller;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
+import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 public class AccommodationController {
 
-    private final AccommodationCommandUseCase accommodationCommandUseCase;
+    private final AccommodationQueryUseCase accommodationQueryUseCase;
 
     @GetMapping
     public ResponseEntity<AccommodationPageResponse> getAccommodations(
@@ -41,7 +41,7 @@ public class AccommodationController {
     ) {
         log.info("GET /api/accommodations");
 
-        AccommodationPageResponse response = accommodationCommandUseCase
+        AccommodationPageResponse response = accommodationQueryUseCase
             .findAccommodations(category, onlyHasCoupon, keyword, pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -59,7 +59,7 @@ public class AccommodationController {
     ) {
         log.info("GET /api/accommodations/{accommodationId}");
 
-        AccommodationDetailResponse response = accommodationCommandUseCase
+        AccommodationDetailResponse response = accommodationQueryUseCase
             .findAccommodationWithRooms(accommodationId, startDate, endDate);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
