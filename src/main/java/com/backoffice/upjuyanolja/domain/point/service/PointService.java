@@ -234,7 +234,6 @@ public class PointService {
         updateChargePointStatus(pointCharges, PointStatus.CANCELED);
 
         long totalBalance = memberPoint.getTotalPointBalance() - pointCharges.getChargePoint();
-        validatePointChargeStatus(memberPoint, totalBalance);
         updateTotalPointBalance(memberPoint, totalBalance);
 
         createPointRefund(pointCharges, tossResponse);
@@ -636,9 +635,6 @@ public class PointService {
     }
 
     private void validatePointChargeStatus(Point point, long totalBalance) {
-        Long l = Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L);
-        Long l1 = Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point))
-            .orElse(0L);
         long correctBalance =
             Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L) +
                 Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point)).orElse(0L);
