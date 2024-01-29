@@ -51,6 +51,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -119,6 +120,8 @@ public class PointService {
             pointCharges.add(pointCharge);
         }
 
+        pointCharges.sort((p1, p2) -> Long.compare(p2.getId(), p1.getId()));
+
         return PointChargePageResponse.of(new PageImpl<>(
                 getPointChargeDetailResponses(pointCharges),
                 pageable,
@@ -146,6 +149,8 @@ public class PointService {
             pointUsages.add(pointusage);
         }
 
+        pointUsages.sort((p1, p2) -> Long.compare(p2.getId(), p1.getId()));
+
         return PointUsagePageResponse.of(new PageImpl<>(
                 getPointUsageDetailResponses(pointUsages),
                 pageable,
@@ -166,6 +171,7 @@ public class PointService {
 
         for (PointChargeDetailResponse charge : chargeDetailResponses) {
             pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+                charge.id(),
                 charge.category(),
                 charge.type(),
                 charge.status(),
@@ -179,6 +185,7 @@ public class PointService {
         }
         for (PointUsageDetailResponse usage : usageDetailResponses) {
             pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+                usage.id(),
                 usage.category(),
                 usage.type(),
                 usage.status(),
@@ -196,15 +203,12 @@ public class PointService {
         int endIndex = Math.min(startIndex + pageable.getPageSize(),
             pointTotalDetailResponses.size());
 
-        for (int i = startIndex; i < endIndex; i++) {
-            result.add(PointTotalDetailResponse.from(i + 1, pointTotalDetailResponses.get(i)));
-        }
 
         long total = pointTotalDetailResponses.size();
 
         return PointTotalPageResponse.of(
             new PageImpl<>(
-                result,
+                pointTotalDetailResponses.subList(startIndex,endIndex),
                 pageable,
                 total
             )
