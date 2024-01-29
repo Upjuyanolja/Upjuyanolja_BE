@@ -51,7 +51,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +60,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -113,14 +113,13 @@ public class PointService {
     @Transactional(readOnly = true)
     public PointChargePageResponse getPointChargePageResponse(Long memberId, Pageable pageable) {
         Long pointId = getMemberPoint(memberId).getId();
-        Page<PointCharges> pagePointCharges = pointChargesRepository.findPageByPointId(pointId,
+        Page<PointCharges> pagePointCharges = pointChargesRepository.findPageByPointIdOrderByIdDesc(pointId,
             pageable);
+
         List<PointCharges> pointCharges = new ArrayList<>();
         for (PointCharges pointCharge : pagePointCharges) {
             pointCharges.add(pointCharge);
         }
-
-        pointCharges.sort((p1, p2) -> Long.compare(p2.getId(), p1.getId()));
 
         return PointChargePageResponse.of(new PageImpl<>(
                 getPointChargeDetailResponses(pointCharges),
@@ -141,15 +140,13 @@ public class PointService {
     @Transactional(readOnly = true)
     public PointUsagePageResponse getPointUsagePageResponse(Long memberId, Pageable pageable) {
         Long pointId = getMemberPoint(memberId).getId();
-        Page<PointUsage> pagePointUsages = pointUsageRepository.findPageByPointId(
+        Page<PointUsage> pagePointUsages = pointUsageRepository.findPageByPointIdOrderByIdDesc(
             pointId, pageable
         );
         List<PointUsage> pointUsages = new ArrayList<>();
         for (PointUsage pointusage : pagePointUsages) {
             pointUsages.add(pointusage);
         }
-
-        pointUsages.sort((p1, p2) -> Long.compare(p2.getId(), p1.getId()));
 
         return PointUsagePageResponse.of(new PageImpl<>(
                 getPointUsageDetailResponses(pointUsages),
