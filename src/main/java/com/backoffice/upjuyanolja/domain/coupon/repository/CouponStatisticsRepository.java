@@ -10,30 +10,25 @@ import org.springframework.data.jpa.repository.Query;
 public interface CouponStatisticsRepository extends JpaRepository<CouponStatistics, Long> {
 
     String couponQuery = """
-        select t.id, t.total, u.used, t.total - u.used as stock
-        from (select ac.id as id, sum(ci.quantity) as total
-              from coupon_issuance ci
-                       left join room rm on ci.room_id = rm.id
-                       left join coupon cp on cp.id = ci.coupon_id
-                       left join accommodation ac on rm.accommodation_id = ac.id
-              where rm.deleted_at is null
-                and ac.deleted_at is null
-                and cp.deleted_at is null
+        select t.id,
+               coalesce(t.total, 0)                   as total,
+               coalesce(u.used, 0)                    as used,
+               coalesce(t.total - u.used, t.total, 0) as stock
+        from (select ac.id, coalesce(sum(ci.quantity), 0) as total
+              from accommodation ac
+                       join room rm on ac.id = rm.accommodation_id
+                       left join coupon_issuance ci on rm.id = ci.room_id
+                       left join coupon cp on ci.coupon_id = cp.id
+              where cp.deleted_at is null
               group by ac.id) t
-                 inner join
-             (select ac.id as id, count(*) as used
-              from room rm
-                       left join reservation_room rr on rr.room_id = rm.id
+                 left join
+             (select ac.id, coalesce(count(*), 0) as used
+              from accommodation ac
+                       join room rm on ac.id = rm.accommodation_id
+                       left join reservation_room rr on rm.id = rr.room_id
                        left join reservation rv on rr.id = rv.reservation_room_id
-                       left join coupon_redeem cr on rv.id = cr.reservation_id
-                       left join accommodation ac on rm.accommodation_id = ac.id
               where rv.is_coupon_used = true
-                and rm.deleted_at is null
-                and ac.deleted_at is null
-                and not exists(select 1
-                               from coupon cp
-                                        inner join coupon_redeem cr on cr.coupon_id = cp.id
-                               where cp.deleted_at is not null)
+                and rv.status != 'CANCELLED'
               group by ac.id) u
              on t.id = u.id
         """;
