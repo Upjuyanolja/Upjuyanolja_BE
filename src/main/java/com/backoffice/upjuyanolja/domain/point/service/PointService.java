@@ -166,6 +166,7 @@ public class PointService {
 
         for (PointChargeDetailResponse charge : chargeDetailResponses) {
             pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+                charge.id(),
                 charge.category(),
                 charge.type(),
                 charge.status(),
@@ -179,6 +180,7 @@ public class PointService {
         }
         for (PointUsageDetailResponse usage : usageDetailResponses) {
             pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+                usage.id(),
                 usage.category(),
                 usage.type(),
                 usage.status(),
@@ -196,15 +198,12 @@ public class PointService {
         int endIndex = Math.min(startIndex + pageable.getPageSize(),
             pointTotalDetailResponses.size());
 
-        for (int i = startIndex; i < endIndex; i++) {
-            result.add(PointTotalDetailResponse.from(i + 1, pointTotalDetailResponses.get(i)));
-        }
 
         long total = pointTotalDetailResponses.size();
 
         return PointTotalPageResponse.of(
             new PageImpl<>(
-                result,
+                pointTotalDetailResponses.subList(startIndex,endIndex),
                 pageable,
                 total
             )
