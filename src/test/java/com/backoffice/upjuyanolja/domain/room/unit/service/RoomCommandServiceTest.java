@@ -718,12 +718,12 @@ public class RoomCommandServiceTest {
             given(roomQueryUseCase.findAllByAccommodationId(any(Long.TYPE), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(savedRoom)));
             given(couponService.getCouponInRoom(any(Room.class))).willReturn(coupons);
-            given(couponService.getSortedCouponResponseInRoom(
+            given(couponService.getSortedDiscountTypeCouponResponseInRoom(
                 any(Room.class),
                 any(List.class),
                 eq(DiscountType.FLAT)
             )).willReturn(flatCoupons);
-            given(couponService.getSortedCouponResponseInRoom(
+            given(couponService.getSortedDiscountTypeCouponResponseInRoom(
                 any(Room.class),
                 any(List.class),
                 eq(DiscountType.RATE)
@@ -762,12 +762,12 @@ public class RoomCommandServiceTest {
             verify(roomQueryUseCase, times(1))
                 .findAllByAccommodationId(any(Long.TYPE), any(Pageable.class));
             verify(couponService, times(1)).getCouponInRoom(any(Room.class));
-            verify(couponService, times(1)).getSortedCouponResponseInRoom(
+            verify(couponService, times(1)).getSortedDiscountTypeCouponResponseInRoom(
                 any(Room.class),
                 any(List.class),
                 eq(DiscountType.FLAT)
             );
-            verify(couponService, times(1)).getSortedCouponResponseInRoom(
+            verify(couponService, times(1)).getSortedDiscountTypeCouponResponseInRoom(
                 any(Room.class),
                 any(List.class),
                 eq(DiscountType.RATE)

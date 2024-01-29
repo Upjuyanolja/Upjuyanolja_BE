@@ -153,9 +153,9 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         for (Room room : rooms) {
             coupons = couponService.getCouponInRoom(room);
             responses.addAll(
-                couponService.getSortedCouponResponseInRoom(room, coupons, DiscountType.FLAT));
+                couponService.getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.FLAT));
             responses.addAll(
-                couponService.getSortedCouponResponseInRoom(room, coupons, DiscountType.RATE));
+                couponService.getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.RATE));
         }
 
         return responses.stream()
@@ -164,39 +164,19 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
     private String getMainCouponName(Long accommodationId) {
         List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
-        List<Coupon> coupons = new ArrayList<>();
-        List<CouponDetailResponse> flatResponses = new ArrayList<>();
-        List<CouponDetailResponse> rateResponses = new ArrayList<>();
+        String flatName = couponService.getDiscountTypeMainRoomCouponName(rooms, DiscountType.FLAT);
+        String rateName = couponService.getDiscountTypeMainRoomCouponName(rooms, DiscountType.RATE);
 
-        for (Room room : rooms) {
-            coupons = couponService.getCouponInRoom(room).stream()
-                .filter(coupon -> coupon.getCouponStatus().equals(CouponStatus.ENABLE))
-                .toList();
 
-            List<CouponDetailResponse> flat = couponService.getSortedCouponResponseInRoom(
-                room, coupons, DiscountType.FLAT);
-            List<CouponDetailResponse> rate = couponService.getSortedCouponResponseInRoom(
-                room, coupons, DiscountType.RATE);
-            if (!flat.isEmpty()) {
-                flatResponses.add(flat.get(0));
-            }
-            if (!rate.isEmpty()) {
-                rateResponses.add(rate.get(0));
-            }
-        }
-
-        flatResponses.sort(Comparator.comparingInt(CouponDetailResponse::price));
-        rateResponses.sort(Comparator.comparingInt(CouponDetailResponse::price));
-
-        if (flatResponses.isEmpty() && rateResponses.isEmpty()) {
+        if (flatName.isEmpty() && rateName.isEmpty()) {
             return "";
         }
 
-        if (!flatResponses.isEmpty() && !rateResponses.isEmpty()) {
-            return flatResponses.get(0).name() + " or " + rateResponses.get(0).name();
+        if (flatName.isEmpty() || rateName.isEmpty()) {
+            return flatName.isEmpty() ? rateName : flatName;
+        } else {
+            return flatName + " or " + rateName;
         }
-
-        return flatResponses.isEmpty() ? rateResponses.get(0).name() : flatResponses.get(0).name();
 
     }
 
@@ -219,7 +199,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                         room, getDiscountPrice(room),
                         !checkSoldOut(filterRooms, room),
                         getMinFilteredRoomStock(room, startDate, endDate),
-                        couponService.getEnableSortedTotalCouponResponseInRoom(room)
+                        couponService.getSortedTotalCouponResponseInRoom(room)
                     )
                 )
                 .toList()
@@ -233,7 +213,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
 
     private int getDiscountPrice(Room room) {
-        return couponService.getEnableSortedTotalCouponResponseInRoom(room)
+        return couponService.getSortedTotalCouponResponseInRoom(room)
             .stream()
             .findFirst()
             .map(coupon -> coupon.price())

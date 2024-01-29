@@ -114,9 +114,9 @@ public class RoomCommandService implements RoomCommandUseCase {
             List<CouponDetailResponse> couponDetails = new ArrayList<>();
             List<Coupon> coupons = couponService.getCouponInRoom(room);
             couponDetails.addAll(couponService
-                .getSortedCouponResponseInRoom(room, coupons, DiscountType.FLAT));
+                .getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.FLAT));
             couponDetails.addAll(couponService
-                .getSortedCouponResponseInRoom(room, coupons, DiscountType.RATE));
+                .getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.RATE));
             rooms.add(RoomsInfoResponse.of(room, couponDetails));
         });
         return RoomPageResponse.builder()
