@@ -1,5 +1,7 @@
 package com.backoffice.upjuyanolja.domain.point.dto.response;
 
+import com.backoffice.upjuyanolja.domain.point.entity.PointUsage;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.Builder;
 
@@ -13,12 +15,11 @@ public record PointUsageReceiptResponse(
 ) {
 
     public static PointUsageReceiptResponse of(
-        String orderId, String tradeAt,
-        String accommodationName, List<PointUsageDetailReceiptResponse> orders
+        PointUsage pointUsages, String accommodationName, List<PointUsageDetailReceiptResponse> orders
     ) {
         return PointUsageReceiptResponse.builder()
-            .orderId(orderId)
-            .tradeAt(tradeAt)
+            .orderId(pointUsages.getOrderName())
+            .tradeAt(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(pointUsages.getOrderDate()))
             .accommodationName(accommodationName)
             .orders(orders)
             .build();

@@ -18,14 +18,13 @@ public record PointChargeDetailResponse(
 ) {
 
     public static PointChargeDetailResponse of(
-        PointCharges pointCharges, String category, String type,
-        PointChargeReceiptResponse receipt
+        PointCharges pointCharges, PointChargeReceiptResponse receipt
     ) {
         return PointChargeDetailResponse.builder()
             .id(pointCharges.getId())
-            .category(category)
-            .type(type)
-            .status(pointCharges.getPointStatus().getDescription())
+            .category(pointCharges.getPointStatus().getCategory())
+            .type(pointCharges.getPointStatus().getType())
+            .status(pointCharges.getPointStatus().getStatus())
             .name("포인트 충전")
             .trade(pointCharges.getChargePoint())
             .amount(pointCharges.getChargePoint())
