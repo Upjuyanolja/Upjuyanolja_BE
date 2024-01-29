@@ -11,12 +11,12 @@ import org.springframework.data.jpa.repository.Query;
 public interface RevenueStatisticsRepository extends JpaRepository<RevenueStatistics, Long> {
 
     String revenueSQL = """
-        select ac.id         as id,
+        select ac.id,
                py.created_at as revenueDate,
-               coalesce(sum(case when py.discount_amount != 0 then py.total_amount else 0 end),
-                        0)   as couponRevenue,
                coalesce(sum(case when py.discount_amount = 0 then py.total_amount else 0 end),
-                        0)   as regularRevenue
+                        0)   as regularRevenue,
+               coalesce(sum(case when py.discount_amount != 0 then py.total_amount else 0 end),
+                        0)   as couponRevenue
         from reservation_room rr
                  left join reservation rv on rr.id = rv.reservation_room_id
                  left join payment py on rv.payment_id = py.id
@@ -24,12 +24,10 @@ public interface RevenueStatisticsRepository extends JpaRepository<RevenueStatis
                  left join accommodation ac on rm.accommodation_id = ac.id
                  left join coupon cp on cp.room_id = rm.id
         where py.created_at between :startDate and :endDate
-          and rv.status = 'SERVICED'
-          and rm.deleted_at is null
-          and ac.deleted_at is null
+          and rv.status != 'CANCELLED'
           and cp.deleted_at is null
-        group by ac.id, py.created_at
-        order by ac.id, py.created_at
+        group by ac.id, date(py.created_at)
+        order by ac.id, date(py.created_at);
         """;
     @Query(value = revenueSQL, nativeQuery = true)
     List<RevenueStatisticsInterface> createRevenueStatistics(

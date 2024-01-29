@@ -49,7 +49,8 @@ public class MockStatisticsInit {
                 if (!couponStatisticsRepository.existsById(1L)) {
                     makeCouponStatistics();
                 }
-                if (!revenueStatisticsRepository.existsById(1L)) {
+                if (!revenueStatisticsRepository.existsById(1L) ||
+                    !revenueTotalRepository.existsById(1L)) {
                     createRevenueStatistics();
                 }
             }
