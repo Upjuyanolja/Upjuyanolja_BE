@@ -19,7 +19,7 @@ import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
-import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
+import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     private final CategoryRepository categoryRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
     private final AccommodationImageRepository accommodationImageRepository;
-    private final RoomCommandUseCase roomCommandUseCase;
+    private final RoomCommandService roomCommandService;
     private final EntityManager em;
 
     @Override
@@ -85,7 +85,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
         roomValidate(request.rooms());
         request.rooms().forEach(
-            roomRegisterRequest -> roomCommandUseCase.saveRoom(accommodation, roomRegisterRequest));
+            roomRegisterRequest -> roomCommandService.saveRoom(accommodation, roomRegisterRequest));
 
         em.refresh(accommodation);
         return AccommodationInfoResponse.of(accommodation);

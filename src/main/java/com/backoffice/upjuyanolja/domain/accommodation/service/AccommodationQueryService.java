@@ -23,7 +23,6 @@ import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
-import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -47,7 +46,6 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     private final MemberRepository memberRepository;
     private final CouponService couponService;
     private final RoomQueryService roomQueryService;
-    private final RoomCommandUseCase roomCommandUseCase;
 
     @Override
     @Transactional(readOnly = true)
@@ -234,7 +232,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         List<Room> filterRoom = new ArrayList<>();
 
         for (Room room : rooms) {
-            List<RoomStock> filteredStocks = roomCommandUseCase.getFilteredRoomStocksByDate(room,
+            List<RoomStock> filteredStocks = roomQueryService.getFilteredRoomStocksByDate(room,
                 startDate, endDate);
             if (!filteredStocks.isEmpty()) {
                 filterRoom.add(room);
@@ -246,7 +244,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     private int getMinFilteredRoomStock(
         Room room, LocalDate startDate, LocalDate endDate
     ) {
-        return roomCommandUseCase.getFilteredRoomStocksByDate(room, startDate, endDate).stream()
+        return roomQueryService.getFilteredRoomStocksByDate(room, startDate, endDate).stream()
             .mapToInt(RoomStock::getCount)
             .min()
             .orElse(0);

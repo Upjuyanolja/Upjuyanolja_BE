@@ -43,6 +43,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
+import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -79,6 +80,9 @@ class ReservationServiceTest {
 
     @Mock
     RoomCommandUseCase roomCommandUseCase;
+
+    @Mock
+    RoomQueryService roomQueryService;
 
     @Mock
     RoomRepository roomRepository;
@@ -352,7 +356,7 @@ class ReservationServiceTest {
 
             when(roomRepository.findById(any(Long.class))).thenReturn(
                 Optional.ofNullable(mockRoom));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+            when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
 
@@ -379,7 +383,7 @@ class ReservationServiceTest {
 
             when(roomRepository.findById(any(Long.class))).thenReturn(
                 Optional.ofNullable(notMatchedRoom));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+            when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
             when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
@@ -410,7 +414,7 @@ class ReservationServiceTest {
 
             when(roomRepository.findById(any(Long.class))).thenReturn(
                 Optional.ofNullable(mockRoom));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+            when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
             when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
@@ -438,7 +442,7 @@ class ReservationServiceTest {
 
             when(roomRepository.findById(any(Long.class))).thenReturn(
                 Optional.ofNullable(mockRoom));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+            when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
             when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
@@ -473,7 +477,7 @@ class ReservationServiceTest {
 
             when(roomRepository.findById(any(Long.class))).thenReturn(
                 Optional.ofNullable(mockRoom));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+            when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
             when(couponRepository.findByIdAndRoom(any(Long.class),
@@ -580,7 +584,7 @@ class ReservationServiceTest {
             when(couponRedeemRepository.findByReservation(any(Reservation.class)))
                 .thenReturn(Optional.ofNullable(couponRedeem));
             doNothing().when(couponRedeemRepository).delete(any(CouponRedeem.class));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+            when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(new ArrayList<>());
 

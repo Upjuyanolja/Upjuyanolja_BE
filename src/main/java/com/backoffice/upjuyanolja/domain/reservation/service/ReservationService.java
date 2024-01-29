@@ -26,6 +26,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
+import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import java.time.LocalDate;
 import java.time.Period;
@@ -52,6 +53,7 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
 
     private final RoomCommandUseCase roomCommandUseCase;
+    private final RoomQueryService roomQueryService;
     private final ReservationStockService stockService;
 
     @Transactional
@@ -118,7 +120,7 @@ public class ReservationService {
     private List<RoomStock> getRoomStock(Room room, LocalDate startDate, LocalDate endDate) {
         int daysCount = Period.between(startDate, endDate).getDays() + 1;
 
-        List<RoomStock> roomStocks = roomCommandUseCase.getFilteredRoomStocksByDate(room,
+        List<RoomStock> roomStocks = roomQueryService.getFilteredRoomStocksByDate(room,
             startDate, endDate);
 
         if (roomStocks.size() != daysCount ||
@@ -244,7 +246,7 @@ public class ReservationService {
         LocalDate endDate) {
         int daysCount = Period.between(startDate, endDate).getDays() + 1;
 
-        List<RoomStock> roomStocks = roomCommandUseCase.getFilteredRoomStocksByDate(room,
+        List<RoomStock> roomStocks = roomQueryService.getFilteredRoomStocksByDate(room,
             startDate, endDate);
 
         if (roomStocks.size() != daysCount) {
