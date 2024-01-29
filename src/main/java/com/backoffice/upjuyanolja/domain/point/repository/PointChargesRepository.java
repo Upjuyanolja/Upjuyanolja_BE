@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PointChargesRepository extends JpaRepository<PointCharges, Long>,
     PointChargesCustomRepository {
 
-    Page<PointCharges> findPageByPointId(Long pointId, Pageable pageable);
+    Page<PointCharges> findPageByPointIdOrderByIdDesc(Long pointId, Pageable pageable);
 
     List<PointCharges> findByPointId(Long pointId);
 
