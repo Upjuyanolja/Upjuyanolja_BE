@@ -16,7 +16,10 @@ import static org.springframework.restdocs.request.RequestDocumentation.pathPara
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.restdocs.snippet.Attributes.key;
 
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
+import com.backoffice.upjuyanolja.domain.reservation.service.ReservationService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageAddRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageDeleteRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
@@ -54,6 +57,15 @@ public class RoomControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private SecurityUtil securityUtil;
+
+    @MockBean
+    private AccommodationCommandService accommodationCommandService;
+
+    @MockBean
+    private AccommodationQueryService accommodationQueryService;
+
+    @MockBean
+    private ReservationService reservationService;
 
     private final ConstraintDescriptions roomRegisterRequestDescriptions = new ConstraintDescriptions(
         RoomRegisterRequest.class);
