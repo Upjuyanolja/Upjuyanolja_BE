@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PointUsageRepository extends JpaRepository<PointUsage, Long>,
     PointUsageCustomRepository {
 
-    Page<PointUsage> findPageByPointId(Long pointId, Pageable pageable);
+    Page<PointUsage> findPageByPointIdOrderByIdDesc(Long pointId, Pageable pageable);
 
     List<PointUsage> findByPointId(Long pointId);
 
