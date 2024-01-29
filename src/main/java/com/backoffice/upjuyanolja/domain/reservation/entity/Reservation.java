@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.reservation.entity;
 
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -48,11 +47,6 @@ public class Reservation extends BaseTime {
     @Comment("방문자 전화번호")
     private String visitorPhone;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id")
-    @Comment("결제 식별자")
-    private Payment payment;
-
     @Column(nullable = false, name = "is_coupon_used")
     @Comment("쿠폰 사용 여부")
     private Boolean isCouponUsed;
@@ -69,7 +63,6 @@ public class Reservation extends BaseTime {
         ReservationRoom reservationRoom,
         String visitorName,
         String visitorPhone,
-        Payment payment,
         Boolean isCouponUsed,
         ReservationStatus status
     ) {
@@ -78,7 +71,6 @@ public class Reservation extends BaseTime {
         this.reservationRoom = reservationRoom;
         this.visitorName = visitorName;
         this.visitorPhone = visitorPhone;
-        this.payment = payment;
         this.isCouponUsed = isCouponUsed;
         this.status = status;
     }
