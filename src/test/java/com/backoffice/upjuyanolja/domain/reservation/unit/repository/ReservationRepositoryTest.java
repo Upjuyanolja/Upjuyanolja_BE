@@ -12,9 +12,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryReposi
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
-import com.backoffice.upjuyanolja.domain.payment.entity.PayMethod;
-import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
-import com.backoffice.upjuyanolja.domain.payment.repository.PaymentRepository;
 import com.backoffice.upjuyanolja.domain.reservation.entity.Reservation;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationRoom;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
@@ -66,9 +63,6 @@ class ReservationRepositoryTest {
 
     @Autowired
     private ReservationRoomRepository reservationRoomRepository;
-
-    @Autowired
-    private PaymentRepository paymentRepository;
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -173,20 +167,19 @@ class ReservationRepositoryTest {
     }
 
     private void setupDummy() {
-        saveReservation(LocalDate.now(), LocalDate.now().plusDays(1), 0,
+        saveReservation(LocalDate.now(), LocalDate.now().plusDays(1),
             false, ReservationStatus.RESERVED);
-        saveReservation(LocalDate.now(), LocalDate.now().plusDays(1), 1000,
+        saveReservation(LocalDate.now(), LocalDate.now().plusDays(1),
             true, ReservationStatus.RESERVED);
-        saveReservation(LocalDate.now(), LocalDate.now().plusDays(1), 0,
+        saveReservation(LocalDate.now(), LocalDate.now().plusDays(1),
             false, ReservationStatus.SERVICED);
-        saveReservation(LocalDate.now(), LocalDate.now().plusDays(1), 0,
+        saveReservation(LocalDate.now(), LocalDate.now().plusDays(1),
             false, ReservationStatus.CANCELLED);
     }
 
     private void saveReservation(
         LocalDate startDate,
         LocalDate endDate,
-        int discount,
         boolean isCouponUsed,
         ReservationStatus status
     ) {
@@ -198,21 +191,11 @@ class ReservationRepositoryTest {
             .build();
         reservationRoomRepository.save(reservationRoom);
 
-        Payment payment = Payment.builder()
-            .member(member)
-            .payMethod(PayMethod.KAKAO_PAY)
-            .roomPrice(room.getPrice().getOffWeekDaysMinFee())
-            .discountAmount(discount)
-            .totalAmount(room.getPrice().getOffWeekDaysMinFee() - discount)
-            .build();
-        paymentRepository.save(payment);
-
         Reservation reservation = Reservation.builder()
             .member(member)
             .reservationRoom(reservationRoom)
             .visitorName("홍길동")
             .visitorPhone("010-1234-5678")
-            .payment(payment)
             .isCouponUsed(isCouponUsed)
             .status(status)
             .build();

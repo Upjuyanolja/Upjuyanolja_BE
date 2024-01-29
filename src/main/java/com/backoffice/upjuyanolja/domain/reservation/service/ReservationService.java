@@ -178,16 +178,15 @@ public class ReservationService {
         ReservationRoom reservationRoom = saveReservationRoom(request, room);
 
         /*
+         * 예약 저장
+         * */
+        Reservation reservation = saveReservation(member, request, reservationRoom);
+
+        /*
          * 결제 정보 저장
          * 계산한 결제 금액과 요청 결제 금액이 다르면 결제 오류
          */
-        Payment payment = savePayment(member, request, reservationRoom.getPrice(),
-            totalAmount);
-
-        /*
-         * 예약 저장
-         * */
-        Reservation reservation = saveReservation(member, request, reservationRoom, payment);
+        savePayment(member, reservation, request, reservationRoom.getPrice(), totalAmount);
 
         /*
          * 쿠폰 사용 시 쿠폰 사용 내역 저장
@@ -206,30 +205,30 @@ public class ReservationService {
             .build());
     }
 
-    private Payment savePayment(
-        Member member, CreateReservationRequest request, int roomPrice, int totalAmount
-    ) {
-        return paymentRepository.save(Payment.builder()
-            .member(member)
-            .payMethod(request.getPayMethod())
-            .roomPrice(roomPrice)
-            .discountAmount(roomPrice - totalAmount)
-            .totalAmount(totalAmount)
-            .build());
-    }
-
     private Reservation saveReservation(
-        Member member, CreateReservationRequest request, ReservationRoom reservationRoom,
-        Payment payment
+        Member member, CreateReservationRequest request, ReservationRoom reservationRoom
     ) {
         return reservationRepository.save(Reservation.builder()
             .member(member)
             .reservationRoom(reservationRoom)
             .visitorName(request.getVisitorName())
             .visitorPhone(request.getVisitorPhone())
-            .payment(payment)
             .isCouponUsed(request.getCouponId() != null)
             .status(ReservationStatus.RESERVED)
+            .build());
+    }
+
+    private Payment savePayment(
+        Member member, Reservation reservation, CreateReservationRequest request,
+        int roomPrice, int totalAmount
+    ) {
+        return paymentRepository.save(Payment.builder()
+            .member(member)
+            .reservation(reservation)
+            .payMethod(request.getPayMethod())
+            .roomPrice(roomPrice)
+            .discountAmount(roomPrice - totalAmount)
+            .totalAmount(totalAmount)
             .build());
     }
 
@@ -311,7 +310,14 @@ public class ReservationService {
             Arrays.asList(ReservationStatus.RESERVED, ReservationStatus.SERVICED),
             pageable
         );
-        return new GetReservedResponse(reservations);
+
+        List<Payment> payments = new ArrayList<>();
+        for (Reservation reservation : reservations) {
+            Payment payment = paymentRepository.findByReservation(reservation)
+                .orElseThrow(NoSuchReservationException::new);
+            payments.add(payment);
+        }
+        return new GetReservedResponse(reservations, payments);
     }
 
     @Transactional(readOnly = true)
@@ -321,6 +327,13 @@ public class ReservationService {
             List.of(ReservationStatus.CANCELLED),
             pageable
         );
-        return new GetCanceledResponse(reservations);
+
+        List<Payment> payments = new ArrayList<>();
+        for (Reservation reservation : reservations) {
+            Payment payment = paymentRepository.findByReservation(reservation)
+                .orElseThrow(NoSuchReservationException::new);
+            payments.add(payment);
+        }
+        return new GetCanceledResponse(reservations, payments);
     }
 }

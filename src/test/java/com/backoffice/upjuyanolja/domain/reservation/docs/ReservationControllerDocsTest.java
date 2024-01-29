@@ -157,7 +157,6 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
     private Reservation createReservation(
         LocalDate startDate,
         LocalDate endDate,
-        int discount,
         boolean isCouponUsed,
         ReservationStatus status
     ) {
@@ -169,27 +168,28 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
             .price(mockRoom.getPrice().getOffWeekDaysMinFee())
             .build();
 
-        Payment payment = Payment.builder()
-            .id(1L)
-            .member(mockMember)
-            .payMethod(PayMethod.KAKAO_PAY)
-            .roomPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
-            .discountAmount(discount)
-            .totalAmount(mockRoom.getPrice().getOffWeekDaysMinFee() - discount)
-            .build();
-
         Reservation reservation = Reservation.builder()
             .id(1L)
             .member(mockMember)
             .reservationRoom(reservationRoom)
             .visitorName("홍길동")
             .visitorPhone("010-1234-5678")
-            .payment(payment)
             .isCouponUsed(isCouponUsed)
             .status(status)
             .build();
 
         return reservation;
+    }
+
+    private Payment getPayment(Reservation reservation) {
+        return Payment.builder()
+            .member(mockMember)
+            .reservation(reservation)
+            .payMethod(PayMethod.KAKAO_PAY)
+            .roomPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .discountAmount(0)
+            .totalAmount(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .build();
     }
 
     private static CreateReservationRequest createRequest(Long couponId) {
@@ -310,15 +310,20 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         List<Reservation> reservations = new ArrayList<>();
         reservations.add(createReservation(
             LocalDate.now(), LocalDate.now().plusDays(1),
-            0, false, ReservationStatus.RESERVED
+            false, ReservationStatus.RESERVED
         ));
         reservations.add(createReservation(
             LocalDate.now(), LocalDate.now().plusDays(1),
-            0, false, ReservationStatus.SERVICED
+            false, ReservationStatus.SERVICED
         ));
 
         Page<Reservation> mockPage = new PageImpl<>(reservations, pageable, 4);
-        GetReservedResponse mockResponse = new GetReservedResponse(mockPage);
+        List<Payment> mockPayments = new ArrayList<>();
+        for (Reservation reservation : reservations) {
+            Payment payment = getPayment(reservation);
+            mockPayments.add(payment);
+        }
+        GetReservedResponse mockResponse = new GetReservedResponse(mockPage, mockPayments);
 
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
         when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
@@ -378,11 +383,17 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         List<Reservation> reservations = new ArrayList<>();
         reservations.add(createReservation(
             LocalDate.now(), LocalDate.now().plusDays(1),
-            0, false, ReservationStatus.CANCELLED
+            false, ReservationStatus.CANCELLED
         ));
 
         Page<Reservation> mockPage = new PageImpl<>(reservations, pageable, 4);
-        GetCanceledResponse mockResponse = new GetCanceledResponse(mockPage);
+
+        List<Payment> mockPayments = new ArrayList<>();
+        for (Reservation reservation : reservations) {
+            Payment payment = getPayment(reservation);
+            mockPayments.add(payment);
+        }
+        GetCanceledResponse mockResponse = new GetCanceledResponse(mockPage, mockPayments);
 
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
         when(memberGetService.getMemberById(1L)).thenReturn(mockMember);

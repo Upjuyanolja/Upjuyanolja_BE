@@ -10,6 +10,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
@@ -26,7 +27,7 @@ public class GetReservationResponse {
 
     private final List<GetReservationResponse.ReservationDTO> reservations;
 
-    public GetReservationResponse(Page<Reservation> reservations) {
+    public GetReservationResponse(Page<Reservation> reservations, List<Payment> payments) {
         if (reservations == null) {
             this.pageNum = null;
             this.pageSize = null;
@@ -41,8 +42,13 @@ public class GetReservationResponse {
             this.totalPages = reservations.getTotalPages();
             this.totalElements = reservations.getTotalElements();
             this.isLast = reservations.isLast();
-            this.reservations = reservations.stream()
-                .map(GetReservationResponse.ReservationDTO::new).toList();
+
+            List<GetReservationResponse.ReservationDTO> reservationDTOList = new ArrayList<>();
+            for (int i = 0; i < reservations.getContent().size(); i++) {
+                reservationDTOList.add(
+                    new ReservationDTO(reservations.getContent().get(i), payments.get(i)));
+            }
+            this.reservations = reservationDTOList;
         }
     }
 
@@ -66,8 +72,7 @@ public class GetReservationResponse {
         private final LocalDate endDate;
         private final ReservationStatus status;
 
-        public ReservationDTO(Reservation reservation) {
-            Payment payment = reservation.getPayment();
+        public ReservationDTO(Reservation reservation, Payment payment) {
             LocalDateTime createdAt = reservation.getCreatedAt();
 
             this.id = reservation.getId();
