@@ -2,46 +2,28 @@ package com.backoffice.upjuyanolja.domain.accommodation.service;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationImageRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationNameResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationSummaryResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationImageNotExistsException;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
-import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
-import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase.AccommodationSaveRequest;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
-import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
-import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
-import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
-import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
-import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
-import com.backoffice.upjuyanolja.domain.room.exception.RoomNotExistsException;
-import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
-import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
+import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
+import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
+import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
 import jakarta.persistence.EntityManager;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.PriorityQueue;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,13 +32,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AccommodationCommandService implements AccommodationCommandUseCase {
 
-    private final AccommodationQueryUseCase accommodationQueryUseCase;
-    private final AccommodationRepository accommodationRepository;
-    private final CouponService couponService;
-    private final RoomQueryService roomQueryService;
-    private final RoomCommandUseCase roomCommandUseCase;
     private final MemberGetService memberGetService;
-    private final S3UploadService s3UploadService;
+    private final AccommodationRepository accommodationRepository;
+    private final CategoryRepository categoryRepository;
+    private final AccommodationOwnershipRepository accommodationOwnershipRepository;
+    private final AccommodationImageRepository accommodationImageRepository;
+    private final RoomCommandService roomCommandService;
     private final EntityManager em;
 
     @Override
@@ -65,224 +46,65 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         AccommodationRegisterRequest request
     ) {
         Member member = memberGetService.getMemberById(memberId);
-        Accommodation accommodation = saveAccommodation(request);
-        accommodationQueryUseCase.saveOwnership(member, accommodation);
-        if (request.rooms().isEmpty()) {
-            throw new RoomNotExistsException();
-        }
+
+        Category category = getCategory(request.category());
+
+        Accommodation accommodation = accommodationRepository.save(Accommodation.builder()
+            .name(request.name())
+            .address(Address.builder()
+                .address(request.address())
+                .detailAddress(request.detailAddress())
+                .zipCode(request.zipCode())
+                .build())
+            .description(request.description())
+            .category(category)
+            .thumbnail(request.thumbnail())
+            .option(AccommodationOption.builder()
+                .cooking(request.option().cooking())
+                .parking(request.option().parking())
+                .pickup(request.option().pickup())
+                .barbecue(request.option().barbecue())
+                .fitness(request.option().fitness())
+                .karaoke(request.option().karaoke())
+                .sauna(request.option().sauna())
+                .sports(request.option().sports())
+                .seminar(request.option().seminar())
+                .build())
+            .rooms(new ArrayList<>())
+            .images(new ArrayList<>())
+            .build());
+
+        imageValidate(request.images());
+        accommodationImageRepository.saveAll(AccommodationImageRequest
+            .toEntity(accommodation, request.images()));
+
+        accommodationOwnershipRepository.save(AccommodationOwnership.builder()
+            .accommodation(accommodation)
+            .member(member)
+            .build());
+
+        roomValidate(request.rooms());
         request.rooms().forEach(
-            roomRegisterRequest -> roomCommandUseCase.saveRoom(accommodation, roomRegisterRequest));
+            roomRegisterRequest -> roomCommandService.saveRoom(accommodation, roomRegisterRequest));
 
         em.refresh(accommodation);
         return AccommodationInfoResponse.of(accommodation);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public AccommodationPageResponse findAccommodations(
-        String category, boolean onlyHasCoupon, String keyword, Pageable pageable
-    ) {
-        Page<Accommodation> accommodations = accommodationRepository
-            .searchPageByCategoryWithTypeAndName(category, keyword, pageable);
-
-        if (accommodations.isEmpty()) {
-            return AccommodationPageResponse.builder()
-                .accommodations(new ArrayList<>())
-                .build();
-        }
-
-        return AccommodationPageResponse.of(
-            new PageImpl<>(
-                accommodations.stream()
-                    .filter(
-                        accommodation -> !onlyHasCoupon || this.checkCouponAvailability(
-                            accommodation))
-                    .map(accommodation -> {
-                        int lowestPrice = getLowestPrice(accommodation.getId());
-                        Optional<CouponDetailResponse> discountInfo = getDiscountInfo(
-                            accommodation.getId());
-                        return AccommodationSummaryResponse.of(
-                            accommodation, lowestPrice,
-                            discountInfo.map(response -> response.price()).orElse(lowestPrice),
-                            discountInfo.map(response -> response.name()).orElse("")
-
-                        );
-                    })
-                    .toList(),
-                pageable,
-                accommodations.getTotalElements()
-            )
-        );
+    private Category getCategory(String category) {
+        return categoryRepository.findCategoryByNameAndIdGreaterThan(category, 4L)
+            .orElseThrow(WrongCategoryException::new);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public AccommodationOwnershipResponse getAccommodationOwnership(long memberId) {
-        Member member = memberGetService.getMemberById(memberId);
-        List<AccommodationOwnership> ownerships = accommodationQueryUseCase
-            .getOwnershipByMember(member);
-        List<AccommodationNameResponse> accommodations = new ArrayList<>();
-        ownerships.forEach(ownership -> accommodations.add(
-            AccommodationNameResponse.of(ownership.getAccommodation())));
-        return AccommodationOwnershipResponse.builder()
-            .accommodations(accommodations)
-            .build();
-    }
-
-    private boolean checkCouponAvailability(Accommodation accommodation) {
-        return !couponService.findCouponResponseInAccommodation(accommodation.getId()).isEmpty();
-    }
-
-    private int getLowestPrice(Long accommodationId) {
-        List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
-
-        PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
-
-        for (Room room : rooms) {
-            pq.offer(room.getPrice().getOffWeekDaysMinFee());
-        }
-
-        return pq.poll();
-    }
-
-    private Optional<CouponDetailResponse> getDiscountInfo(Long accommodationId) {
-        List<CouponDetailResponse> responses = new ArrayList<>();
-        List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
-        List<Coupon> coupons = new ArrayList<>();
-
-        for (Room room : rooms) {
-            coupons = couponService.getCouponInRoom(room);
-            responses.addAll(
-                couponService.getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.FLAT));
-            responses.addAll(
-                couponService.getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.RATE));
-        }
-
-        return responses.stream()
-            .min(Comparator.comparingInt(CouponDetailResponse::price));
-    }
-
-    private String getMainCouponName(Long accommodationId) {
-        List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
-        String flatName = couponService.getDiscountTypeMainRoomCouponName(rooms, DiscountType.FLAT);
-        String rateName = couponService.getDiscountTypeMainRoomCouponName(rooms, DiscountType.RATE);
-
-
-        if (flatName.isEmpty() && rateName.isEmpty()) {
-            return "";
-        }
-
-        if (flatName.isEmpty() || rateName.isEmpty()) {
-            return flatName.isEmpty() ? rateName : flatName;
-        } else {
-            return flatName + " or " + rateName;
-        }
-
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public AccommodationDetailResponse findAccommodationWithRooms(
-        Long accommodationId, LocalDate startDate, LocalDate endDate
-    ) {
-        Accommodation accommodation = accommodationQueryUseCase.getAccommodationById(
-            accommodationId);
-
-        List<Room> filterRooms = getFilteredRoomsByDate(
-            accommodation.getRooms(), startDate, endDate
-        );
-
-        return AccommodationDetailResponse.of(accommodation,
-            getMainCouponName(accommodationId),
-            accommodation.getRooms().stream()
-                .map(room -> RoomResponse.of(
-                        room, getDiscountPrice(room),
-                        !checkSoldOut(filterRooms, room),
-                        getMinFilteredRoomStock(room, startDate, endDate),
-                        couponService.getSortedTotalCouponResponseInRoom(room)
-                    )
-                )
-                .toList()
-        );
-    }
-
-    @Transactional(readOnly = true)
-    public Accommodation findAccommodationByRoomId(long roomId) {
-        return roomQueryService.findRoomById(roomId).getAccommodation();
-    }
-
-
-    private int getDiscountPrice(Room room) {
-        return couponService.getSortedTotalCouponResponseInRoom(room)
-            .stream()
-            .findFirst()
-            .map(coupon -> coupon.price())
-            .orElse(room.getPrice().getOffWeekDaysMinFee());
-    }
-
-    private List<Room> getFilteredRoomsByDate(
-        List<Room> rooms, LocalDate startDate, LocalDate endDate
-    ) {
-        List<Room> filterRoom = new ArrayList<>();
-
-        for (Room room : rooms) {
-            List<RoomStock> filteredStocks = roomCommandUseCase.getFilteredRoomStocksByDate(room,
-                startDate, endDate);
-            if (!filteredStocks.isEmpty()) {
-                filterRoom.add(room);
-            }
-        }
-        return filterRoom;
-    }
-
-    private int getMinFilteredRoomStock(
-        Room room, LocalDate startDate, LocalDate endDate
-    ) {
-        return roomCommandUseCase.getFilteredRoomStocksByDate(room, startDate, endDate).stream()
-            .mapToInt(RoomStock::getCount)
-            .min()
-            .orElse(0);
-    }
-
-    private boolean checkSoldOut(List<Room> rooms, Room room) {
-        return rooms.contains(room);
-    }
-
-    private Accommodation saveAccommodation(AccommodationRegisterRequest request) {
-        Category category = accommodationQueryUseCase.getCategoryByName(request.category());
-
-        Accommodation accommodation = accommodationQueryUseCase.saveAccommodation(
-            AccommodationSaveRequest.builder()
-                .name(request.name())
-                .address(Address.builder()
-                    .address(request.address())
-                    .detailAddress(request.detailAddress())
-                    .zipCode(request.zipCode())
-                    .build())
-                .description(request.description())
-                .category(category)
-                .thumbnail(request.thumbnail())
-                .option(AccommodationOption.builder()
-                    .cooking(request.option().cooking())
-                    .parking(request.option().parking())
-                    .pickup(request.option().pickup())
-                    .barbecue(request.option().barbecue())
-                    .fitness(request.option().fitness())
-                    .karaoke(request.option().karaoke())
-                    .sauna(request.option().sauna())
-                    .sports(request.option().sports())
-                    .seminar(request.option().seminar())
-                    .build()
-                )
-                .build());
-
-        if (request.images().isEmpty()) {
+    private void imageValidate(List<AccommodationImageRequest> accommodationImageRequests) {
+        if (accommodationImageRequests.isEmpty()) {
             throw new AccommodationImageNotExistsException();
         }
+    }
 
-        accommodationQueryUseCase.saveAllImages(AccommodationImageRequest
-            .toEntity(accommodation, request.images()));
-
-        return accommodation;
+    private void roomValidate(List<RoomRegisterRequest> roomRegisterRequests) {
+        if (roomRegisterRequests.isEmpty()) {
+            throw new RoomNotFoundException();
+        }
     }
 }

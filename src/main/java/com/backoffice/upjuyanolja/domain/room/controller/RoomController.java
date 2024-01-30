@@ -5,7 +5,9 @@ import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomUpdateRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
+import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
+import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RoomController {
 
     private final RoomCommandUseCase roomCommandUseCase;
+    private final RoomQueryUseCase roomQueryUseCase;
     private final SecurityUtil securityUtil;
 
     @PostMapping
@@ -58,7 +61,7 @@ public class RoomController {
             pageSize
         );
 
-        RoomPageResponse response = roomCommandUseCase.getRooms(
+        RoomPageResponse response = roomQueryUseCase.getRooms(
             securityUtil.getCurrentMemberId(),
             accommodationId,
             RoomPageRequest.builder()
@@ -76,7 +79,7 @@ public class RoomController {
     ) {
         log.info("GET /backoffice-api/accommodations/{}/rooms/{}", accommodationId, roomId);
 
-        RoomInfoResponse response = roomCommandUseCase
+        RoomInfoResponse response = roomQueryUseCase
             .getRoom(securityUtil.getCurrentMemberId(), roomId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

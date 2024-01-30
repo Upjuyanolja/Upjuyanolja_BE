@@ -20,6 +20,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOptionResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
@@ -43,6 +44,9 @@ public class AccommodationBackofficeControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private AccommodationCommandService accommodationCommandService;
+
+    @MockBean
+    private AccommodationQueryService accommodationQueryService;
 
     @MockBean
     private SecurityUtil securityUtil;
@@ -376,7 +380,7 @@ public class AccommodationBackofficeControllerDocsTest extends RestDocsSupport {
             .build();
 
         given(securityUtil.getCurrentMemberId()).willReturn(1L);
-        given(accommodationCommandService.getAccommodationOwnership(any(Long.TYPE)))
+        given(accommodationQueryService.getAccommodationOwnership(any(Long.TYPE)))
             .willReturn(accommodationOwnershipResponse);
 
         // when then
@@ -392,6 +396,6 @@ public class AccommodationBackofficeControllerDocsTest extends RestDocsSupport {
                 )
             ));
 
-        verify(accommodationCommandService, times(1)).getAccommodationOwnership(any(Long.TYPE));
+        verify(accommodationQueryService, times(1)).getAccommodationOwnership(any(Long.TYPE));
     }
 }

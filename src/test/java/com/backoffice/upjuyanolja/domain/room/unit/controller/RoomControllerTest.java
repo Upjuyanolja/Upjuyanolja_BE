@@ -26,6 +26,7 @@ import com.backoffice.upjuyanolja.domain.room.dto.response.RoomOptionResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomsInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
+import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -61,6 +62,9 @@ public class RoomControllerTest {
 
     @MockBean
     private RoomCommandUseCase roomCommandUseCase;
+
+    @MockBean
+    private RoomQueryUseCase roomQueryUseCase;
 
     @MockBean
     private SecurityUtil securityUtil;
@@ -202,7 +206,7 @@ public class RoomControllerTest {
                 .build();
 
             given(securityUtil.getCurrentMemberId()).willReturn(1L);
-            given(roomCommandUseCase
+            given(roomQueryUseCase
                 .getRooms(any(Long.TYPE), any(Long.TYPE), any(Pageable.class)))
                 .willReturn(roomPageResponse);
 
@@ -240,7 +244,7 @@ public class RoomControllerTest {
                 .andExpect(jsonPath("$.rooms[0].coupons[0].price").isNumber())
                 .andDo(print());
 
-            verify(roomCommandUseCase, times(1))
+            verify(roomQueryUseCase, times(1))
                 .getRooms(any(Long.TYPE), any(Long.TYPE), any(Pageable.class));
         }
     }
@@ -275,7 +279,7 @@ public class RoomControllerTest {
                 .build();
 
             given(securityUtil.getCurrentMemberId()).willReturn(1L);
-            given(roomCommandUseCase.getRoom(any(Long.TYPE), any(Long.TYPE)))
+            given(roomQueryUseCase.getRoom(any(Long.TYPE), any(Long.TYPE)))
                 .willReturn(roomInfoResponse);
 
             // when then
@@ -301,7 +305,7 @@ public class RoomControllerTest {
                 .andExpect(jsonPath("$.option.internet").isBoolean())
                 .andDo(print());
 
-            verify(roomCommandUseCase, times(1)).getRoom(any(Long.TYPE), any(Long.TYPE));
+            verify(roomQueryUseCase, times(1)).getRoom(any(Long.TYPE), any(Long.TYPE));
         }
     }
 

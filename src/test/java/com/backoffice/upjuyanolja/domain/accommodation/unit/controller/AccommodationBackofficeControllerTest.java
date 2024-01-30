@@ -20,6 +20,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOptionResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
@@ -60,6 +61,9 @@ public class AccommodationBackofficeControllerTest {
 
     @MockBean
     private AccommodationCommandService accommodationCommandService;
+
+    @MockBean
+    private AccommodationQueryService accommodationQueryService;
 
     @MockBean
     private SecurityUtil securityUtil;
@@ -228,7 +232,7 @@ public class AccommodationBackofficeControllerTest {
                 .build();
 
             given(securityUtil.getCurrentMemberId()).willReturn(1L);
-            given(accommodationCommandService.getAccommodationOwnership(any(Long.TYPE)))
+            given(accommodationQueryService.getAccommodationOwnership(any(Long.TYPE)))
                 .willReturn(accommodationOwnershipResponse);
 
             // when then
@@ -239,7 +243,7 @@ public class AccommodationBackofficeControllerTest {
                 .andExpect(jsonPath("$.accommodations[0].name").isString())
                 .andDo(print());
 
-            verify(accommodationCommandService, times(1)).getAccommodationOwnership(any(Long.TYPE));
+            verify(accommodationQueryService, times(1)).getAccommodationOwnership(any(Long.TYPE));
         }
     }
 }

@@ -1,11 +1,9 @@
 package com.backoffice.upjuyanolja.domain.room.service;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
-import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
-import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
-import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
-import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageAddRequest;
@@ -15,8 +13,6 @@ import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomUpdateRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
-import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
-import com.backoffice.upjuyanolja.domain.room.dto.response.RoomsInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
@@ -26,8 +22,12 @@ import com.backoffice.upjuyanolja.domain.room.exception.CanNotDeleteLastRoomExce
 import com.backoffice.upjuyanolja.domain.room.exception.DuplicateRoomNameException;
 import com.backoffice.upjuyanolja.domain.room.exception.InvalidRoomStatusException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomImageNotExistsException;
+import com.backoffice.upjuyanolja.domain.room.exception.RoomImageNotFoundException;
+import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
-import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import com.backoffice.upjuyanolja.global.util.DateTimeParser;
 import jakarta.persistence.EntityManager;
@@ -37,8 +37,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -47,10 +45,12 @@ import org.springframework.stereotype.Service;
 public class RoomCommandService implements RoomCommandUseCase {
 
     private final MemberGetService memberGetService;
-    private final RoomQueryUseCase roomQueryUseCase;
-    private final AccommodationQueryUseCase accommodationQueryUseCase;
+    private final RoomRepository roomRepository;
+    private final RoomImageRepository roomImageRepository;
+    private final RoomStockRepository roomStockRepository;
+    private final AccommodationRepository accommodationRepository;
+    private final AccommodationOwnershipRepository accommodationOwnershipRepository;
     private final EntityManager em;
-    private final CouponService couponService;
 
     @Override
     public RoomInfoResponse registerRoom(
@@ -59,21 +59,20 @@ public class RoomCommandService implements RoomCommandUseCase {
         RoomRegisterRequest request
     ) {
         Member member = memberGetService.getMemberById(memberId);
-        Accommodation accommodation = accommodationQueryUseCase
-            .getAccommodationById(accommodationId);
+        Accommodation accommodation = accommodationRepository.findById(accommodationId)
+            .orElseThrow(AccommodationNotFoundException::new);
         checkOwnership(member, accommodation);
 
         return saveRoom(accommodation, request);
     }
 
-    @Override
     public RoomInfoResponse saveRoom(Accommodation accommodation, RoomRegisterRequest request) {
         validateRoomName(request.name(), accommodation);
         if (request.images().isEmpty()) {
             throw new RoomImageNotExistsException();
         }
 
-        Room room = roomQueryUseCase.saveRoom(accommodation, Room.builder()
+        Room room = roomRepository.save(Room.builder()
             .accommodation(accommodation)
             .name(request.name())
             .status(RoomStatus.SELLING)
@@ -92,10 +91,9 @@ public class RoomCommandService implements RoomCommandUseCase {
             .option(RoomOptionRequest.toEntity(request.option()))
             .build()
         );
-        // 저장한 객실 이미지를 응답하기 위한 임시 방편
-        roomQueryUseCase.saveRoomImages(RoomImageRequest.toEntity(room, request.images()))
+
+        roomImageRepository.saveAll(RoomImageRequest.toEntity(room, request.images()))
             .forEach(roomImage -> room.getImages().add(roomImage));
-//        em.refresh(room);
 
         createRoomStock(room);
 
@@ -103,73 +101,28 @@ public class RoomCommandService implements RoomCommandUseCase {
     }
 
     @Override
-    public RoomPageResponse getRooms(long memberId, long accommodationId, Pageable pageable) {
-        Member member = memberGetService.getMemberById(memberId);
-        Accommodation accommodation = accommodationQueryUseCase
-            .getAccommodationById(accommodationId);
-        checkOwnership(member, accommodation);
-        List<RoomsInfoResponse> rooms = new ArrayList<>();
-        Page<Room> roomPage = roomQueryUseCase.findAllByAccommodationId(accommodationId, pageable);
-        roomPage.get().forEach(room -> {
-            List<CouponDetailResponse> couponDetails = new ArrayList<>();
-            List<Coupon> coupons = couponService.getCouponInRoom(room);
-            couponDetails.addAll(couponService
-                .getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.FLAT));
-            couponDetails.addAll(couponService
-                .getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.RATE));
-            rooms.add(RoomsInfoResponse.of(room, couponDetails));
-        });
-        return RoomPageResponse.builder()
-            .pageNum(roomPage.getNumber())
-            .pageSize(roomPage.getSize())
-            .totalPages(roomPage.getTotalPages())
-            .totalElements(roomPage.getTotalElements())
-            .isLast(roomPage.isLast())
-            .rooms(rooms)
-            .build();
-    }
-
-    @Override
-    public RoomInfoResponse getRoom(long memberId, long roomId) {
-        Member member = memberGetService.getMemberById(memberId);
-        Room room = roomQueryUseCase.findRoomById(roomId);
-        checkOwnership(member, room.getAccommodation());
-        return RoomInfoResponse.of(room);
-    }
-
-    @Override
     public RoomInfoResponse modifyRoom(long memberId, long roomId, RoomUpdateRequest request) {
         Member member = memberGetService.getMemberById(memberId);
-        Room room = roomQueryUseCase.findRoomById(roomId);
+        Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
 
         if (!room.getName().equals(request.name())) {
             validateRoomName(request.name(), room.getAccommodation());
         }
         validateRoomStatus(request.status());
         checkOwnership(member, room.getAccommodation());
+
         updateRoom(room, request);
+
         em.flush();
         em.refresh(room);
-        return RoomInfoResponse.of(room);
-    }
 
-    @Override
-    public List<RoomStock> getFilteredRoomStocksByDate(
-        Room room, LocalDate startDate, LocalDate endDate
-    ) {
-        return roomQueryUseCase.findStockByRoom(room).stream()
-            .filter(
-                stock ->
-                    !(stock.getDate().isBefore(startDate)) &&
-                        !(stock.getDate().isAfter(endDate))
-            )
-            .toList();
+        return RoomInfoResponse.of(room);
     }
 
     @Override
     public RoomInfoResponse deleteRoom(long memberId, long roomId) {
         Member member = memberGetService.getMemberById(memberId);
-        Room room = roomQueryUseCase.findRoomById(roomId);
+        Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
         checkOwnership(member, room.getAccommodation());
         if (isLastRoom(room)) {
             throw new CanNotDeleteLastRoomException();
@@ -179,14 +132,14 @@ public class RoomCommandService implements RoomCommandUseCase {
     }
 
     private void validateRoomName(String name, Accommodation accommodation) {
-        if (roomQueryUseCase.existsRoomByNameAndAccommodation(name, accommodation)) {
+        if (roomRepository.existsRoomByNameAndAccommodation(name, accommodation)) {
             throw new DuplicateRoomNameException();
         }
     }
 
     private void checkOwnership(Member member, Accommodation accommodation) {
-        if (!accommodationQueryUseCase
-            .existsOwnershipByMemberAndAccommodation(member, accommodation)) {
+        if (!accommodationOwnershipRepository
+            .existsAccommodationOwnershipByMemberAndAccommodation(member, accommodation)) {
             throw new NotOwnerException();
         }
     }
@@ -197,12 +150,12 @@ public class RoomCommandService implements RoomCommandUseCase {
         }
         room.updateRoom(request.toRoomUpdateDto());
         addRoomImages(room, request.addImages());
-        roomQueryUseCase.deleteRoomImages(getRoomImages(request.deleteImages()));
+        roomImageRepository.deleteAll(getRoomImages(request.deleteImages()));
     }
 
     private void updateRoomStock(Room room, int quantity) {
-        List<RoomStock> stocks = roomQueryUseCase
-            .findStocksByRoomAndDateAfter(room, LocalDate.now().minusDays(1));
+        List<RoomStock> stocks = roomStockRepository
+            .findAllByRoomAndDateAfter(room, LocalDate.now().minusDays(1));
         stocks.forEach(stock -> stock.update(quantity));
     }
 
@@ -214,13 +167,14 @@ public class RoomCommandService implements RoomCommandUseCase {
                 .url(request.url())
                 .build());
         }
-        roomQueryUseCase.saveRoomImages(images);
+        roomImageRepository.saveAll(images);
     }
 
     private List<RoomImage> getRoomImages(List<RoomImageDeleteRequest> requests) {
         List<RoomImage> images = new ArrayList<>();
         for (RoomImageDeleteRequest request : requests) {
-            images.add(roomQueryUseCase.findRoomImage(request.id()));
+            images.add(roomImageRepository.findById(request.id())
+                .orElseThrow(RoomImageNotFoundException::new));
         }
         return images;
     }
@@ -240,7 +194,7 @@ public class RoomCommandService implements RoomCommandUseCase {
 
     private void createRoomStock(Room room) {
         for (int i = 0; i < 30; i++) {
-            roomQueryUseCase.saveRoomStock(RoomStock.builder()
+            roomStockRepository.save(RoomStock.builder()
                 .room(room)
                 .count(room.getAmount())
                 .date(LocalDate.now().plusDays(i))

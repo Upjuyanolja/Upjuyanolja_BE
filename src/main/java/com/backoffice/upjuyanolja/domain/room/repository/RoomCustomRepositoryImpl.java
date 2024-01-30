@@ -18,8 +18,10 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
+@Component
 @Repository
 public class RoomCustomRepositoryImpl implements RoomCustomRepository {
 

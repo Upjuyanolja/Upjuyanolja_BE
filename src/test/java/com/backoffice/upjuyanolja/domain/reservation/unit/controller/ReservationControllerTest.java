@@ -10,10 +10,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
-import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponType;
-import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
@@ -166,19 +162,6 @@ class ReservationControllerTest {
         return room;
     }
 
-    private static Coupon createCoupon() {
-        return Coupon.builder()
-            .room(mockRoom)
-            .couponType(CouponType.ALL_DAYS)
-            .discountType(DiscountType.FLAT)
-            .couponStatus(CouponStatus.ENABLE)
-            .discount(1000)
-            .endDate(LocalDate.now().plusMonths(1))
-            .dayLimit(10)
-            .stock(5)
-            .build();
-    }
-
     private Reservation createReservation(
         LocalDate startDate,
         LocalDate endDate,
@@ -194,27 +177,28 @@ class ReservationControllerTest {
             .price(mockRoom.getPrice().getOffWeekDaysMinFee())
             .build();
 
-        Payment payment = Payment.builder()
-            .id(1L)
-            .member(mockMember)
-            .payMethod(PayMethod.KAKAO_PAY)
-            .roomPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
-            .discountAmount(discount)
-            .totalAmount(mockRoom.getPrice().getOffWeekDaysMinFee() - discount)
-            .build();
-
         Reservation reservation = Reservation.builder()
             .id(1L)
             .member(mockMember)
             .reservationRoom(reservationRoom)
             .visitorName("홍길동")
             .visitorPhone("010-1234-5678")
-            .payment(payment)
             .isCouponUsed(isCouponUsed)
             .status(status)
             .build();
 
         return reservation;
+    }
+
+    private Payment createPayment(Reservation reservation) {
+        return Payment.builder()
+            .member(mockMember)
+            .reservation(reservation)
+            .payMethod(PayMethod.KAKAO_PAY)
+            .roomPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .discountAmount(0)
+            .totalAmount(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .build();
     }
 
     @Nested
@@ -322,7 +306,13 @@ class ReservationControllerTest {
 
             Page<Reservation> mockPage = new PageImpl<>(reservations, pageable,
                 reservations.size());
-            GetReservedResponse mockResponse = new GetReservedResponse(mockPage);
+
+            List<Payment> mockPayments = new ArrayList<>();
+            for (Reservation reservation : reservations) {
+                Payment payment = createPayment(reservation);
+                mockPayments.add(payment);
+            }
+            GetReservedResponse mockResponse = new GetReservedResponse(mockPage, mockPayments);
 
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
             when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
@@ -399,7 +389,13 @@ class ReservationControllerTest {
 
             Page<Reservation> mockPage = new PageImpl<>(reservations, pageable,
                 reservations.size());
-            GetCanceledResponse mockResponse = new GetCanceledResponse(mockPage);
+
+            List<Payment> mockPayments = new ArrayList<>();
+            for (Reservation reservation : reservations) {
+                Payment payment = createPayment(reservation);
+                mockPayments.add(payment);
+            }
+            GetCanceledResponse mockResponse = new GetCanceledResponse(mockPage, mockPayments);
 
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
             when(memberGetService.getMemberById(1L)).thenReturn(mockMember);

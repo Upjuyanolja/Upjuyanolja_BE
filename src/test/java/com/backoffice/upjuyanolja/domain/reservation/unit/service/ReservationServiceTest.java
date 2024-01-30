@@ -22,6 +22,7 @@ import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.payment.entity.PayMethod;
 import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
+import com.backoffice.upjuyanolja.domain.payment.repository.PaymentRepository;
 import com.backoffice.upjuyanolja.domain.reservation.dto.request.CreateReservationRequest;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetCanceledResponse;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservedResponse;
@@ -34,7 +35,6 @@ import com.backoffice.upjuyanolja.domain.reservation.exception.NoSuchReservation
 import com.backoffice.upjuyanolja.domain.reservation.exception.NoSuchReservationRoomException;
 import com.backoffice.upjuyanolja.domain.reservation.exception.PaymentFailureException;
 import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRepository;
-import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRoomRepository;
 import com.backoffice.upjuyanolja.domain.reservation.service.ReservationService;
 import com.backoffice.upjuyanolja.domain.reservation.service.ReservationStockService;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
@@ -43,6 +43,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
+import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -81,6 +82,9 @@ class ReservationServiceTest {
     RoomCommandUseCase roomCommandUseCase;
 
     @Mock
+    RoomQueryService roomQueryService;
+
+    @Mock
     RoomRepository roomRepository;
 
     @Mock
@@ -90,10 +94,10 @@ class ReservationServiceTest {
     CouponRedeemRepository couponRedeemRepository;
 
     @Mock
-    ReservationRoomRepository reservationRoomRepository;
+    ReservationRepository reservationRepository;
 
     @Mock
-    ReservationRepository reservationRepository;
+    PaymentRepository paymentRepository;
 
     static Member mockMember;
     static Accommodation mockAccommodation;
@@ -102,6 +106,7 @@ class ReservationServiceTest {
     static Coupon mockCoupon;
 
     static List<Reservation> mockReservations;
+    static List<Payment> mockPayments = new ArrayList<>();
 
     @BeforeEach
     public void initTest() {
@@ -110,6 +115,9 @@ class ReservationServiceTest {
         mockRoom = createRoom(1L, RoomStatus.SELLING);
         mockCoupon = createCoupon(1L, mockRoom, CouponStatus.ENABLE, 1);
         mockReservations = createReservations();
+        for (Reservation reservation : mockReservations) {
+            mockPayments.add(createPayment(reservation));
+        }
     }
 
     private static Member createMember(Long id) {
@@ -190,7 +198,6 @@ class ReservationServiceTest {
     private Reservation createReservation(
         LocalDate startDate,
         LocalDate endDate,
-        int discount,
         boolean isCouponUsed,
         ReservationStatus status
     ) {
@@ -202,22 +209,12 @@ class ReservationServiceTest {
             .price(mockRoom.getPrice().getOffWeekDaysMinFee())
             .build();
 
-        Payment payment = Payment.builder()
-            .id(1L)
-            .member(mockMember)
-            .payMethod(PayMethod.KAKAO_PAY)
-            .roomPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
-            .discountAmount(discount)
-            .totalAmount(mockRoom.getPrice().getOffWeekDaysMinFee() - discount)
-            .build();
-
         Reservation reservation = Reservation.builder()
             .id(1L)
             .member(mockMember)
             .reservationRoom(reservationRoom)
             .visitorName("홍길동")
             .visitorPhone("010-1234-5678")
-            .payment(payment)
             .isCouponUsed(isCouponUsed)
             .status(status)
             .build();
@@ -230,26 +227,38 @@ class ReservationServiceTest {
 
         reservations.add(createReservation(
             LocalDate.now(), LocalDate.now().plusDays(1),
-            0, false, ReservationStatus.RESERVED
+            false, ReservationStatus.RESERVED
         ));
 
         reservations.add(createReservation(
             LocalDate.now(), LocalDate.now().plusDays(1),
-            1000, true, ReservationStatus.RESERVED
+            true, ReservationStatus.RESERVED
         ));
 
         reservations.add(createReservation(
             LocalDate.now(), LocalDate.now().plusDays(1),
-            0, false, ReservationStatus.SERVICED
+            false, ReservationStatus.SERVICED
         ));
 
         reservations.add(createReservation(
             LocalDate.now(), LocalDate.now().plusDays(1),
-            0, false, ReservationStatus.CANCELLED
+            false, ReservationStatus.CANCELLED
         ));
 
         return reservations;
     }
+
+    private Payment createPayment(Reservation reservation) {
+        return Payment.builder()
+            .member(mockMember)
+            .reservation(reservation)
+            .payMethod(PayMethod.KAKAO_PAY)
+            .roomPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .discountAmount(0)
+            .totalAmount(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .build();
+    }
+
 
     private RoomStock createRoomStock(Room room, int count) {
         return RoomStock.builder()
@@ -352,7 +361,7 @@ class ReservationServiceTest {
 
             when(roomRepository.findById(any(Long.class))).thenReturn(
                 Optional.ofNullable(mockRoom));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+            when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
 
@@ -379,7 +388,7 @@ class ReservationServiceTest {
 
             when(roomRepository.findById(any(Long.class))).thenReturn(
                 Optional.ofNullable(notMatchedRoom));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+            when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
             when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
@@ -410,7 +419,7 @@ class ReservationServiceTest {
 
             when(roomRepository.findById(any(Long.class))).thenReturn(
                 Optional.ofNullable(mockRoom));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+            when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
             when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
@@ -438,7 +447,7 @@ class ReservationServiceTest {
 
             when(roomRepository.findById(any(Long.class))).thenReturn(
                 Optional.ofNullable(mockRoom));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+            when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
             when(couponRepository.findByIdAndRoom(eq(request.getCouponId()),
@@ -473,7 +482,7 @@ class ReservationServiceTest {
 
             when(roomRepository.findById(any(Long.class))).thenReturn(
                 Optional.ofNullable(mockRoom));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+            when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
             when(couponRepository.findByIdAndRoom(any(Long.class),
@@ -541,7 +550,7 @@ class ReservationServiceTest {
             List<RoomStock> roomStockList = new ArrayList<>(Arrays.asList(roomStock));
             Reservation reservation = createReservation(
                 LocalDate.now(), LocalDate.now(),
-                0, true, ReservationStatus.RESERVED
+                true, ReservationStatus.RESERVED
             );
 
             when(reservationRepository.findByIdAndMember(any(Long.class), any(Member.class)))
@@ -566,7 +575,7 @@ class ReservationServiceTest {
 
             Reservation reservation = createReservation(
                 LocalDate.now(), LocalDate.now(),
-                0, true, ReservationStatus.RESERVED
+                true, ReservationStatus.RESERVED
             );
 
             CouponRedeem couponRedeem = CouponRedeem.builder()
@@ -580,7 +589,7 @@ class ReservationServiceTest {
             when(couponRedeemRepository.findByReservation(any(Reservation.class)))
                 .thenReturn(Optional.ofNullable(couponRedeem));
             doNothing().when(couponRedeemRepository).delete(any(CouponRedeem.class));
-            when(roomCommandUseCase.getFilteredRoomStocksByDate(
+            when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(new ArrayList<>());
 
@@ -614,6 +623,11 @@ class ReservationServiceTest {
                 eq(statuses),
                 eq(pageable)
             )).thenReturn(new PageImpl<>(mockReservations, pageable, mockReservations.size()));
+            for (int i = 0; i < mockReservations.size(); i++) {
+                when(paymentRepository.findByReservation(
+                    eq(mockReservations.get(i))
+                )).thenReturn(Optional.ofNullable(mockPayments.get(i)));
+            }
 
             // when
             // then
@@ -636,6 +650,11 @@ class ReservationServiceTest {
                 eq(statuses),
                 eq(pageable)
             )).thenReturn(new PageImpl<>(mockReservations, pageable, mockReservations.size()));
+            for (int i = 0; i < mockReservations.size(); i++) {
+                when(paymentRepository.findByReservation(
+                    eq(mockReservations.get(i))
+                )).thenReturn(Optional.ofNullable(mockPayments.get(i)));
+            }
 
             // when
             // then
@@ -652,21 +671,11 @@ class ReservationServiceTest {
             Sort sort = Sort.by(Direction.ASC, "id");
             Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
 
-            Payment payment = Payment.builder()
-                .id(1L)
-                .member(mockMember)
-                .payMethod(PayMethod.KAKAO_PAY)
-                .roomPrice(10000)
-                .discountAmount(1000)
-                .totalAmount(9000)
-                .build();
-
             Reservation wrongReservation = Reservation.builder()
                 .member(mockMember)
                 .reservationRoom(null)
                 .visitorName("홍길동")
                 .visitorPhone("010-1234-5678")
-                .payment(payment)
                 .isCouponUsed(false)
                 .status(ReservationStatus.RESERVED)
                 .build();
@@ -680,6 +689,11 @@ class ReservationServiceTest {
                 eq(statuses),
                 eq(pageable)
             )).thenReturn(new PageImpl<>(mockReservations, pageable, mockReservations.size()));
+            for (int i = 0; i < mockReservations.size(); i++) {
+                when(paymentRepository.findByReservation(
+                    eq(mockReservations.get(i))
+                )).thenReturn(Optional.ofNullable(mockPayments.get(i)));
+            }
 
             // when
             // then
@@ -698,21 +712,11 @@ class ReservationServiceTest {
             Sort sort = Sort.by(Direction.ASC, "id");
             Pageable pageable = (Pageable) PageRequest.of(pageNumber, pageSize, sort);
 
-            Payment payment = Payment.builder()
-                .id(1L)
-                .member(mockMember)
-                .payMethod(PayMethod.KAKAO_PAY)
-                .roomPrice(10000)
-                .discountAmount(1000)
-                .totalAmount(9000)
-                .build();
-
             Reservation wrongReservation = Reservation.builder()
                 .member(mockMember)
                 .reservationRoom(null)
                 .visitorName("홍길동")
                 .visitorPhone("010-1234-5678")
-                .payment(payment)
                 .isCouponUsed(false)
                 .status(ReservationStatus.CANCELLED)
                 .build();
@@ -725,6 +729,11 @@ class ReservationServiceTest {
                 eq(statuses),
                 eq(pageable)
             )).thenReturn(new PageImpl<>(mockReservations, pageable, mockReservations.size()));
+            for (int i = 0; i < mockReservations.size(); i++) {
+                when(paymentRepository.findByReservation(
+                    eq(mockReservations.get(i))
+                )).thenReturn(Optional.ofNullable(mockPayments.get(i)));
+            }
 
             // when
             // then

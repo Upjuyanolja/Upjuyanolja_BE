@@ -1,7 +1,7 @@
 package com.backoffice.upjuyanolja.domain.point.service;
 
 
-import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
@@ -74,7 +74,7 @@ public class PointService {
     private final PointRefundsRepository pointRefundsRepository;
     private final PointUsageRepository pointUsageRepository;
 
-    private final AccommodationCommandService accommodationCommandService;
+    private final AccommodationQueryService accommodationQueryService;
     private final CouponIssuanceGetService couponIssuanceGetService;
     private final MemberGetService memberGetService;
 
@@ -112,8 +112,9 @@ public class PointService {
     @Transactional(readOnly = true)
     public PointChargePageResponse getPointChargePageResponse(Long memberId, Pageable pageable) {
         Long pointId = getMemberPoint(memberId).getId();
-        Page<PointCharges> pagePointCharges = pointChargesRepository.findPageByPointId(pointId,
+        Page<PointCharges> pagePointCharges = pointChargesRepository.findPageByPointIdOrderByIdDesc(pointId,
             pageable);
+
         List<PointCharges> pointCharges = new ArrayList<>();
         for (PointCharges pointCharge : pagePointCharges) {
             pointCharges.add(pointCharge);
@@ -138,7 +139,7 @@ public class PointService {
     @Transactional(readOnly = true)
     public PointUsagePageResponse getPointUsagePageResponse(Long memberId, Pageable pageable) {
         Long pointId = getMemberPoint(memberId).getId();
-        Page<PointUsage> pagePointUsages = pointUsageRepository.findPageByPointId(
+        Page<PointUsage> pagePointUsages = pointUsageRepository.findPageByPointIdOrderByIdDesc(
             pointId, pageable
         );
         List<PointUsage> pointUsages = new ArrayList<>();
@@ -178,11 +179,10 @@ public class PointService {
         List<PointUsageDetailResponse> usageDetailResponses
     ) {
         List<PointTotalDetailResponse> result = new ArrayList<>();
-        long id = 1;
 
         for (PointChargeDetailResponse charge : chargeDetailResponses) {
-            result.add(PointTotalDetailResponse.of(
-                id++,
+            pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+                charge.id(),
                 charge.category(),
                 charge.type(),
                 charge.status(),
@@ -195,8 +195,8 @@ public class PointService {
             ));
         }
         for (PointUsageDetailResponse usage : usageDetailResponses) {
-            result.add(PointTotalDetailResponse.of(
-                id++,
+            pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+                usage.id(),
                 usage.category(),
                 usage.type(),
                 usage.status(),
@@ -249,7 +249,6 @@ public class PointService {
         updateChargePointStatus(pointCharges, PointStatus.CANCELED);
 
         long totalBalance = memberPoint.getTotalPointBalance() - pointCharges.getChargePoint();
-        validatePointChargeStatus(memberPoint, totalBalance);
         updateTotalPointBalance(memberPoint, totalBalance);
 
         createPointRefund(pointCharges, tossResponse);
@@ -325,7 +324,6 @@ public class PointService {
         }
 
         long totalBalance = memberPoint.getTotalPointBalance() - totalPrice;
-        validatePointChargeStatus(memberPoint, totalBalance);
         updateTotalPointBalance(memberPoint, totalBalance);
     }
 
@@ -383,7 +381,7 @@ public class PointService {
                         createCouponIssuancesMap(couponIssuances);
                     CouponIssuance selectCouponIssuance = couponIssuances.get(0);
                     String accommodationName =
-                        accommodationCommandService
+                        accommodationQueryService
                             .findAccommodationByRoomId(selectCouponIssuance.getRoom().getId())
                             .getName();
 
@@ -558,9 +556,6 @@ public class PointService {
     }
 
     private void validatePointChargeStatus(Point point, long totalBalance) {
-        Long l = Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L);
-        Long l1 = Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point))
-            .orElse(0L);
         long correctBalance =
             Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L) +
                 Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point)).orElse(0L);
