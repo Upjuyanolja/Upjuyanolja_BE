@@ -181,7 +181,7 @@ public class PointService {
         List<PointTotalDetailResponse> result = new ArrayList<>();
 
         for (PointChargeDetailResponse charge : chargeDetailResponses) {
-            pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+            result.add(PointTotalDetailResponse.of(
                 charge.id(),
                 charge.category(),
                 charge.type(),
@@ -195,7 +195,7 @@ public class PointService {
             ));
         }
         for (PointUsageDetailResponse usage : usageDetailResponses) {
-            pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+            result.add(PointTotalDetailResponse.of(
                 usage.id(),
                 usage.category(),
                 usage.type(),
