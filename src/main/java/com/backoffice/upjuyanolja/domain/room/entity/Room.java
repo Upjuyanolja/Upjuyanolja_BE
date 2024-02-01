@@ -62,9 +62,6 @@ public class Room extends BaseTime {
     @Comment("객실 체크 아웃 시간")
     private LocalTime checkOutTime;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("객실 가격")
-    private RoomPrice price;
 
     @Column(nullable = false)
     @Comment("객실 개수")
@@ -76,16 +73,16 @@ public class Room extends BaseTime {
     private RoomStatus status;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Comment("객실 가격")
+    private RoomPrice price;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 옵션 식별자")
     private RoomOption option;
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 이미지 식별자")
     private List<RoomImage> images = new ArrayList<>();
-
-    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("객실 재고 식별자")
-    private List<RoomStock> stocks = new ArrayList<>();
 
 
     @Builder
@@ -101,8 +98,7 @@ public class Room extends BaseTime {
         RoomPrice price,
         RoomStatus status,
         RoomOption option,
-        List<RoomImage> images,
-        List<RoomStock> stocks
+        List<RoomImage> images
     ) {
         this.id = id;
         this.accommodation = accommodation;
@@ -116,7 +112,6 @@ public class Room extends BaseTime {
         this.status = status;
         this.option = option;
         this.images = images;
-        this.stocks = stocks;
     }
 
     public void updateRoom(RoomUpdate request) {
