@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.point.service;
 
 
-import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
@@ -61,7 +60,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,7 +74,6 @@ public class PointService {
     private final PointRefundsRepository pointRefundsRepository;
     private final PointUsageRepository pointUsageRepository;
 
-    private final AccommodationCommandService accommodationCommandService;
     private final AccommodationQueryService accommodationQueryService;
     private final CouponIssuanceGetService couponIssuanceGetService;
     private final MemberGetService memberGetService;
@@ -165,11 +162,26 @@ public class PointService {
             getPointChargeDetailResponses(pointChargesRepository.findByPointId(pointId));
         List<PointUsageDetailResponse> usageDetailResponses =
             getPointUsageDetailResponses(pointUsageRepository.findByPointId(pointId));
-        List<PointTotalDetailResponse> pointTotalDetailResponses = new ArrayList<>();
+        List<PointTotalDetailResponse> pointTotalDetailResponses =
+            createDateSortedPointTotalDetailResponse(chargeDetailResponses, usageDetailResponses);
+
+        return PointTotalPageResponse.of(
+            new PageImpl<>(
+                getPageOfList(pageable, pointTotalDetailResponses),
+                pageable,
+                pointTotalDetailResponses.size()
+            )
+        );
+    }
+
+    private List<PointTotalDetailResponse> createDateSortedPointTotalDetailResponse(
+        List<PointChargeDetailResponse> chargeDetailResponses,
+        List<PointUsageDetailResponse> usageDetailResponses
+    ) {
         List<PointTotalDetailResponse> result = new ArrayList<>();
 
         for (PointChargeDetailResponse charge : chargeDetailResponses) {
-            pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+            result.add(PointTotalDetailResponse.of(
                 charge.id(),
                 charge.category(),
                 charge.type(),
@@ -183,7 +195,7 @@ public class PointService {
             ));
         }
         for (PointUsageDetailResponse usage : usageDetailResponses) {
-            pointTotalDetailResponses.add(PointTotalDetailResponse.of(
+            result.add(PointTotalDetailResponse.of(
                 usage.id(),
                 usage.category(),
                 usage.type(),
@@ -196,21 +208,22 @@ public class PointService {
                 usage.receipt()
             ));
         }
-        pointTotalDetailResponses.sort(Comparator.comparing(PointTotalDetailResponse::date));
 
+        result.sort(Comparator.comparing(PointTotalDetailResponse::date));
+
+        return result;
+    }
+
+    private List<PointTotalDetailResponse> getPageOfList(
+        Pageable pageable, List<PointTotalDetailResponse> pointTotalDetailResponses
+    ) {
         int startIndex = pageable.getPageNumber() * pageable.getPageSize();
-        int endIndex = Math.min(startIndex + pageable.getPageSize(),
-            pointTotalDetailResponses.size());
-
-        long total = pointTotalDetailResponses.size();
-
-        return PointTotalPageResponse.of(
-            new PageImpl<>(
-                pointTotalDetailResponses.subList(startIndex,endIndex),
-                pageable,
-                total
-            )
+        int endIndex = Math.min(
+            startIndex + pageable.getPageSize(),
+            pointTotalDetailResponses.size()
         );
+
+        return pointTotalDetailResponses.subList(startIndex, endIndex);
     }
 
     public PointChargeResponse chargePoint(Long memberId, PointChargeRequest request) {
@@ -261,72 +274,6 @@ public class PointService {
         return resultPointUsage;
     }
 
-    private Point getMemberPoint(Long memberId) {
-        return pointRepository.findByMemberId(memberId)
-            .orElseGet(() -> createPoint(memberId));
-    }
-
-    private Point createPoint(Long memberId) {
-        Point newPoint = Point.builder()
-            .totalPointBalance(0)
-            .member(memberGetService.getMemberById(memberId))
-            .build();
-
-        pointRepository.save(newPoint);
-
-        return newPoint;
-    }
-
-    private PointCharges createPointCharge(
-        Point point, TossResponse tossResponse
-    ) {
-
-        PointCharges pointCharges = PointCharges.builder()
-            .point(point)
-            .pointStatus(PointStatus.PAID)
-            .paymentKey(tossResponse.paymentKey())
-            .paymentMethod(tossResponse.method())
-            .orderName(tossResponse.orderId())
-            .chargePoint(tossResponse.totalAmount())
-            .remainPoint(0L)
-            .chargeDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime())
-            .endDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime().plusDays(7))
-            .refundable(true)
-            .build();
-
-        pointChargesRepository.save(pointCharges);
-
-        return pointCharges;
-    }
-
-    private PointRefunds createPointRefund(PointCharges pointCharges, TossResponse tossResponse) {
-
-        PointRefunds pointRefunds = PointRefunds.builder()
-            .pointId(pointCharges.getPoint().getId())
-            .pointCharges(pointCharges)
-            .refundDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime())
-            .build();
-
-        pointRefundsRepository.save(pointRefunds);
-
-        return pointRefunds;
-    }
-
-    private PointUsage createPointUsage(
-        Point point, long orderPrice, String orderName
-    ) {
-        PointUsage pointUsage = PointUsage.builder()
-            .point(point)
-            .orderPrice(orderPrice)
-            .orderName(orderName)
-            .orderDate(LocalDateTime.now())
-            .build();
-
-        pointUsageRepository.save(pointUsage);
-
-        return pointUsage;
-    }
-
     private long getTotalChargePoint(Point point, YearMonth rangeDate) {
         return pointChargesRepository.findByPointByStatusAndRangeDate(
                 point, rangeDate
@@ -341,22 +288,6 @@ public class PointService {
             ).stream()
             .mapToLong(PointUsage::getOrderPrice)
             .sum();
-    }
-
-    private void updateTotalPointBalance(Point point, long totalBalance) {
-        point.updatePointBalance(totalBalance);
-        pointRepository.save(point);
-    }
-
-    private void updateChargePointStatus(PointCharges pointCharges, PointStatus pointStatus) {
-        pointCharges.updatePointStatus(pointStatus);
-        pointCharges.updateRefundable(false);
-        pointChargesRepository.save(pointCharges);
-    }
-
-    private void updateChargeRemainPoint(PointCharges pointCharges, long remainPoint) {
-        pointCharges.updateRemainPoint(remainPoint);
-        pointChargesRepository.save(pointCharges);
     }
 
     private void useChargePointForCoupon(long totalPrice, Long pointChargeId, Point memberPoint) {
@@ -554,6 +485,21 @@ public class PointService {
             .toList();
     }
 
+    private TossResponse getTossChargeResponse(PointChargeRequest request) {
+        return createTossResponse("confirm",
+            "{\"paymentKey\":\"" + request.paymentKey() + "\",\"amount\":\""
+                + request.amount() + "\",\"orderId\":\"" + request.orderId() + "\"}"
+        );
+    }
+
+    private TossResponse getTossRefundResponse(String paymentKey) {
+
+        return createTossResponse(paymentKey + "/cancel",
+            "{\"cancelReason\":\"" + "고객 변심" + "\"}"
+        );
+
+    }
+
     private String createTossAuthorizations() {
         String authorizations;
 
@@ -568,42 +514,16 @@ public class PointService {
         return authorizations;
     }
 
-    private TossResponse getTossChargeResponse(PointChargeRequest request) {
+    private TossResponse createTossResponse(String url, String body) {
 
         HttpResponse<String> response;
 
         try {
             HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(tossBaseUrl + "confirm"))
+                .uri(URI.create(tossBaseUrl + url))
                 .header("Authorization", "Basic " + createTossAuthorizations())
                 .header("Content-Type", "application/json")
-                .method("POST", HttpRequest.BodyPublishers.ofString(
-                    "{\"paymentKey\":\"" + request.paymentKey() + "\",\"amount\":\""
-                        + request.amount() + "\",\"orderId\":\"" + request.orderId() + "\"}"))
-                .build();
-
-            response = HttpClient.newHttpClient()
-                .send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-            return objectMapper.readValue(response.body(), TossResponse.class);
-
-        } catch (IOException | InterruptedException e) {
-            throw new TossApiErrorException();
-        }
-
-    }
-
-    private TossResponse getTossRefundResponse(String paymentKey) {
-
-        HttpResponse<String> response;
-
-        try {
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(tossBaseUrl + paymentKey + "/cancel"))
-                .header("Authorization", "Basic " + createTossAuthorizations())
-                .header("Content-Type", "application/json")
-                .method("POST", HttpRequest.BodyPublishers.ofString(
-                    "{\"cancelReason\":\"" + "고객 변심" + "\"}"))
+                .method("POST", HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
             response = HttpClient.newHttpClient()
@@ -633,6 +553,97 @@ public class PointService {
             pointCharges.getPointStatus() != PointStatus.PAID) {
             throw new WrongRefundInfoException();
         }
+    }
+
+    private void validatePointChargeStatus(Point point, long totalBalance) {
+        long correctBalance =
+            Optional.ofNullable(pointChargesRepository.sumTotalPaidPoint(point)).orElse(0L) +
+                Optional.ofNullable(pointChargesRepository.sumTotalRemainedPoint(point)).orElse(0L);
+        if (totalBalance != correctBalance) {
+            throw new PointTradeFailedException();
+        }
+    }
+
+    private Point getMemberPoint(Long memberId) {
+        return pointRepository.findByMemberId(memberId)
+            .orElseGet(() -> createPoint(memberId));
+    }
+
+    private Point createPoint(Long memberId) {
+        Point newPoint = Point.builder()
+            .totalPointBalance(0)
+            .member(memberGetService.getMemberById(memberId))
+            .build();
+
+        pointRepository.save(newPoint);
+
+        return newPoint;
+    }
+
+    private PointCharges createPointCharge(
+        Point point, TossResponse tossResponse
+    ) {
+
+        PointCharges pointCharges = PointCharges.builder()
+            .point(point)
+            .pointStatus(PointStatus.PAID)
+            .paymentKey(tossResponse.paymentKey())
+            .paymentMethod(tossResponse.method())
+            .orderName(tossResponse.orderId())
+            .chargePoint(tossResponse.totalAmount())
+            .remainPoint(0L)
+            .chargeDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime())
+            .endDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime().plusDays(7))
+            .refundable(true)
+            .build();
+
+        pointChargesRepository.save(pointCharges);
+
+        return pointCharges;
+    }
+
+    private PointRefunds createPointRefund(PointCharges pointCharges, TossResponse tossResponse) {
+
+        PointRefunds pointRefunds = PointRefunds.builder()
+            .pointId(pointCharges.getPoint().getId())
+            .pointCharges(pointCharges)
+            .refundDate(ZonedDateTime.parse(tossResponse.requestedAt()).toLocalDateTime())
+            .build();
+
+        pointRefundsRepository.save(pointRefunds);
+
+        return pointRefunds;
+    }
+
+    private PointUsage createPointUsage(
+        Point point, long orderPrice, String orderName
+    ) {
+        PointUsage pointUsage = PointUsage.builder()
+            .point(point)
+            .orderPrice(orderPrice)
+            .orderName(orderName)
+            .orderDate(LocalDateTime.now())
+            .build();
+
+        pointUsageRepository.save(pointUsage);
+
+        return pointUsage;
+    }
+
+    private void updateTotalPointBalance(Point point, long totalBalance) {
+        point.updatePointBalance(totalBalance);
+        pointRepository.save(point);
+    }
+
+    private void updateChargePointStatus(PointCharges pointCharges, PointStatus pointStatus) {
+        pointCharges.updatePointStatus(pointStatus);
+        pointCharges.updateRefundable(false);
+        pointChargesRepository.save(pointCharges);
+    }
+
+    private void updateChargeRemainPoint(PointCharges pointCharges, long remainPoint) {
+        pointCharges.updateRemainPoint(remainPoint);
+        pointChargesRepository.save(pointCharges);
     }
 
 }

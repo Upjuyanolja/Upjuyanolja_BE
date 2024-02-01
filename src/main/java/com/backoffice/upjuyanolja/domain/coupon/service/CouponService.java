@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,8 @@ public class CouponService {
     private final RoomRepository roomRepository;
 
     @Transactional(readOnly = true)
-    public List<CouponAccommodationResponse> findCouponResponseInAccommodation(Long accommodationId) {
+    public List<CouponAccommodationResponse> findCouponResponseInAccommodation(
+        Long accommodationId) {
         List<CouponAccommodationResponse> responses = new ArrayList<>();
         List<Room> rooms = roomRepository.findByAccommodationId(accommodationId);
 
@@ -45,22 +47,20 @@ public class CouponService {
         return responses;
     }
 
-    public List<CouponDetailResponse> getSortedCouponResponseInRoom(
+    public List<CouponDetailResponse> getSortedDiscountTypeCouponResponseInRoom(
         Room room, List<Coupon> coupons, DiscountType discountType
     ) {
         List<CouponDetailResponse> responses = new ArrayList<>();
+        List<Coupon> discountTypeCouponInRoom =
+            getDiscountTypeCouponInRoom(coupons, discountType);
         List<Coupon> resultCoupons = new ArrayList<>();
         int roomPrice = room.getPrice().getOffWeekDaysMinFee();
-        resultCoupons.addAll(getDiscountTypeCouponInRoom(coupons, discountType));
 
-        if (resultCoupons.isEmpty()) {
+        if (discountTypeCouponInRoom.isEmpty()) {
             return new ArrayList<>();
         }
 
-        Collections.sort(resultCoupons, Comparator.comparingInt(coupon -> DiscountType.makePaymentPrice(
-                coupon.getDiscountType(), roomPrice, coupon.getDiscount()
-            ))
-        );
+        resultCoupons = sortDiscountTypeCouponInRoom(discountTypeCouponInRoom, roomPrice);
 
         for (Coupon coupon : resultCoupons) {
             responses.add(CouponDetailResponse.of(
@@ -79,17 +79,8 @@ public class CouponService {
         return couponRepository.findByRoom(room);
     }
 
-    private List<Coupon> getDiscountTypeCouponInRoom(
-        List<Coupon> coupons, DiscountType discountType
-    ) {
-        return coupons.stream()
-            .filter(coupon -> coupon.getDiscountType() == discountType)
-            .sorted(Comparator.comparingInt(Coupon::getDiscount).reversed())
-            .toList();
-    }
-
     @Transactional(readOnly = true)
-    public List<CouponDetailResponse> getEnableSortedTotalCouponResponseInRoom(Room room) {
+    public List<CouponDetailResponse> getSortedTotalCouponResponseInRoom(Room room) {
         List<Coupon> roomCoupons = couponRepository.findByRoom(room);
         int roomPrice = room.getPrice().getOffWeekDaysMinFee();
 
@@ -111,5 +102,61 @@ public class CouponService {
                 return CouponDetailResponse.of(coupon, discountedPrice);
             })
             .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public String getDiscountTypeMainRoomCouponName(List<Room> rooms, DiscountType discountType) {
+        TreeMap<Integer, String> result = new TreeMap<>(Comparator.reverseOrder());
+
+        for (Room room : rooms) {
+            int roomPrice = room.getPrice().getOffWeekDaysMinFee();
+            List<Coupon> coupons = getDiscountTypeCouponInRoom(
+                getCouponInRoom(room), discountType
+            );
+
+            if (coupons.isEmpty()) {
+                continue;
+            }
+
+            coupons = sortDiscountTypeCouponInRoom(coupons, roomPrice);
+
+            result.put(
+                coupons.get(0).getDiscount(),
+                DiscountType.makeDetailName(discountType, coupons.get(0).getDiscount())
+            );
+
+        }
+
+        if (result.isEmpty()) {
+            return "";
+        }
+
+        return result.firstEntry().getValue();
+    }
+
+    private List<Coupon> sortDiscountTypeCouponInRoom(
+        List<Coupon> discountTypeCoupon, int roomPrice
+    ) {
+        List<Coupon> result = new ArrayList<>();
+        result.addAll(discountTypeCoupon);
+
+        Collections.sort(result,
+            Comparator.comparingInt(coupon -> DiscountType.makePaymentPrice(
+                    coupon.getDiscountType(), roomPrice, coupon.getDiscount()
+                )
+            )
+        );
+
+        return result;
+
+    }
+
+    private List<Coupon> getDiscountTypeCouponInRoom(
+        List<Coupon> coupons, DiscountType discountType
+    ) {
+        return coupons.stream()
+            .filter(coupon -> coupon.getDiscountType() == discountType &&
+                coupon.getCouponStatus() == CouponStatus.ENABLE)
+            .toList();
     }
 }
