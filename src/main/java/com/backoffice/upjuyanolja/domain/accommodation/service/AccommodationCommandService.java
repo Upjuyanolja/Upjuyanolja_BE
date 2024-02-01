@@ -6,7 +6,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.response.Accommodatio
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationImageNotExistsException;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
@@ -51,11 +50,9 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
         Accommodation accommodation = accommodationRepository.save(Accommodation.builder()
             .name(request.name())
-            .address(Address.builder()
-                .address(request.address())
-                .detailAddress(request.detailAddress())
-                .zipCode(request.zipCode())
-                .build())
+            .address(request.address())
+            .detailAddress(request.detailAddress())
+            .zipCode(request.zipCode())
             .description(request.description())
             .category(category)
             .thumbnail(request.thumbnail())

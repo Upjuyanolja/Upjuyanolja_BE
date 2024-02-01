@@ -4,7 +4,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
@@ -255,13 +254,9 @@ public class OpenApiService {
         Accommodation accommodation = Accommodation.builder()
             .name(base.getString("title"))
             .category(category)
-            .address(
-                Address.builder()
-                    .address(base.getString("addr1"))
-                    .detailAddress(base.getString("addr2"))
-                    .zipCode(common.getString("zipcode"))
-                    .build()
-            )
+            .address(base.getString("addr1"))
+            .detailAddress(base.getString("addr2"))
+            .zipCode(common.getString("zipcode"))
             .description(common.getString("overview"))
             .thumbnail(base.getString("firstimage"))
             .images(new ArrayList<>())

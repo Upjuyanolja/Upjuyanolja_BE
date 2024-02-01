@@ -25,8 +25,8 @@ public record AccommodationDetailResponse(
             .id(accommodation.getId())
             .name(accommodation.getName())
             .address(
-                accommodation.getAddress().getAddress() + "\n"
-                    + accommodation.getAddress().getDetailAddress()
+                accommodation.getAddress() + "\n"
+                    + accommodation.getDetailAddress()
             )
             .description(accommodation.getDescription())
             .category(accommodation.getCategory().getName())
