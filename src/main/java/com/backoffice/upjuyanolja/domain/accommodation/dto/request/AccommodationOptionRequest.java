@@ -1,11 +1,16 @@
 package com.backoffice.upjuyanolja.domain.accommodation.dto.request;
 
+import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder
 public record AccommodationOptionRequest(
+
+    @NotNull(message = "숙소 ID를 입력하세요.")
+    Long AccommodationId,
+
     @NotNull(message = "객실 내 취사 여부를 입력하세요.")
     boolean cooking,
 
@@ -34,8 +39,12 @@ public record AccommodationOptionRequest(
     boolean seminar
 ) {
 
-    public static AccommodationOption toEntity(AccommodationOptionRequest request) {
+    public static AccommodationOption toEntity(
+        AccommodationOptionRequest request,
+        Accommodation accommodation
+    ) {
         return AccommodationOption.builder()
+            .accommodation(accommodation)
             .cooking(request.cooking)
             .parking(request.parking)
             .pickup(request.pickup)

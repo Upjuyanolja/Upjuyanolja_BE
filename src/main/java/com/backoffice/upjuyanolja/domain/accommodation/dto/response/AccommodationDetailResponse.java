@@ -19,7 +19,8 @@ public record AccommodationDetailResponse(
 ) {
 
     public static AccommodationDetailResponse of(
-        Accommodation accommodation, String mainCoupon, List<RoomResponse> rooms
+        Accommodation accommodation, String mainCoupon,
+        AccommodationOptionResponse option, List<RoomResponse> rooms
     ) {
         return AccommodationDetailResponse.builder()
             .id(accommodation.getId())
@@ -36,9 +37,7 @@ public record AccommodationDetailResponse(
                     .map(image -> image.getUrl())
                     .toList()
             )
-            .option(
-                AccommodationOptionResponse.of(accommodation.getOption())
-            )
+            .option(option)
             .rooms(rooms)
             .build();
     }

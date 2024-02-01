@@ -18,7 +18,9 @@ public record AccommodationInfoResponse(
     List<RoomInfoResponse> rooms
 ) {
 
-    public static AccommodationInfoResponse of(Accommodation accommodation) {
+    public static AccommodationInfoResponse of(
+        Accommodation accommodation, AccommodationOptionResponse option
+    ) {
         List<RoomInfoResponse> rooms = new ArrayList<>();
         accommodation.getRooms().forEach(room -> rooms.add(RoomInfoResponse.of(room)));
         return AccommodationInfoResponse.builder()
@@ -30,7 +32,7 @@ public record AccommodationInfoResponse(
                 + " "
                 + accommodation.getDetailAddress())
             .images(AccommodationImageResponse.of(accommodation.getImages()))
-            .option(AccommodationOptionResponse.of(accommodation.getOption()))
+            .option(option)
             .rooms(rooms)
             .build();
     }

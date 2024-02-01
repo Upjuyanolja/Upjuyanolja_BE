@@ -61,10 +61,6 @@ public class Accommodation extends BaseTime {
     @Comment("숙소 카테고리")
     private Category category;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("숙소 옵션 식별자")
-    private AccommodationOption option;
-
     @OneToMany(mappedBy = "accommodation", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AccommodationImage> images = new ArrayList<>();
 
@@ -81,7 +77,6 @@ public class Accommodation extends BaseTime {
         Category category,
         String description,
         String thumbnail,
-        AccommodationOption option,
         List<AccommodationImage> images,
         List<Room> rooms
     ) {
@@ -93,7 +88,6 @@ public class Accommodation extends BaseTime {
         this.category = category;
         this.description = description;
         this.thumbnail = thumbnail;
-        this.option = option;
         this.images = images;
         this.rooms = rooms;
     }

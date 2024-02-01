@@ -2,12 +2,16 @@ package com.backoffice.upjuyanolja.domain.accommodation.service;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationNameResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOptionResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationSummaryResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationOptionNotFoundException;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOptionRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
@@ -43,6 +47,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
 
     private final AccommodationRepository accommodationRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
+    private final AccommodationOptionRepository accommodationOptionRepository;
     private final MemberRepository memberRepository;
     private final CouponService couponService;
     private final RoomQueryService roomQueryService;
@@ -97,8 +102,13 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
             accommodation.getRooms(), startDate, endDate
         );
 
-        return AccommodationDetailResponse.of(accommodation,
+        AccommodationOption accommodationOption =
+            getAccommodationOptionByAccommodation(accommodation);
+
+        return AccommodationDetailResponse.of(
+            accommodation,
             getMainCouponName(accommodationId),
+            AccommodationOptionResponse.of(accommodationOption),
             accommodation.getRooms().stream()
                 .map(room -> RoomResponse.of(
                         room, getDiscountPrice(room),
@@ -141,6 +151,12 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         return accommodationOwnershipRepository.findAllByMember(member);
     }
 
+    @Transactional(readOnly = true)
+    public AccommodationOption getAccommodationOptionByAccommodation(Accommodation accommodation) {
+        return accommodationOptionRepository.findByAccommodation(accommodation)
+            .orElseThrow(AccommodationOptionNotFoundException::new);
+    }
+
     private boolean checkCouponAvailability(Accommodation accommodation) {
         return !couponService.findCouponResponseInAccommodation(accommodation.getId()).isEmpty();
     }
@@ -165,9 +181,11 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         for (Room room : rooms) {
             coupons = couponService.getCouponInRoom(room);
             responses.addAll(
-                couponService.getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.FLAT));
+                couponService.getSortedDiscountTypeCouponResponseInRoom(room, coupons,
+                    DiscountType.FLAT));
             responses.addAll(
-                couponService.getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.RATE));
+                couponService.getSortedDiscountTypeCouponResponseInRoom(room, coupons,
+                    DiscountType.RATE));
         }
 
         return responses.stream()
@@ -178,7 +196,6 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
         String flatName = couponService.getDiscountTypeMainRoomCouponName(rooms, DiscountType.FLAT);
         String rateName = couponService.getDiscountTypeMainRoomCouponName(rooms, DiscountType.RATE);
-
 
         if (flatName.isEmpty() && rateName.isEmpty()) {
             return "";

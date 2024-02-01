@@ -1,15 +1,19 @@
 package com.backoffice.upjuyanolja.domain.accommodation.service;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationImageRequest;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationOptionRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOptionResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationImageNotExistsException;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOptionRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
@@ -33,6 +37,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
     private final MemberGetService memberGetService;
     private final AccommodationRepository accommodationRepository;
+    private final AccommodationOptionRepository accommodationOptionRepository;
     private final CategoryRepository categoryRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
     private final AccommodationImageRepository accommodationImageRepository;
@@ -56,17 +61,6 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
             .description(request.description())
             .category(category)
             .thumbnail(request.thumbnail())
-            .option(AccommodationOption.builder()
-                .cooking(request.option().cooking())
-                .parking(request.option().parking())
-                .pickup(request.option().pickup())
-                .barbecue(request.option().barbecue())
-                .fitness(request.option().fitness())
-                .karaoke(request.option().karaoke())
-                .sauna(request.option().sauna())
-                .sports(request.option().sports())
-                .seminar(request.option().seminar())
-                .build())
             .rooms(new ArrayList<>())
             .images(new ArrayList<>())
             .build());
@@ -84,8 +78,42 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         request.rooms().forEach(
             roomRegisterRequest -> roomCommandService.saveRoom(accommodation, roomRegisterRequest));
 
+        AccommodationOptionResponse option = createAccommodationOption(request.option());
+
         em.refresh(accommodation);
-        return AccommodationInfoResponse.of(accommodation);
+
+        return AccommodationInfoResponse.of(accommodation, option);
+    }
+
+    public AccommodationOptionResponse createAccommodationOption(
+        AccommodationOptionRequest request
+    ) {
+
+        Accommodation accommodation = getAccommodation(request.AccommodationId());
+
+        AccommodationOption accommodationOption = accommodationOptionRepository.save(
+            AccommodationOption.builder()
+                .accommodation(accommodation)
+                .cooking(request.cooking())
+                .parking(request.parking())
+                .pickup(request.pickup())
+                .barbecue(request.barbecue())
+                .fitness(request.fitness())
+                .karaoke(request.karaoke())
+                .sauna(request.sauna())
+                .sports(request.sports())
+                .seminar(request.seminar())
+                .build()
+        );
+
+        em.refresh(accommodationOption);
+        return AccommodationOptionResponse.of(accommodationOption);
+    }
+
+
+    private Accommodation getAccommodation(Long accommodationId) {
+        return accommodationRepository.findById(accommodationId)
+            .orElseThrow(AccommodationNotFoundException::new);
     }
 
     private Category getCategory(String category) {

@@ -7,6 +7,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwner
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOptionRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
@@ -66,6 +67,7 @@ public class OpenApiService {
     private final AccommodationRepository accommodationRepository;
     private final AccommodationImageRepository accommodationImageRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
+    private final AccommodationOptionRepository accommodationOptionRepository;
     private final CategoryRepository categoryRepository;
     private final RoomRepository roomRepository;
     private final RoomImageRepository roomImageRepository;
@@ -236,17 +238,6 @@ public class OpenApiService {
         JSONObject common,
         JSONObject intro
     ) throws JSONException {
-        AccommodationOption option = AccommodationOption.builder()
-            .cooking(intro.get("chkcooking").equals("가능"))
-            .parking(intro.get("parkinglodging").equals("가능"))
-            .pickup(intro.get("pickup").equals("가능"))
-            .barbecue(intro.get("barbecue").equals("1"))
-            .fitness(intro.get("fitness").equals("1"))
-            .karaoke(intro.get("karaoke").equals("1"))
-            .sports(intro.get("sports").equals("1"))
-            .seminar(intro.get("seminar").equals("1"))
-            .build();
-
         Category category = categoryRepository.findCategoryByNameAndIdGreaterThan(
                 AccommodationType.getByCode(base.getString("cat3")).name(), 4L)
             .orElseThrow(WrongCategoryException::new);
@@ -260,11 +251,33 @@ public class OpenApiService {
             .description(common.getString("overview"))
             .thumbnail(base.getString("firstimage"))
             .images(new ArrayList<>())
-            .option(option)
             .build();
 
-        return accommodationRepository.save(accommodation);
+        Accommodation saveAccommodation = accommodationRepository.save(accommodation);
+        saveAccommodationOption(accommodation, intro);
+
+        return saveAccommodation;
     }
+
+    private AccommodationOption saveAccommodationOption(
+        Accommodation accommodation, JSONObject intro
+    ) {
+
+        AccommodationOption option = AccommodationOption.builder()
+            .accommodation(accommodation)
+            .cooking(intro.get("chkcooking").equals("가능"))
+            .parking(intro.get("parkinglodging").equals("가능"))
+            .pickup(intro.get("pickup").equals("가능"))
+            .barbecue(intro.get("barbecue").equals("1"))
+            .fitness(intro.get("fitness").equals("1"))
+            .karaoke(intro.get("karaoke").equals("1"))
+            .sports(intro.get("sports").equals("1"))
+            .seminar(intro.get("seminar").equals("1"))
+            .build();
+
+        return accommodationOptionRepository.save(option);
+    }
+
 
     private void saveOwnership(Accommodation accommodation, Member member) {
         accommodationOwnershipRepository.save(AccommodationOwnership.builder()
