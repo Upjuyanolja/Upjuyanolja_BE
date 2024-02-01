@@ -84,7 +84,13 @@ public class ReservationService {
          * 쿠폰 재고 차감
          * */
         if (coupon != null) {
-            stockService.decreaseCouponStock(coupon.getId()); //lock
+            try {
+                stockService.decreaseCouponStock(coupon.getId()); //lock
+            } catch (Exception e) {
+                for (RoomStock roomStock : roomStocks) {
+                    stockService.increaseRoomStock(roomStock.getId()); //lock
+                }
+            }
         }
 
         /*
