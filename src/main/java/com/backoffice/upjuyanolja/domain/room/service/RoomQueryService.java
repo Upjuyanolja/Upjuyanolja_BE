@@ -14,6 +14,7 @@ import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomsInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomStockNotFoundException;
@@ -41,6 +42,7 @@ public class RoomQueryService implements RoomQueryUseCase {
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
     private final RoomRepository roomRepository;
     private final CouponService couponService;
+    private final RoomCommandService roomCommandService;
     private final RoomStockRepository roomStockRepository;
 
     @Override
@@ -58,7 +60,10 @@ public class RoomQueryService implements RoomQueryUseCase {
                 .getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.FLAT));
             couponDetails.addAll(couponService
                 .getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.RATE));
-            rooms.add(RoomsInfoResponse.of(room, couponDetails));
+
+            RoomOption option = roomCommandService.getRoomOption(room);
+
+            rooms.add(RoomsInfoResponse.of(room, option, couponDetails));
         });
         return RoomPageResponse.builder()
             .pageNum(roomPage.getNumber())
@@ -75,7 +80,10 @@ public class RoomQueryService implements RoomQueryUseCase {
         Member member = memberGetService.getMemberById(memberId);
         Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
         checkOwnership(member, room.getAccommodation());
-        return RoomInfoResponse.of(room);
+
+        RoomOption option = roomCommandService.getRoomOption(room);
+
+        return RoomInfoResponse.of(room, option);
     }
 
     @Override

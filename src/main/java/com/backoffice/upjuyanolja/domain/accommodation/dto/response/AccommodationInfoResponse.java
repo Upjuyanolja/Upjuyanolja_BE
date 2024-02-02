@@ -19,10 +19,9 @@ public record AccommodationInfoResponse(
 ) {
 
     public static AccommodationInfoResponse of(
-        Accommodation accommodation, AccommodationOptionResponse option
+        Accommodation accommodation, AccommodationOptionResponse option,
+        List<RoomInfoResponse> rooms
     ) {
-        List<RoomInfoResponse> rooms = new ArrayList<>();
-        accommodation.getRooms().forEach(room -> rooms.add(RoomInfoResponse.of(room)));
         return AccommodationInfoResponse.builder()
             .accommodationId(accommodation.getId())
             .name(accommodation.getName())

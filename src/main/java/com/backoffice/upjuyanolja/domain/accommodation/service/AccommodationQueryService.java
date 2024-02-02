@@ -17,7 +17,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationR
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
@@ -26,6 +25,7 @@ import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
+import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
 import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -50,6 +50,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     private final AccommodationOptionRepository accommodationOptionRepository;
     private final MemberRepository memberRepository;
     private final CouponService couponService;
+    private final RoomCommandService roomCommandService;
     private final RoomQueryService roomQueryService;
 
     @Override
@@ -111,7 +112,9 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
             AccommodationOptionResponse.of(accommodationOption),
             accommodation.getRooms().stream()
                 .map(room -> RoomResponse.of(
-                        room, getDiscountPrice(room),
+                        room,
+                        roomCommandService.getRoomOption(room),
+                        getDiscountPrice(room),
                         !checkSoldOut(filterRooms, room),
                         getMinFilteredRoomStock(room, startDate, endDate),
                         couponService.getSortedTotalCouponResponseInRoom(room)

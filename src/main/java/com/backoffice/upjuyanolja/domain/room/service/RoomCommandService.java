@@ -15,6 +15,7 @@ import com.backoffice.upjuyanolja.domain.room.dto.request.RoomUpdateRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
@@ -24,20 +25,22 @@ import com.backoffice.upjuyanolja.domain.room.exception.InvalidRoomStatusExcepti
 import com.backoffice.upjuyanolja.domain.room.exception.RoomImageNotExistsException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomImageNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
+import com.backoffice.upjuyanolja.domain.room.exception.RoomOptionNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import com.backoffice.upjuyanolja.global.util.DateTimeParser;
 import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -47,6 +50,7 @@ public class RoomCommandService implements RoomCommandUseCase {
     private final MemberGetService memberGetService;
     private final RoomRepository roomRepository;
     private final RoomImageRepository roomImageRepository;
+    private final RoomOptionRepository roomOptionRepository;
     private final RoomStockRepository roomStockRepository;
     private final AccommodationRepository accommodationRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
@@ -88,7 +92,6 @@ public class RoomCommandService implements RoomCommandUseCase {
             .checkOutTime(DateTimeParser.timeParser(request.checkOutTime()))
             .amount(request.amount())
             .images(new ArrayList<>())
-            .option(RoomOptionRequest.toEntity(request.option()))
             .build()
         );
 
@@ -97,7 +100,9 @@ public class RoomCommandService implements RoomCommandUseCase {
 
         createRoomStock(room);
 
-        return RoomInfoResponse.of(room);
+        RoomOption roomOption = saveRoomOption(room, request.option());
+
+        return RoomInfoResponse.of(room, roomOption);
     }
 
     @Override
@@ -116,7 +121,9 @@ public class RoomCommandService implements RoomCommandUseCase {
         em.flush();
         em.refresh(room);
 
-        return RoomInfoResponse.of(room);
+        RoomOption roomOption = updateRoomOption(room, request.option().toRoomOptionUpdateDto());
+
+        return RoomInfoResponse.of(room, roomOption);
     }
 
     @Override
@@ -128,7 +135,30 @@ public class RoomCommandService implements RoomCommandUseCase {
             throw new CanNotDeleteLastRoomException();
         }
         room.delete(LocalDateTime.now());
-        return RoomInfoResponse.of(room);
+
+        RoomOption roomOption = getRoomOption(room);
+        roomOption.delete(LocalDateTime.now());
+
+        return RoomInfoResponse.of(room, roomOption);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RoomInfoResponse> getRoomsInAccommodation(Accommodation accommodation) {
+        List<RoomInfoResponse> rooms = new ArrayList<>();
+        accommodation.getRooms()
+            .forEach(room -> {
+                    RoomOption option = getRoomOption(room);
+                    rooms.add(RoomInfoResponse.of(room, option));
+                }
+            );
+
+        return rooms;
+    }
+
+    @Transactional(readOnly = true)
+    public RoomOption getRoomOption(Room room) {
+        return roomOptionRepository.findByRoom(room)
+            .orElseThrow(RoomOptionNotFoundException::new);
     }
 
     private void validateRoomName(String name, Accommodation accommodation) {
@@ -149,8 +179,19 @@ public class RoomCommandService implements RoomCommandUseCase {
             updateRoomStock(room, request.amount() - room.getAmount());
         }
         room.updateRoom(request.toRoomUpdateDto());
+        updateRoomOption(room, request.option().toRoomOptionUpdateDto());
         addRoomImages(room, request.addImages());
         roomImageRepository.deleteAll(getRoomImages(request.deleteImages()));
+    }
+
+    private RoomOption updateRoomOption(Room room, RoomOptionUpdate option) {
+        RoomOption roomOption = getRoomOption(room);
+        roomOption.updateRoomOption(option);
+
+        em.flush();
+        em.refresh(roomOption);
+
+        return roomOption;
     }
 
     private void updateRoomStock(Room room, int quantity) {
@@ -190,6 +231,18 @@ public class RoomCommandService implements RoomCommandUseCase {
         if (!flag) {
             throw new InvalidRoomStatusException();
         }
+    }
+
+    private RoomOption saveRoomOption(Room room, RoomOptionRequest request) {
+        RoomOption saveRoomOption = roomOptionRepository.save(RoomOption.builder()
+            .room(room)
+            .tv(request.tv())
+            .airCondition(request.airCondition())
+            .internet(request.internet())
+            .build()
+        );
+
+        return saveRoomOption;
     }
 
     private void createRoomStock(Room room) {

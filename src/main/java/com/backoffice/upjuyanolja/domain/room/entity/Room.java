@@ -76,10 +76,6 @@ public class Room extends BaseTime {
     @Comment("객실 가격")
     private RoomPrice price;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("객실 옵션 식별자")
-    private RoomOption option;
-
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 이미지 식별자")
     private List<RoomImage> images = new ArrayList<>();
@@ -97,7 +93,6 @@ public class Room extends BaseTime {
         LocalTime checkOutTime,
         RoomPrice price,
         RoomStatus status,
-        RoomOption option,
         List<RoomImage> images
     ) {
         this.id = id;
@@ -110,7 +105,6 @@ public class Room extends BaseTime {
         this.checkOutTime = checkOutTime;
         this.price = price;
         this.status = status;
-        this.option = option;
         this.images = images;
     }
 
@@ -123,7 +117,6 @@ public class Room extends BaseTime {
         this.checkInTime = DateTimeParser.timeParser(request.checkInTime());
         this.checkOutTime = DateTimeParser.timeParser(request.checkOutTime());
         this.amount = request.amount();
-        this.option.updateRoomOption(request.option());
     }
 
     @Override

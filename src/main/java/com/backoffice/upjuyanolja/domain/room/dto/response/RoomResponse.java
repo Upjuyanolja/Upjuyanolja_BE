@@ -2,6 +2,7 @@ package com.backoffice.upjuyanolja.domain.room.dto.response;
 
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Stream;
@@ -25,8 +26,8 @@ public record RoomResponse(
 ) {
 
     public static RoomResponse of(
-        Room room, int discountPrice, boolean soldOut, int count,
-        List<CouponDetailResponse> coupons
+        Room room, RoomOption option, int discountPrice,
+        boolean soldOut, int count, List<CouponDetailResponse> coupons
 
     ) {
         return RoomResponse.builder()
@@ -53,7 +54,7 @@ public record RoomResponse(
                     .map(image -> image.getUrl())
                     .toList()
             )
-            .roomOption(RoomOptionResponse.of(room.getOption()))
+            .roomOption(RoomOptionResponse.of(option))
             .build();
     }
 

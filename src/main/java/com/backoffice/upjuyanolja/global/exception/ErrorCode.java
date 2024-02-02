@@ -33,14 +33,15 @@ public enum ErrorCode {
 
     // Room
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 3000, "객실 정보를 찾을 수 없습니다."),
-    DUPLICATED_ROOM_NAME(HttpStatus.BAD_REQUEST, 3001, "중복된 객실 이름입니다."),
-    INVALID_TIME_FORMAT(HttpStatus.BAD_REQUEST, 3002, "올바르지 않은 형식의 시간입니다.(HH:mm)"),
-    INVALID_ROOM_STATUS(HttpStatus.BAD_REQUEST, 3003, "올바르지 않은 형식의 객실 상태입니다."),
-    ROOM_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, 3004, "객실 재고 정보를 찾을 수 없습니다."),
-    ROOM_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, 3005, "객실 이미지 정보를 찾을 수 없습니다."),
-    ROOM_NOT_EXISTS(HttpStatus.BAD_REQUEST, 3006, "객실을 1개 이상 등록해야 합니다."),
-    ROOM_IMAGE_NOT_EXISTS(HttpStatus.BAD_REQUEST, 3007, "객실 이미지를 1개 이상 등록해야 합니다."),
-    LAST_ROOM(HttpStatus.BAD_REQUEST, 3008, "마지막 객실은 삭제할 수 없습니다."),
+    ROOM_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, 3001, "객실 옵션 정보를 찾을 수 없습니다."),
+    DUPLICATED_ROOM_NAME(HttpStatus.BAD_REQUEST, 3002, "중복된 객실 이름입니다."),
+    INVALID_TIME_FORMAT(HttpStatus.BAD_REQUEST, 3003, "올바르지 않은 형식의 시간입니다.(HH:mm)"),
+    INVALID_ROOM_STATUS(HttpStatus.BAD_REQUEST, 3004, "올바르지 않은 형식의 객실 상태입니다."),
+    ROOM_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, 3005, "객실 재고 정보를 찾을 수 없습니다."),
+    ROOM_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, 3006, "객실 이미지 정보를 찾을 수 없습니다."),
+    ROOM_NOT_EXISTS(HttpStatus.BAD_REQUEST, 3007, "객실을 1개 이상 등록해야 합니다."),
+    ROOM_IMAGE_NOT_EXISTS(HttpStatus.BAD_REQUEST, 3008, "객실 이미지를 1개 이상 등록해야 합니다."),
+    LAST_ROOM(HttpStatus.BAD_REQUEST, 3009, "마지막 객실은 삭제할 수 없습니다."),
 
     // Reservation
     RESERVATION_PAYMENT_FAILED(HttpStatus.BAD_REQUEST, 4000, "결제에 실패 했습니다."),

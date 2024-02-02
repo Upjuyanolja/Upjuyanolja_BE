@@ -24,6 +24,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import jakarta.annotation.PostConstruct;
@@ -70,6 +71,7 @@ public class OpenApiService {
     private final AccommodationOptionRepository accommodationOptionRepository;
     private final CategoryRepository categoryRepository;
     private final RoomRepository roomRepository;
+    private final RoomOptionRepository roomOptionRepository;
     private final RoomImageRepository roomImageRepository;
     private final RoomStockRepository roomStockRepository;
 
@@ -259,11 +261,10 @@ public class OpenApiService {
         return saveAccommodation;
     }
 
-    private AccommodationOption saveAccommodationOption(
+    private void saveAccommodationOption(
         Accommodation accommodation, JSONObject intro
     ) {
-
-        AccommodationOption option = AccommodationOption.builder()
+        accommodationOptionRepository.save(AccommodationOption.builder()
             .accommodation(accommodation)
             .cooking(intro.get("chkcooking").equals("가능"))
             .parking(intro.get("parkinglodging").equals("가능"))
@@ -273,11 +274,9 @@ public class OpenApiService {
             .karaoke(intro.get("karaoke").equals("1"))
             .sports(intro.get("sports").equals("1"))
             .seminar(intro.get("seminar").equals("1"))
-            .build();
-
-        return accommodationOptionRepository.save(option);
+            .build()
+        );
     }
-
 
     private void saveOwnership(Accommodation accommodation, Member member) {
         accommodationOwnershipRepository.save(AccommodationOwnership.builder()
@@ -336,11 +335,6 @@ public class OpenApiService {
                     .peakWeekDaysMinFee(peakWeekDaysMinFee)
                     .peakWeekendMinFee(peakWeekendMinFee)
                     .build();
-                RoomOption option = RoomOption.builder()
-                    .airCondition(roomJson.get("roomaircondition").equals("Y"))
-                    .tv(roomJson.get("roomtv").equals("Y"))
-                    .internet(roomJson.get("roominternet").equals("Y"))
-                    .build();
 
                 Room room = roomRepository.save(Room.builder()
                     .accommodation(accommodation)
@@ -352,7 +346,6 @@ public class OpenApiService {
                     .checkInTime(checkIn)
                     .checkOutTime(checkOut)
                     .price(price)
-                    .option(option)
                     .images(new ArrayList<>())
                     .amount(Integer.parseInt(roomJson.getString("roomcount")))
                     .status(RoomStatus.SELLING)
@@ -374,8 +367,20 @@ public class OpenApiService {
                             .build());
                     }
                 }
+
+                saveRoomOption(room, roomJson);
             }
         }
+    }
+
+    private void saveRoomOption(Room room, JSONObject roomJson) {
+        roomOptionRepository.save(RoomOption.builder()
+            .room(room)
+            .airCondition(roomJson.get("roomaircondition").equals("Y"))
+            .tv(roomJson.get("roomtv").equals("Y"))
+            .internet(roomJson.get("roominternet").equals("Y"))
+            .build()
+        );
     }
 
     private boolean isEmpty(JSONObject body) throws JSONException {

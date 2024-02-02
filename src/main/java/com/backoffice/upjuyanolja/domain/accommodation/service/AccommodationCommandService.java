@@ -21,6 +21,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.Accommoda
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
+import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
 import jakarta.persistence.EntityManager;
@@ -82,7 +83,9 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
         em.refresh(accommodation);
 
-        return AccommodationInfoResponse.of(accommodation, option);
+        List<RoomInfoResponse> room = roomCommandService.getRoomsInAccommodation(accommodation);
+
+        return AccommodationInfoResponse.of(accommodation, option, room);
     }
 
     public AccommodationOptionResponse createAccommodationOption(
