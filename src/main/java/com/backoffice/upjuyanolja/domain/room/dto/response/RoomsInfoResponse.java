@@ -27,13 +27,13 @@ public record RoomsInfoResponse(
 ) {
 
     public static RoomsInfoResponse of(
-        Room room, RoomOption option, List<CouponDetailResponse> coupons
+        Room room, RoomOption option, List<CouponDetailResponse> coupons, int roomPrice
     ) {
         PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
         for (CouponDetailResponse coupon : coupons) {
             pq.offer(coupon.price());
         }
-        int discountPrice = pq.isEmpty() ? room.getPrice().getOffWeekDaysMinFee() : pq.poll();
+        int discountPrice = pq.isEmpty() ? roomPrice : pq.poll();
 
         return RoomsInfoResponse.builder()
             .id(room.getId())
@@ -42,7 +42,7 @@ public record RoomsInfoResponse(
             .maxCapacity(room.getMaxCapacity())
             .checkInTime(room.getCheckInTime().format(DateTimeFormatter.ofPattern("HH:mm")))
             .checkOutTime(room.getCheckOutTime().format(DateTimeFormatter.ofPattern("HH:mm")))
-            .basePrice(room.getPrice().getOffWeekDaysMinFee())
+            .basePrice(roomPrice)
             .discountPrice(discountPrice)
             .amount(room.getAmount())
             .status(room.getStatus().name())

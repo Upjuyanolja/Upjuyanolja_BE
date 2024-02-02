@@ -26,8 +26,9 @@ import com.backoffice.upjuyanolja.domain.room.exception.RoomImageNotExistsExcept
 import com.backoffice.upjuyanolja.domain.room.exception.RoomImageNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
-import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomPriceRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
@@ -47,14 +48,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RoomCommandService implements RoomCommandUseCase {
 
-    private final MemberGetService memberGetService;
     private final RoomRepository roomRepository;
     private final RoomImageRepository roomImageRepository;
     private final RoomOptionRepository roomOptionRepository;
+    private final RoomPriceRepository roomPriceRepository;
     private final RoomStockRepository roomStockRepository;
     private final AccommodationRepository accommodationRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
+
+    private final MemberGetService memberGetService;
     private final RoomQueryUseCase roomQueryUseCase;
+
     private final EntityManager em;
 
     @Override
@@ -81,12 +85,6 @@ public class RoomCommandService implements RoomCommandUseCase {
             .accommodation(accommodation)
             .name(request.name())
             .status(RoomStatus.SELLING)
-            .price(RoomPrice.builder()
-                .offWeekDaysMinFee(request.price())
-                .offWeekendMinFee(request.price())
-                .peakWeekDaysMinFee(request.price())
-                .peakWeekendMinFee(request.price())
-                .build())
             .defaultCapacity(request.defaultCapacity())
             .maxCapacity(request.maxCapacity())
             .checkInTime(DateTimeParser.timeParser(request.checkInTime()))
@@ -102,8 +100,9 @@ public class RoomCommandService implements RoomCommandUseCase {
         createRoomStock(room);
 
         RoomOption roomOption = saveRoomOption(room, request.option());
+        RoomPrice roomPrice = saveRoomPrice(room, request.price());
 
-        return RoomInfoResponse.of(room, roomOption);
+        return RoomInfoResponse.of(room, roomOption, roomPrice.getOffWeekDaysMinFee());
     }
 
     public RoomOption saveRoomOption(Room room, RoomOptionRequest request) {
@@ -118,6 +117,19 @@ public class RoomCommandService implements RoomCommandUseCase {
         return saveRoomOption;
     }
 
+    private RoomPrice saveRoomPrice(Room room, int price) {
+        RoomPrice saveRoomPrice = roomPriceRepository.save(RoomPrice.builder()
+            .room(room)
+            .offWeekDaysMinFee(price)
+            .offWeekendMinFee(price)
+            .peakWeekDaysMinFee(price)
+            .peakWeekendMinFee(price)
+            .build()
+        );
+
+        return saveRoomPrice;
+    }
+
     @Override
     public RoomInfoResponse modifyRoom(long memberId, long roomId, RoomUpdateRequest request) {
         Member member = memberGetService.getMemberById(memberId);
@@ -130,14 +142,16 @@ public class RoomCommandService implements RoomCommandUseCase {
         checkOwnership(member, room.getAccommodation());
 
         updateRoom(room, request);
-
         RoomOption roomOption = updateRoomOption(room, request.option().toRoomOptionUpdateDto());
+        RoomPrice roomPrice = updateRoomPrice(room, request.price());
+
 
         em.flush();
         em.refresh(room);
         em.refresh(roomOption);
+        em.refresh(roomPrice);
 
-        return RoomInfoResponse.of(room, roomOption);
+        return RoomInfoResponse.of(room, roomOption, roomPrice.getOffWeekDaysMinFee());
     }
 
     @Override
@@ -152,21 +166,24 @@ public class RoomCommandService implements RoomCommandUseCase {
 
         RoomOption roomOption = roomQueryUseCase.findRoomOptionByRoom(room);
         roomOption.delete(LocalDateTime.now());
+        RoomPrice roomPrice = roomQueryUseCase.findRoomPriceByRoom(room);
+        roomPrice.delete(LocalDateTime.now());
 
-        return RoomInfoResponse.of(room, roomOption);
+        return RoomInfoResponse.of(room, roomOption, roomPrice.getOffWeekDaysMinFee());
     }
 
     @Transactional(readOnly = true)
-    public List<RoomInfoResponse> getRoomsInAccommodation(Accommodation accommodation) {
-        List<RoomInfoResponse> rooms = new ArrayList<>();
+    public List<RoomInfoResponse> getRoomInfoResponses(Accommodation accommodation) {
+        List<RoomInfoResponse> roomInfoResponses = new ArrayList<>();
         accommodation.getRooms()
             .forEach(room -> {
-                    RoomOption option = roomQueryUseCase.findRoomOptionByRoom(room);
-                    rooms.add(RoomInfoResponse.of(room, option));
+                RoomOption option = roomQueryUseCase.findRoomOptionByRoom(room);
+                int roomPrice = roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee();
+                roomInfoResponses.add(RoomInfoResponse.of(room, option, roomPrice));
                 }
             );
 
-        return rooms;
+        return roomInfoResponses;
     }
 
     private void validateRoomName(String name, Accommodation accommodation) {
@@ -196,6 +213,14 @@ public class RoomCommandService implements RoomCommandUseCase {
         roomOption.updateRoomOption(option);
 
         return roomOption;
+    }
+
+    private RoomPrice updateRoomPrice(Room room, int price) {
+        RoomPrice roomPrice = roomQueryUseCase.findRoomPriceByRoom(room);
+        roomPrice.updateRoomPrice(price);
+        roomPriceRepository.save(roomPrice);
+
+        return roomPrice;
     }
 
     private void updateRoomStock(Room room, int quantity) {

@@ -109,14 +109,22 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
             getMainCouponName(accommodationId),
             AccommodationOptionResponse.of(accommodationOption),
             accommodation.getRooms().stream()
-                .map(room -> RoomResponse.of(
-                        room,
-                        roomQueryUseCase.findRoomOptionByRoom(room),
-                        getDiscountPrice(room),
-                        !checkSoldOut(filterRooms, room),
-                        getMinFilteredRoomStock(room, startDate, endDate),
-                        couponService.getSortedTotalCouponResponseInRoom(room)
-                    )
+                .map(room -> {
+                        int roomPrice = roomQueryUseCase.findRoomPriceByRoom(room)
+                            .getOffWeekDaysMinFee();
+
+                        return RoomResponse.of(
+                            room,
+                            roomQueryUseCase.findRoomOptionByRoom(room),
+                            roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee(),
+                            getDiscountPrice(room, roomPrice),
+                            !checkSoldOut(filterRooms, room),
+                            getMinFilteredRoomStock(room, startDate, endDate),
+                            couponService.getSortedTotalCouponResponseInRoom(
+                                room, roomPrice
+                            )
+                        );
+                    }
                 )
                 .toList()
         );
@@ -168,7 +176,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
 
         for (Room room : rooms) {
-            pq.offer(room.getPrice().getOffWeekDaysMinFee());
+            pq.offer(roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee());
         }
 
         return pq.poll();
@@ -182,11 +190,13 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         for (Room room : rooms) {
             coupons = couponService.getCouponInRoom(room);
             responses.addAll(
-                couponService.getSortedDiscountTypeCouponResponseInRoom(room, coupons,
-                    DiscountType.FLAT));
+                couponService.getSortedDiscountTypeCouponResponseInRoom(
+                    room, roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee(),
+                    coupons, DiscountType.FLAT));
             responses.addAll(
-                couponService.getSortedDiscountTypeCouponResponseInRoom(room, coupons,
-                    DiscountType.RATE));
+                couponService.getSortedDiscountTypeCouponResponseInRoom(
+                    room, roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee(),
+                    coupons, DiscountType.RATE));
         }
 
         return responses.stream()
@@ -195,8 +205,13 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
 
     private String getMainCouponName(Long accommodationId) {
         List<Room> rooms = roomQueryUseCase.findByAccommodationId(accommodationId);
-        String flatName = couponService.getDiscountTypeMainRoomCouponName(rooms, DiscountType.FLAT);
-        String rateName = couponService.getDiscountTypeMainRoomCouponName(rooms, DiscountType.RATE);
+
+        String flatName = couponService.getDiscountTypeMainRoomCouponName(
+            rooms, DiscountType.FLAT, roomQueryUseCase.getMinRoomPriceWithRoom(rooms)
+        );
+        String rateName = couponService.getDiscountTypeMainRoomCouponName(
+            rooms, DiscountType.RATE, roomQueryUseCase.getMinRoomPriceWithRoom(rooms)
+        );
 
         if (flatName.isEmpty() && rateName.isEmpty()) {
             return "";
@@ -216,12 +231,11 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     }
 
 
-    private int getDiscountPrice(Room room) {
-        return couponService.getSortedTotalCouponResponseInRoom(room)
-            .stream()
+    private int getDiscountPrice(Room room, int roomPrice) {
+        return couponService.getSortedTotalCouponResponseInRoom(room, roomPrice).stream()
             .findFirst()
             .map(coupon -> coupon.price())
-            .orElse(room.getPrice().getOffWeekDaysMinFee());
+            .orElse(roomPrice);
     }
 
     private List<Room> getFilteredRoomsByDate(

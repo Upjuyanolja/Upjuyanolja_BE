@@ -27,7 +27,9 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    RoomCustomRepositoryImpl(JPAQueryFactory jpaQueryFactory) {
+    RoomCustomRepositoryImpl(
+        JPAQueryFactory jpaQueryFactory
+    ) {
         this.queryFactory = jpaQueryFactory;
     }
 
@@ -84,7 +86,6 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
     private List<OrderSpecifier<?>> getAllOrderSpecifiers() {
         List<OrderSpecifier<?>> orders = new LinkedList<>();
         orders.add(QueryDslUtil.getSortedColumn(Order.ASC, room, "status"));
-        orders.add(QueryDslUtil.getSortedColumn(Order.ASC, room.price, "offWeekDaysMinFee"));
         orders.add(QueryDslUtil.getSortedColumn(Order.ASC, room, "id"));
         return orders;
     }

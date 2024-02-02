@@ -25,6 +25,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomPriceRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import jakarta.annotation.PostConstruct;
@@ -72,6 +73,7 @@ public class OpenApiService {
     private final CategoryRepository categoryRepository;
     private final RoomRepository roomRepository;
     private final RoomOptionRepository roomOptionRepository;
+    private final RoomPriceRepository roomPriceRepository;
     private final RoomImageRepository roomImageRepository;
     private final RoomStockRepository roomStockRepository;
 
@@ -312,29 +314,6 @@ public class OpenApiService {
                 LocalTime checkIn = getTimeFromString(stringCheckIn);
                 LocalTime checkOut = getTimeFromString(stringCheckOut);
 
-                int offWeekDaysMinFee = Integer.parseInt(
-                    roomJson.getString("roomoffseasonminfee1")) == 0 ? DEFAULT_PRICE
-                    : Integer.parseInt(
-                        roomJson.getString("roomoffseasonminfee1"));
-                int offWeekendMinFee = Math.max(Integer.parseInt(
-                    roomJson.getString("roomoffseasonminfee2")) == 0 ? DEFAULT_PRICE
-                    : Integer.parseInt(
-                        roomJson.getString("roomoffseasonminfee2")), offWeekDaysMinFee);
-                int peakWeekDaysMinFee = Math.max(Integer.parseInt(
-                    roomJson.getString("roompeakseasonminfee1")) == 0 ? DEFAULT_PRICE
-                    : Integer.parseInt(
-                        roomJson.getString("roompeakseasonminfee1")), offWeekendMinFee);
-                int peakWeekendMinFee = Math.max(Integer.parseInt(
-                    roomJson.getString("roompeakseasonminfee2")) == 0 ? DEFAULT_PRICE
-                    : Integer.parseInt(
-                        roomJson.getString("roompeakseasonminfee2")), peakWeekDaysMinFee);
-
-                RoomPrice price = RoomPrice.builder()
-                    .offWeekDaysMinFee(offWeekDaysMinFee)
-                    .offWeekendMinFee(offWeekendMinFee)
-                    .peakWeekDaysMinFee(peakWeekDaysMinFee)
-                    .peakWeekendMinFee(peakWeekendMinFee)
-                    .build();
 
                 Room room = roomRepository.save(Room.builder()
                     .accommodation(accommodation)
@@ -345,7 +324,6 @@ public class OpenApiService {
                         roomJson.getInt("roommaxcount")))
                     .checkInTime(checkIn)
                     .checkOutTime(checkOut)
-                    .price(price)
                     .images(new ArrayList<>())
                     .amount(Integer.parseInt(roomJson.getString("roomcount")))
                     .status(RoomStatus.SELLING)
@@ -369,6 +347,8 @@ public class OpenApiService {
                 }
 
                 saveRoomOption(room, roomJson);
+                saveRoomPrice(room, roomJson);
+
             }
         }
     }
@@ -381,6 +361,34 @@ public class OpenApiService {
             .internet(roomJson.get("roominternet").equals("Y"))
             .build()
         );
+    }
+
+    private void saveRoomPrice(Room room, JSONObject roomJson){
+        int offWeekDaysMinFee = Integer.parseInt(
+            roomJson.getString("roomoffseasonminfee1")) == 0 ? DEFAULT_PRICE
+            : Integer.parseInt(
+                roomJson.getString("roomoffseasonminfee1"));
+        int offWeekendMinFee = Math.max(Integer.parseInt(
+            roomJson.getString("roomoffseasonminfee2")) == 0 ? DEFAULT_PRICE
+            : Integer.parseInt(
+                roomJson.getString("roomoffseasonminfee2")), offWeekDaysMinFee);
+        int peakWeekDaysMinFee = Math.max(Integer.parseInt(
+            roomJson.getString("roompeakseasonminfee1")) == 0 ? DEFAULT_PRICE
+            : Integer.parseInt(
+                roomJson.getString("roompeakseasonminfee1")), offWeekendMinFee);
+        int peakWeekendMinFee = Math.max(Integer.parseInt(
+            roomJson.getString("roompeakseasonminfee2")) == 0 ? DEFAULT_PRICE
+            : Integer.parseInt(
+                roomJson.getString("roompeakseasonminfee2")), peakWeekDaysMinFee);
+
+        roomPriceRepository.save(RoomPrice.builder()
+            .room(room)
+            .offWeekDaysMinFee(offWeekDaysMinFee)
+            .offWeekendMinFee(offWeekendMinFee)
+            .peakWeekDaysMinFee(peakWeekDaysMinFee)
+            .peakWeekendMinFee(peakWeekendMinFee)
+            .build());
+
     }
 
     private boolean isEmpty(JSONObject body) throws JSONException {

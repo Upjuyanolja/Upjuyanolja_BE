@@ -21,7 +21,9 @@ public record RoomInfoResponse(
     RoomOptionResponse option
 ) {
 
-    public static RoomInfoResponse of(Room room, RoomOption option) {
+    public static RoomInfoResponse of(
+        Room room, RoomOption option, int price
+    ) {
         return RoomInfoResponse.builder()
             .id(room.getId())
             .name(room.getName())
@@ -29,7 +31,7 @@ public record RoomInfoResponse(
             .maxCapacity(room.getMaxCapacity())
             .checkInTime(room.getCheckInTime().format(DateTimeFormatter.ofPattern("HH:mm")))
             .checkOutTime(room.getCheckOutTime().format(DateTimeFormatter.ofPattern("HH:mm")))
-            .price(room.getPrice().getOffWeekDaysMinFee())
+            .price(price)
             .amount(room.getAmount())
             .status(room.getStatus().name())
             .images(RoomImageResponse.of(room.getImages()))

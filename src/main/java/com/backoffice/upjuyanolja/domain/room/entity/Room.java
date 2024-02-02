@@ -16,7 +16,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -62,7 +61,6 @@ public class Room extends BaseTime {
     @Comment("객실 체크 아웃 시간")
     private LocalTime checkOutTime;
 
-
     @Column(nullable = false)
     @Comment("객실 개수")
     private int amount;
@@ -71,10 +69,6 @@ public class Room extends BaseTime {
     @Enumerated(value = EnumType.STRING)
     @Comment("객실 상태")
     private RoomStatus status;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("객실 가격")
-    private RoomPrice price;
 
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Comment("객실 이미지 식별자")
@@ -91,7 +85,6 @@ public class Room extends BaseTime {
         int amount,
         LocalTime checkInTime,
         LocalTime checkOutTime,
-        RoomPrice price,
         RoomStatus status,
         List<RoomImage> images
     ) {
@@ -103,7 +96,6 @@ public class Room extends BaseTime {
         this.amount = amount;
         this.checkInTime = checkInTime;
         this.checkOutTime = checkOutTime;
-        this.price = price;
         this.status = status;
         this.images = images;
     }
@@ -111,7 +103,6 @@ public class Room extends BaseTime {
     public void updateRoom(RoomUpdate request) {
         this.name = request.name();
         this.status = RoomStatus.valueOf(request.status());
-        this.price.updateRoomPrice(request.price());
         this.defaultCapacity = request.defaultCapacity();
         this.maxCapacity = request.maxCapacity();
         this.checkInTime = DateTimeParser.timeParser(request.checkInTime());

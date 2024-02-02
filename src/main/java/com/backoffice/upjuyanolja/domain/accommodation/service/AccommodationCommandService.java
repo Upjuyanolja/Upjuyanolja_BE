@@ -4,13 +4,11 @@ import com.backoffice.upjuyanolja.domain.accommodation.dto.request.Accommodation
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationOptionRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOptionResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationImageNotExistsException;
-import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.WrongCategoryException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOptionRepository;
@@ -36,13 +34,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AccommodationCommandService implements AccommodationCommandUseCase {
 
-    private final MemberGetService memberGetService;
     private final AccommodationRepository accommodationRepository;
     private final AccommodationOptionRepository accommodationOptionRepository;
     private final CategoryRepository categoryRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
     private final AccommodationImageRepository accommodationImageRepository;
+
+    private final MemberGetService memberGetService;
     private final RoomCommandService roomCommandService;
+
     private final EntityManager em;
 
     @Override
@@ -84,7 +84,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         em.refresh(accommodation);
         em.refresh(option);
 
-        List<RoomInfoResponse> room = roomCommandService.getRoomsInAccommodation(accommodation);
+        List<RoomInfoResponse> room = roomCommandService.getRoomInfoResponses(accommodation);
 
         return AccommodationInfoResponse.of(accommodation, option, room);
     }

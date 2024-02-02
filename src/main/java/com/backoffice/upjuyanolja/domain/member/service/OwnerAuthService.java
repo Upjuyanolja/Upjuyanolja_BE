@@ -50,7 +50,7 @@ public class OwnerAuthService implements
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
     private final MailService mailService;
-    private final RedisService redisService;
+    //    private final RedisService redisService;
     private final BCryptPasswordEncoder encoder;
 
     @Value("${spring.mail.auth-code-expiration-millis}")
@@ -77,8 +77,8 @@ public class OwnerAuthService implements
         mailService.sendMail(request.getEmail(), title, verificationCode);
 
         // 이메일 인증 요청 시 인증 번호 Redis에 저장 ( key = "AuthCode " + Email / value = AuthCode )
-        redisService.setValues(AUTH_CODE_PREFIX + request.getEmail(),
-            verificationCode, Duration.ofMillis(this.authCodeExpirationMillis));
+//        redisService.setValues(AUTH_CODE_PREFIX + request.getEmail(),
+//            verificationCode, Duration.ofMillis(this.authCodeExpirationMillis));
 
         return OwnerEmailResponse.builder()
             .verificationCode(verificationCode)
@@ -101,14 +101,14 @@ public class OwnerAuthService implements
 
     public String verifyCode(String email, String authCode) {
 
-        String values = redisService.getValues(AUTH_CODE_PREFIX + email);
-
-        if (!values.equals(authCode)) {
-            throw new IncorrectVerificationCodeException();
-        }
-
-        //이메일 인증을 마치면, key: 이메일, value: authCode를 레디스에 저장
-        redisService.setValues(email+EMAIL_VERIFY_DONE_FLAG, "true");
+//        String values = redisService.getValues(AUTH_CODE_PREFIX + email);
+//
+//        if (!values.equals(authCode)) {
+//            throw new IncorrectVerificationCodeException();
+//        }
+//
+//        //이메일 인증을 마치면, key: 이메일, value: authCode를 레디스에 저장
+//        redisService.setValues(email+EMAIL_VERIFY_DONE_FLAG, "true");
 
         return "SUCCESS";
     }
@@ -117,10 +117,10 @@ public class OwnerAuthService implements
     public OwnerSignupResponse signup(OwnerSignupRequest request) {
 
         //redis에서 이메일 인증이 완료된 상태인지 검증. 완료되지 않았다면 예외 발생
-        if (!redisService.getValues(request.getEmail()+EMAIL_VERIFY_DONE_FLAG).equals("true")){
-            throw new InvalidSignupProcessException();
-        }
-        redisService.deleteValues(request.getEmail()+EMAIL_VERIFY_DONE_FLAG);
+//        if (!redisService.getValues(request.getEmail()+EMAIL_VERIFY_DONE_FLAG).equals("true")){
+//            throw new InvalidSignupProcessException();
+//        }
+//        redisService.deleteValues(request.getEmail()+EMAIL_VERIFY_DONE_FLAG);
 
         //입점
         Owner ownerInfo = ownerRepository.findByEmail(request.getEmail()).orElseThrow(
@@ -166,7 +166,7 @@ public class OwnerAuthService implements
         }
 
         //Redis에 RefreshToken 저장
-        redisService.setValues(authentication.getName(), tokenResponse.getRefreshToken());
+//        redisService.setValues(authentication.getName(), tokenResponse.getRefreshToken());
 
         return SignInResponse.builder()
             .accessToken(tokenResponse.getAccessToken())

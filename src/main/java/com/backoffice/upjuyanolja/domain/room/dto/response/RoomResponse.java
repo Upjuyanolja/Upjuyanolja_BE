@@ -26,21 +26,14 @@ public record RoomResponse(
 ) {
 
     public static RoomResponse of(
-        Room room, RoomOption option, int discountPrice,
+        Room room, RoomOption option, int roomPrice, int discountPrice,
         boolean soldOut, int count, List<CouponDetailResponse> coupons
 
     ) {
         return RoomResponse.builder()
             .id(room.getId())
             .name(room.getName())
-            .basePrice(
-                Stream.of(
-                        room.getPrice().getOffWeekDaysMinFee(),
-                        room.getPrice().getOffWeekendMinFee(),
-                        room.getPrice().getPeakWeekDaysMinFee(),
-                        room.getPrice().getPeakWeekendMinFee())
-                    .reduce(Math::min).orElse(0)
-            )
+            .basePrice(roomPrice)
             .discountPrice(discountPrice)
             .defaultCapacity(room.getDefaultCapacity())
             .maxCapacity(room.getMaxCapacity())
