@@ -9,11 +9,11 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
-import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -48,13 +48,12 @@ public class CouponService {
     }
 
     public List<CouponDetailResponse> getSortedDiscountTypeCouponResponseInRoom(
-        Room room, List<Coupon> coupons, DiscountType discountType
+        Room room, int roomPrice, List<Coupon> coupons, DiscountType discountType
     ) {
         List<CouponDetailResponse> responses = new ArrayList<>();
         List<Coupon> discountTypeCouponInRoom =
             getDiscountTypeCouponInRoom(coupons, discountType);
         List<Coupon> resultCoupons = new ArrayList<>();
-        int roomPrice = room.getPrice().getOffWeekDaysMinFee();
 
         if (discountTypeCouponInRoom.isEmpty()) {
             return new ArrayList<>();
@@ -80,9 +79,8 @@ public class CouponService {
     }
 
     @Transactional(readOnly = true)
-    public List<CouponDetailResponse> getSortedTotalCouponResponseInRoom(Room room) {
+    public List<CouponDetailResponse> getSortedTotalCouponResponseInRoom(Room room, int roomPrice) {
         List<Coupon> roomCoupons = couponRepository.findByRoom(room);
-        int roomPrice = room.getPrice().getOffWeekDaysMinFee();
 
         if (roomCoupons.isEmpty()) {
             return new ArrayList<>();
@@ -105,11 +103,13 @@ public class CouponService {
     }
 
     @Transactional(readOnly = true)
-    public String getDiscountTypeMainRoomCouponName(List<Room> rooms, DiscountType discountType) {
+    public String getDiscountTypeMainRoomCouponName(
+        List<Room> rooms, DiscountType discountType, Map<Room, Integer> priceRoomMap
+    ) {
         TreeMap<Integer, String> result = new TreeMap<>(Comparator.reverseOrder());
 
         for (Room room : rooms) {
-            int roomPrice = room.getPrice().getOffWeekDaysMinFee();
+            int roomPrice = priceRoomMap.get(room);
             List<Coupon> coupons = getDiscountTypeCouponInRoom(
                 getCouponInRoom(room), discountType
             );

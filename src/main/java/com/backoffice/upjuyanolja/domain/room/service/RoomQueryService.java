@@ -15,18 +15,23 @@ import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomsInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomOptionNotFoundException;
+import com.backoffice.upjuyanolja.domain.room.exception.RoomPriceNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomStockNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomPriceRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,13 +43,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RoomQueryService implements RoomQueryUseCase {
 
-    private final MemberGetService memberGetService;
     private final AccommodationRepository accommodationRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
     private final RoomRepository roomRepository;
-    private final CouponService couponService;
     private final RoomOptionRepository roomOptionRepository;
+    private final RoomPriceRepository roomPriceRepository;
     private final RoomStockRepository roomStockRepository;
+
+    private final MemberGetService memberGetService;
+    private final CouponService couponService;
 
     @Override
     public List<Room> findByAccommodationId(long accommodationId) {
@@ -63,6 +70,12 @@ public class RoomQueryService implements RoomQueryUseCase {
     }
 
     @Override
+    public RoomPrice findRoomPriceByRoom(Room room) {
+        return roomPriceRepository.findByRoom(room)
+            .orElseThrow(RoomPriceNotFoundException::new);
+    }
+
+    @Override
     public RoomPageResponse getRooms(long memberId, long accommodationId, Pageable pageable) {
         Member member = memberGetService.getMemberById(memberId);
         Accommodation accommodation = accommodationRepository.findById(accommodationId)
@@ -73,14 +86,22 @@ public class RoomQueryService implements RoomQueryUseCase {
         roomPage.get().forEach(room -> {
             List<CouponDetailResponse> couponDetails = new ArrayList<>();
             List<Coupon> coupons = couponService.getCouponInRoom(room);
-            couponDetails.addAll(couponService
-                .getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.FLAT));
-            couponDetails.addAll(couponService
-                .getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.RATE));
-
             RoomOption option = findRoomOptionByRoom(room);
+            int roomPrice = findRoomPriceByRoom(room).getOffWeekDaysMinFee();
 
-            rooms.add(RoomsInfoResponse.of(room, option, couponDetails));
+            couponDetails.addAll(couponService
+                .getSortedDiscountTypeCouponResponseInRoom(
+                    room, roomPrice,
+                    coupons, DiscountType.FLAT)
+            );
+            couponDetails.addAll(couponService
+                .getSortedDiscountTypeCouponResponseInRoom(
+                    room, roomPrice,
+                    coupons, DiscountType.RATE)
+            );
+
+            rooms.add(RoomsInfoResponse.of(room, option, couponDetails,
+                roomPrice));
         });
         return RoomPageResponse.builder()
             .pageNum(roomPage.getNumber())
@@ -99,8 +120,9 @@ public class RoomQueryService implements RoomQueryUseCase {
         checkOwnership(member, room.getAccommodation());
 
         RoomOption option = findRoomOptionByRoom(room);
+        int roomPrice = findRoomPriceByRoom(room).getOffWeekDaysMinFee();
 
-        return RoomInfoResponse.of(room, option);
+        return RoomInfoResponse.of(room, option, roomPrice);
     }
 
     @Override
@@ -117,6 +139,19 @@ public class RoomQueryService implements RoomQueryUseCase {
             )
             .toList();
     }
+
+    @Override
+    public Map<Room, Integer> getMinRoomPriceWithRoom(List<Room> rooms) {
+        Map<Room, Integer> roomMinPriceMap = new HashMap<>();
+
+        for (Room room: rooms) {
+            int roomPrice = findRoomPriceByRoom(room).getOffWeekDaysMinFee();
+            roomMinPriceMap.put(room, roomPrice);
+        }
+
+        return roomMinPriceMap;
+    }
+
     private void checkOwnership(Member member, Accommodation accommodation) {
         if (!accommodationOwnershipRepository
             .existsAccommodationOwnershipByMemberAndAccommodation(member, accommodation)) {
