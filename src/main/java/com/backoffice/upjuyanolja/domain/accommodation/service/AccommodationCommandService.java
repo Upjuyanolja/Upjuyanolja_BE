@@ -79,21 +79,19 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         request.rooms().forEach(
             roomRegisterRequest -> roomCommandService.saveRoom(accommodation, roomRegisterRequest));
 
-        AccommodationOptionResponse option = createAccommodationOption(request.option());
+        AccommodationOption option = createAccommodationOption(accommodation, request.option());
 
         em.refresh(accommodation);
+        em.refresh(option);
 
         List<RoomInfoResponse> room = roomCommandService.getRoomsInAccommodation(accommodation);
 
         return AccommodationInfoResponse.of(accommodation, option, room);
     }
 
-    public AccommodationOptionResponse createAccommodationOption(
-        AccommodationOptionRequest request
+    public AccommodationOption createAccommodationOption(
+        Accommodation accommodation, AccommodationOptionRequest request
     ) {
-
-        Accommodation accommodation = getAccommodation(request.AccommodationId());
-
         AccommodationOption accommodationOption = accommodationOptionRepository.save(
             AccommodationOption.builder()
                 .accommodation(accommodation)
@@ -109,14 +107,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
                 .build()
         );
 
-        em.refresh(accommodationOption);
-        return AccommodationOptionResponse.of(accommodationOption);
-    }
-
-
-    private Accommodation getAccommodation(Long accommodationId) {
-        return accommodationRepository.findById(accommodationId)
-            .orElseThrow(AccommodationNotFoundException::new);
+        return accommodationOption;
     }
 
     private Category getCategory(String category) {

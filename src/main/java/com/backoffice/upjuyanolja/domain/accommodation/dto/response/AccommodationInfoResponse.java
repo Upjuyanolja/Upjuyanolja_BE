@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.accommodation.dto.response;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ public record AccommodationInfoResponse(
 ) {
 
     public static AccommodationInfoResponse of(
-        Accommodation accommodation, AccommodationOptionResponse option,
+        Accommodation accommodation, AccommodationOption option,
         List<RoomInfoResponse> rooms
     ) {
         return AccommodationInfoResponse.builder()
@@ -31,7 +32,7 @@ public record AccommodationInfoResponse(
                 + " "
                 + accommodation.getDetailAddress())
             .images(AccommodationImageResponse.of(accommodation.getImages()))
-            .option(option)
+            .option(AccommodationOptionResponse.of(option))
             .rooms(rooms)
             .build();
     }

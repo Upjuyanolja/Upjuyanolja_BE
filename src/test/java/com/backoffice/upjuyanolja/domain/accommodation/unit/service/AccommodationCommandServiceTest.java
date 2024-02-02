@@ -15,6 +15,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOptio
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOptionRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
@@ -65,6 +66,9 @@ public class AccommodationCommandServiceTest {
 
     @Mock
     private AccommodationOwnershipRepository accommodationOwnershipRepository;
+
+    @Mock
+    private AccommodationOptionRepository accommodationOptionRepository;
 
     @Mock
     private AccommodationImageRepository accommodationImageRepository;
@@ -153,6 +157,7 @@ public class AccommodationCommandServiceTest {
                 .build();
             AccommodationOption accommodationOption = AccommodationOption.builder()
                 .id(1L)
+                .accommodation(accommodation)
                 .cooking(false)
                 .parking(true)
                 .pickup(false)
@@ -208,11 +213,6 @@ public class AccommodationCommandServiceTest {
                     .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .option(RoomOption.builder()
-                    .airCondition(true)
-                    .tv(true)
-                    .internet(true)
-                    .build())
                 .images(new ArrayList<>())
                 .build();
             Accommodation savedAccommodation = Accommodation.builder()
@@ -234,6 +234,7 @@ public class AccommodationCommandServiceTest {
                 .findCategoryByNameAndIdGreaterThan(any(String.class), any(Long.TYPE)))
                 .willReturn(Optional.of(category));
             given(accommodationRepository.save(any(Accommodation.class))).willReturn(accommodation);
+            given(accommodationOptionRepository.save(any(AccommodationOption.class))).willReturn(accommodationOption);
             given(accommodationImageRepository.saveAll(any(List.class)))
                 .willReturn(List.of(accommodationImage));
             given(accommodationOwnershipRepository.save(any(AccommodationOwnership.class)))
