@@ -25,12 +25,12 @@ import com.backoffice.upjuyanolja.domain.room.exception.InvalidRoomStatusExcepti
 import com.backoffice.upjuyanolja.domain.room.exception.RoomImageNotExistsException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomImageNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
-import com.backoffice.upjuyanolja.domain.room.exception.RoomOptionNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
+import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import com.backoffice.upjuyanolja.global.util.DateTimeParser;
 import jakarta.persistence.EntityManager;
@@ -54,6 +54,7 @@ public class RoomCommandService implements RoomCommandUseCase {
     private final RoomStockRepository roomStockRepository;
     private final AccommodationRepository accommodationRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
+    private final RoomQueryUseCase roomQueryUseCase;
     private final EntityManager em;
 
     @Override
@@ -105,6 +106,18 @@ public class RoomCommandService implements RoomCommandUseCase {
         return RoomInfoResponse.of(room, roomOption);
     }
 
+    public RoomOption saveRoomOption(Room room, RoomOptionRequest request) {
+        RoomOption saveRoomOption = roomOptionRepository.save(RoomOption.builder()
+            .room(room)
+            .tv(request.tv())
+            .airCondition(request.airCondition())
+            .internet(request.internet())
+            .build()
+        );
+
+        return saveRoomOption;
+    }
+
     @Override
     public RoomInfoResponse modifyRoom(long memberId, long roomId, RoomUpdateRequest request) {
         Member member = memberGetService.getMemberById(memberId);
@@ -118,10 +131,11 @@ public class RoomCommandService implements RoomCommandUseCase {
 
         updateRoom(room, request);
 
+        RoomOption roomOption = updateRoomOption(room, request.option().toRoomOptionUpdateDto());
+
         em.flush();
         em.refresh(room);
-
-        RoomOption roomOption = updateRoomOption(room, request.option().toRoomOptionUpdateDto());
+        em.refresh(roomOption);
 
         return RoomInfoResponse.of(room, roomOption);
     }
@@ -136,7 +150,7 @@ public class RoomCommandService implements RoomCommandUseCase {
         }
         room.delete(LocalDateTime.now());
 
-        RoomOption roomOption = getRoomOption(room);
+        RoomOption roomOption = roomQueryUseCase.findRoomOptionByRoom(room);
         roomOption.delete(LocalDateTime.now());
 
         return RoomInfoResponse.of(room, roomOption);
@@ -147,18 +161,12 @@ public class RoomCommandService implements RoomCommandUseCase {
         List<RoomInfoResponse> rooms = new ArrayList<>();
         accommodation.getRooms()
             .forEach(room -> {
-                    RoomOption option = getRoomOption(room);
+                    RoomOption option = roomQueryUseCase.findRoomOptionByRoom(room);
                     rooms.add(RoomInfoResponse.of(room, option));
                 }
             );
 
         return rooms;
-    }
-
-    @Transactional(readOnly = true)
-    public RoomOption getRoomOption(Room room) {
-        return roomOptionRepository.findByRoom(room)
-            .orElseThrow(RoomOptionNotFoundException::new);
     }
 
     private void validateRoomName(String name, Accommodation accommodation) {
@@ -179,17 +187,13 @@ public class RoomCommandService implements RoomCommandUseCase {
             updateRoomStock(room, request.amount() - room.getAmount());
         }
         room.updateRoom(request.toRoomUpdateDto());
-        updateRoomOption(room, request.option().toRoomOptionUpdateDto());
         addRoomImages(room, request.addImages());
         roomImageRepository.deleteAll(getRoomImages(request.deleteImages()));
     }
 
     private RoomOption updateRoomOption(Room room, RoomOptionUpdate option) {
-        RoomOption roomOption = getRoomOption(room);
+        RoomOption roomOption = roomQueryUseCase.findRoomOptionByRoom(room);
         roomOption.updateRoomOption(option);
-
-        em.flush();
-        em.refresh(roomOption);
 
         return roomOption;
     }
@@ -231,18 +235,6 @@ public class RoomCommandService implements RoomCommandUseCase {
         if (!flag) {
             throw new InvalidRoomStatusException();
         }
-    }
-
-    private RoomOption saveRoomOption(Room room, RoomOptionRequest request) {
-        RoomOption saveRoomOption = roomOptionRepository.save(RoomOption.builder()
-            .room(room)
-            .tv(request.tv())
-            .airCondition(request.airCondition())
-            .internet(request.internet())
-            .build()
-        );
-
-        return saveRoomOption;
     }
 
     private void createRoomStock(Room room) {

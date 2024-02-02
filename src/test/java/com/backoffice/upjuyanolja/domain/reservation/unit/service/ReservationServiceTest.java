@@ -171,11 +171,6 @@ class ReservationServiceTest {
                 .build())
             .amount(858)
             .status(status)
-            .option(RoomOption.builder()
-                .airCondition(true)
-                .tv(true)
-                .internet(true)
-                .build())
             .images(new ArrayList<>())
             .build();
         return room;

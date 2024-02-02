@@ -32,9 +32,11 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.exception.DuplicateRoomNameException;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
+import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import jakarta.persistence.EntityManager;
 import java.time.LocalTime;
@@ -61,7 +63,13 @@ public class RoomCommandServiceTest {
     private MemberGetService memberGetService;
 
     @Mock
+    private RoomQueryUseCase roomQueryUseCase;
+
+    @Mock
     private RoomRepository roomRepository;
+
+    @Mock
+    private RoomOptionRepository roomOptionRepository;
 
     @Mock
     private RoomImageRepository roomImageRepository;
@@ -148,12 +156,15 @@ public class RoomCommandServiceTest {
                     .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .option(RoomOption.builder()
-                    .airCondition(true)
-                    .tv(true)
-                    .internet(true)
-                    .build())
                 .images(new ArrayList<>())
+                .build();
+
+            RoomOption roomOption = RoomOption.builder()
+                .id(1L)
+                .room(room)
+                .airCondition(true)
+                .tv(true)
+                .internet(true)
                 .build();
 
             RoomImage roomImage = RoomImage.builder()
@@ -178,11 +189,6 @@ public class RoomCommandServiceTest {
                     .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .option(RoomOption.builder()
-                    .airCondition(true)
-                    .tv(true)
-                    .internet(true)
-                    .build())
                 .images(List.of(roomImage))
                 .build();
 
@@ -199,6 +205,7 @@ public class RoomCommandServiceTest {
                 .existsRoomByNameAndAccommodation(any(String.class), any(Accommodation.class)))
                 .willReturn(false);
             given(roomRepository.save(any(Room.class))).willReturn(room);
+            given(roomOptionRepository.save(any(RoomOption.class))).willReturn(roomOption);
             given(roomImageRepository.saveAll(any(List.class))).willReturn(List.of(roomImage));
 
             // when
@@ -370,12 +377,15 @@ public class RoomCommandServiceTest {
                     .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .option(RoomOption.builder()
-                    .airCondition(true)
-                    .tv(true)
-                    .internet(true)
-                    .build())
                 .images(new ArrayList<>())
+                .build();
+
+            RoomOption roomOption = RoomOption.builder()
+                .id(1L)
+                .room(room)
+                .airCondition(true)
+                .tv(true)
+                .internet(true)
                 .build();
 
             RoomImage roomImage = RoomImage.builder()
@@ -400,11 +410,6 @@ public class RoomCommandServiceTest {
                     .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .option(RoomOption.builder()
-                    .airCondition(true)
-                    .tv(true)
-                    .internet(true)
-                    .build())
                 .images(List.of(roomImage))
                 .build();
 
@@ -413,6 +418,7 @@ public class RoomCommandServiceTest {
                 any(Accommodation.class)))
                 .willReturn(false);
             given(roomRepository.save(any(Room.class))).willReturn(room);
+            given(roomOptionRepository.save(any(RoomOption.class))).willReturn(roomOption);
             given(roomImageRepository.saveAll(any(List.class))).willReturn(List.of(roomImage));
 
             // when
@@ -575,12 +581,15 @@ public class RoomCommandServiceTest {
                     .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .option(RoomOption.builder()
-                    .airCondition(true)
-                    .tv(true)
-                    .internet(true)
-                    .build())
                 .images(List.of(roomImage1))
+                .build();
+
+            RoomOption roomOption = RoomOption.builder()
+                .id(1L)
+                .room(room)
+                .airCondition(true)
+                .tv(true)
+                .internet(true)
                 .build();
 
             RoomImage roomImage2 = RoomImage.builder()
@@ -610,16 +619,12 @@ public class RoomCommandServiceTest {
                     .build())
                 .amount(858)
                 .status(RoomStatus.STOP_SELLING)
-                .option(RoomOption.builder()
-                    .airCondition(true)
-                    .tv(true)
-                    .internet(true)
-                    .build())
                 .images(List.of(roomImage2, roomImage3))
                 .build();
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(roomRepository.findById(any(Long.TYPE))).willReturn(Optional.of(room));
+            given(roomQueryUseCase.findRoomOptionByRoom(any(Room.class))).willReturn(roomOption);
             given(accommodationOwnershipRepository
                 .existsAccommodationOwnershipByMemberAndAccommodation(
                     any(Member.class),
@@ -652,6 +657,7 @@ public class RoomCommandServiceTest {
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
             verify(roomRepository, times(1)).findById(any(Long.TYPE));
+            verify(roomQueryUseCase, times(1)).findRoomOptionByRoom(room);
             verify(accommodationOwnershipRepository, times(1))
                 .existsAccommodationOwnershipByMemberAndAccommodation(
                     any(Member.class),
@@ -720,15 +726,19 @@ public class RoomCommandServiceTest {
                     .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .option(RoomOption.builder()
-                    .airCondition(true)
-                    .tv(true)
-                    .internet(true)
-                    .build())
                 .images(List.of(roomImage1))
                 .build();
 
+            RoomOption roomOption = RoomOption.builder()
+                .id(1L)
+                .room(room)
+                .airCondition(true)
+                .tv(true)
+                .internet(true)
+                .build();
+
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
+            given(roomQueryUseCase.findRoomOptionByRoom(any(Room.class))).willReturn(roomOption);
             given(roomRepository.findById(any(Long.TYPE))).willReturn(Optional.of(room));
             given(accommodationOwnershipRepository
                 .existsAccommodationOwnershipByMemberAndAccommodation(
@@ -759,6 +769,7 @@ public class RoomCommandServiceTest {
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
             verify(roomRepository, times(1)).findById(any(Long.TYPE));
+            verify(roomQueryUseCase, times(1)).findRoomOptionByRoom(room);
             verify(accommodationOwnershipRepository, times(1))
                 .existsAccommodationOwnershipByMemberAndAccommodation(
                     any(Member.class),

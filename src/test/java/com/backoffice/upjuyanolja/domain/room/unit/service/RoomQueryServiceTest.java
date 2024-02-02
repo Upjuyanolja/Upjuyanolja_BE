@@ -8,7 +8,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
@@ -29,8 +28,8 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
-import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -68,7 +67,7 @@ public class RoomQueryServiceTest {
     private RoomRepository roomRepository;
 
     @Mock
-    private RoomStockRepository roomStockRepository;
+    private RoomOptionRepository roomOptionRepository;
 
     @Mock
     private CouponService couponService;
@@ -130,12 +129,15 @@ public class RoomQueryServiceTest {
                     .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .option(RoomOption.builder()
-                    .airCondition(true)
-                    .tv(true)
-                    .internet(true)
-                    .build())
                 .images(new ArrayList<>())
+                .build();
+
+            RoomOption roomOption = RoomOption.builder()
+                .id(1L)
+                .room(room)
+                .airCondition(true)
+                .tv(true)
+                .internet(true)
                 .build();
 
             RoomImage roomImage = RoomImage.builder()
@@ -160,13 +162,17 @@ public class RoomQueryServiceTest {
                     .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .option(RoomOption.builder()
-                    .airCondition(true)
-                    .tv(true)
-                    .internet(true)
-                    .build())
                 .images(List.of(roomImage))
                 .build();
+
+            RoomOption savedRoomOption = RoomOption.builder()
+                .id(1L)
+                .room(room)
+                .airCondition(true)
+                .tv(true)
+                .internet(true)
+                .build();
+
             List<Coupon> coupons = List.of(
                 Coupon.builder()
                     .id(1L)
@@ -229,6 +235,8 @@ public class RoomQueryServiceTest {
                 .willReturn(true);
             given(roomRepository.findAllByAccommodation(any(Long.TYPE), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(savedRoom)));
+            given(roomOptionRepository.findByRoom(savedRoom))
+                .willReturn(Optional.of(savedRoomOption));
             given(couponService.getCouponInRoom(any(Room.class))).willReturn(coupons);
             given(couponService.getSortedDiscountTypeCouponResponseInRoom(
                 any(Room.class),
@@ -344,16 +352,21 @@ public class RoomQueryServiceTest {
                     .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .option(RoomOption.builder()
-                    .airCondition(true)
-                    .tv(true)
-                    .internet(true)
-                    .build())
                 .images(List.of(roomImage1))
+                .build();
+
+            RoomOption roomOption = RoomOption.builder()
+                .id(1L)
+                .room(room)
+                .airCondition(true)
+                .tv(true)
+                .internet(true)
                 .build();
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(roomRepository.findById(any(Long.TYPE))).willReturn(Optional.of(room));
+            given(roomOptionRepository.findByRoom(room))
+                .willReturn(Optional.of(roomOption));
             given(accommodationOwnershipRepository
                 .existsAccommodationOwnershipByMemberAndAccommodation(
                     any(Member.class),

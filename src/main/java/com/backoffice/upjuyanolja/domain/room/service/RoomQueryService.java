@@ -17,8 +17,9 @@ import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
+import com.backoffice.upjuyanolja.domain.room.exception.RoomOptionNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomStockNotFoundException;
-import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
@@ -42,8 +43,24 @@ public class RoomQueryService implements RoomQueryUseCase {
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
     private final RoomRepository roomRepository;
     private final CouponService couponService;
-    private final RoomCommandService roomCommandService;
+    private final RoomOptionRepository roomOptionRepository;
     private final RoomStockRepository roomStockRepository;
+
+    @Override
+    public List<Room> findByAccommodationId(long accommodationId) {
+        return roomRepository.findByAccommodationId(accommodationId);
+    }
+
+    @Override
+    public Room findRoomById(long roomId) {
+        return roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
+    }
+
+    @Override
+    public RoomOption findRoomOptionByRoom(Room room) {
+        return roomOptionRepository.findByRoom(room)
+            .orElseThrow(RoomOptionNotFoundException::new);
+    }
 
     @Override
     public RoomPageResponse getRooms(long memberId, long accommodationId, Pageable pageable) {
@@ -61,7 +78,7 @@ public class RoomQueryService implements RoomQueryUseCase {
             couponDetails.addAll(couponService
                 .getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.RATE));
 
-            RoomOption option = roomCommandService.getRoomOption(room);
+            RoomOption option = findRoomOptionByRoom(room);
 
             rooms.add(RoomsInfoResponse.of(room, option, couponDetails));
         });
@@ -81,7 +98,7 @@ public class RoomQueryService implements RoomQueryUseCase {
         Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
         checkOwnership(member, room.getAccommodation());
 
-        RoomOption option = roomCommandService.getRoomOption(room);
+        RoomOption option = findRoomOptionByRoom(room);
 
         return RoomInfoResponse.of(room, option);
     }
@@ -100,7 +117,6 @@ public class RoomQueryService implements RoomQueryUseCase {
             )
             .toList();
     }
-
     private void checkOwnership(Member member, Accommodation accommodation) {
         if (!accommodationOwnershipRepository
             .existsAccommodationOwnershipByMemberAndAccommodation(member, accommodation)) {
@@ -108,11 +124,4 @@ public class RoomQueryService implements RoomQueryUseCase {
         }
     }
 
-    public List<Room> findByAccommodationId(long accommodationId) {
-        return roomRepository.findByAccommodationId(accommodationId);
-    }
-
-    public Room findRoomById(long roomId) {
-        return roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
-    }
 }

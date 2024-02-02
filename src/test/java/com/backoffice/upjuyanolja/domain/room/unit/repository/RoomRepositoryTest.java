@@ -107,11 +107,6 @@ public class RoomRepositoryTest {
                 .build())
             .amount(858)
             .status(RoomStatus.SELLING)
-            .option(RoomOption.builder()
-                .airCondition(true)
-                .tv(true)
-                .internet(true)
-                .build())
             .images(new ArrayList<>())
             .build());
     }
