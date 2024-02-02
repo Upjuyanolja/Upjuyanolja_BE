@@ -25,8 +25,7 @@ import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
-import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
-import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
+import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -50,8 +49,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     private final AccommodationOptionRepository accommodationOptionRepository;
     private final MemberRepository memberRepository;
     private final CouponService couponService;
-    private final RoomCommandService roomCommandService;
-    private final RoomQueryService roomQueryService;
+    private final RoomQueryUseCase roomQueryUseCase;
 
     @Override
     @Transactional(readOnly = true)
@@ -113,7 +111,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
             accommodation.getRooms().stream()
                 .map(room -> RoomResponse.of(
                         room,
-                        roomCommandService.getRoomOption(room),
+                        roomQueryUseCase.findRoomOptionByRoom(room),
                         getDiscountPrice(room),
                         !checkSoldOut(filterRooms, room),
                         getMinFilteredRoomStock(room, startDate, endDate),
@@ -165,7 +163,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     }
 
     private int getLowestPrice(Long accommodationId) {
-        List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
+        List<Room> rooms = roomQueryUseCase.findByAccommodationId(accommodationId);
 
         PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
 
@@ -178,7 +176,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
 
     private Optional<CouponDetailResponse> getDiscountInfo(Long accommodationId) {
         List<CouponDetailResponse> responses = new ArrayList<>();
-        List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
+        List<Room> rooms = roomQueryUseCase.findByAccommodationId(accommodationId);
         List<Coupon> coupons = new ArrayList<>();
 
         for (Room room : rooms) {
@@ -196,7 +194,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     }
 
     private String getMainCouponName(Long accommodationId) {
-        List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
+        List<Room> rooms = roomQueryUseCase.findByAccommodationId(accommodationId);
         String flatName = couponService.getDiscountTypeMainRoomCouponName(rooms, DiscountType.FLAT);
         String rateName = couponService.getDiscountTypeMainRoomCouponName(rooms, DiscountType.RATE);
 
@@ -214,7 +212,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
 
     @Transactional(readOnly = true)
     public Accommodation findAccommodationByRoomId(long roomId) {
-        return roomQueryService.findRoomById(roomId).getAccommodation();
+        return roomQueryUseCase.findRoomById(roomId).getAccommodation();
     }
 
 
@@ -232,7 +230,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         List<Room> filterRoom = new ArrayList<>();
 
         for (Room room : rooms) {
-            List<RoomStock> filteredStocks = roomQueryService.getFilteredRoomStocksByDate(room,
+            List<RoomStock> filteredStocks = roomQueryUseCase.getFilteredRoomStocksByDate(room,
                 startDate, endDate);
             if (!filteredStocks.isEmpty()) {
                 filterRoom.add(room);
@@ -244,7 +242,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     private int getMinFilteredRoomStock(
         Room room, LocalDate startDate, LocalDate endDate
     ) {
-        return roomQueryService.getFilteredRoomStocksByDate(room, startDate, endDate).stream()
+        return roomQueryUseCase.getFilteredRoomStocksByDate(room, startDate, endDate).stream()
             .mapToInt(RoomStock::getCount)
             .min()
             .orElse(0);

@@ -17,6 +17,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.global.config.QueryDslConfig;
 import jakarta.persistence.EntityManager;
@@ -56,6 +57,9 @@ public class AccommodationOwnershipRepositoryTest {
 
     @Autowired
     private RoomRepository roomRepository;
+
+    @Autowired
+    private RoomOptionRepository roomOptionRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -174,12 +178,17 @@ public class AccommodationOwnershipRepositoryTest {
                 .build())
             .amount(858)
             .status(RoomStatus.SELLING)
-            .option(RoomOption.builder()
-                .airCondition(true)
-                .tv(true)
-                .internet(true)
-                .build())
             .images(new ArrayList<>())
+            .build());
+    }
+
+
+    private RoomOption saveRoomOption(Room room) {
+        return roomOptionRepository.save(RoomOption.builder()
+            .room(room)
+            .airCondition(true)
+            .tv(true)
+            .internet(true)
             .build());
     }
 
