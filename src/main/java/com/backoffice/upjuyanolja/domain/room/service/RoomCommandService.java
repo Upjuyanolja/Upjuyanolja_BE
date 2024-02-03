@@ -167,7 +167,7 @@ public class RoomCommandService implements RoomCommandUseCase {
         roomOption.delete(LocalDateTime.now());
         RoomPrice roomPrice = roomQueryUseCase.findRoomPriceByRoom(room);
         roomPrice.delete(LocalDateTime.now());
-        List<RoomImage> roomImages = roomQueryUseCase.findRoomImageByRoom(room);
+        List<RoomImage> roomImages = deleteAllRoomImages(room);
 
         return RoomInfoResponse.of(room, roomOption, roomImages, roomPrice.getOffWeekDaysMinFee());
     }
@@ -205,8 +205,10 @@ public class RoomCommandService implements RoomCommandUseCase {
             updateRoomStock(room, request.amount() - room.getAmount());
         }
         room.updateRoom(request.toRoomUpdateDto());
+
         addRoomImages(room, request.addImages());
-        roomImageRepository.deleteAll(deleteRoomImages(request.deleteImages()));
+        deleteRoomImages(request.deleteImages());
+
     }
 
     private RoomOption updateRoomOption(Room room, RoomOptionUpdate option) {
@@ -240,12 +242,20 @@ public class RoomCommandService implements RoomCommandUseCase {
         roomImageRepository.saveAll(images);
     }
 
-    private List<RoomImage> deleteRoomImages(List<RoomImageDeleteRequest> requests) {
+    private void deleteRoomImages(List<RoomImageDeleteRequest> requests) {
         List<RoomImage> images = new ArrayList<>();
         for (RoomImageDeleteRequest request : requests) {
             images.add(roomImageRepository.findById(request.id())
                 .orElseThrow(RoomImageNotFoundException::new));
         }
+
+        roomImageRepository.deleteAll(images);
+    }
+
+    private List<RoomImage> deleteAllRoomImages(Room room) {
+        List<RoomImage> images = roomQueryUseCase.findRoomImageByRoom(room);
+        roomImageRepository.deleteAll(images);
+
         return images;
     }
 
