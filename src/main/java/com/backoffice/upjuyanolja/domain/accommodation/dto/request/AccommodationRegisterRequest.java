@@ -56,7 +56,6 @@ public record AccommodationRegisterRequest(
             .category(category)
             .description(request.description())
             .thumbnail(request.thumbnail())
-            .images(new ArrayList<>())
             .rooms(new ArrayList<>())
             .build();
     }

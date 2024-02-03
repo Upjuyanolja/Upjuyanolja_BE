@@ -62,9 +62,6 @@ public class Accommodation extends BaseTime {
     private Category category;
 
     @OneToMany(mappedBy = "accommodation", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AccommodationImage> images = new ArrayList<>();
-
-    @OneToMany(mappedBy = "accommodation", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Room> rooms = new ArrayList<>();
 
     @Builder
@@ -77,7 +74,6 @@ public class Accommodation extends BaseTime {
         Category category,
         String description,
         String thumbnail,
-        List<AccommodationImage> images,
         List<Room> rooms
     ) {
         this.id = id;
@@ -88,7 +84,6 @@ public class Accommodation extends BaseTime {
         this.category = category;
         this.description = description;
         this.thumbnail = thumbnail;
-        this.images = images;
         this.rooms = rooms;
     }
 

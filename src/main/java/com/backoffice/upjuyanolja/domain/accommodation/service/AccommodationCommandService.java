@@ -3,8 +3,10 @@ package com.backoffice.upjuyanolja.domain.accommodation.service;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationImageRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationOptionRequest;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.request.AccommodationRegisterRequest;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationImageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationInfoResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
@@ -63,12 +65,12 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
             .category(category)
             .thumbnail(request.thumbnail())
             .rooms(new ArrayList<>())
-            .images(new ArrayList<>())
             .build());
 
         imageValidate(request.images());
-        accommodationImageRepository.saveAll(AccommodationImageRequest
-            .toEntity(accommodation, request.images()));
+        List<AccommodationImage> images = accommodationImageRepository.saveAll(
+            AccommodationImageRequest
+                .toEntity(accommodation, request.images()));
 
         accommodationOwnershipRepository.save(AccommodationOwnership.builder()
             .accommodation(accommodation)
@@ -86,7 +88,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
         List<RoomInfoResponse> room = roomCommandService.getRoomInfoResponses(accommodation);
 
-        return AccommodationInfoResponse.of(accommodation, option, room);
+        return AccommodationInfoResponse.of(accommodation, option, images, room);
     }
 
     public AccommodationOption createAccommodationOption(

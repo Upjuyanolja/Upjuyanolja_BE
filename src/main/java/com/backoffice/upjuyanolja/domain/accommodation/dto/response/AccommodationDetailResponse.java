@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.accommodation.dto.response;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import java.util.List;
 import lombok.Builder;
@@ -19,8 +20,8 @@ public record AccommodationDetailResponse(
 ) {
 
     public static AccommodationDetailResponse of(
-        Accommodation accommodation, String mainCoupon,
-        AccommodationOptionResponse option, List<RoomResponse> rooms
+        Accommodation accommodation, String mainCoupon, AccommodationOption option,
+        List<String> images, List<RoomResponse> rooms
     ) {
         return AccommodationDetailResponse.builder()
             .id(accommodation.getId())
@@ -32,12 +33,8 @@ public record AccommodationDetailResponse(
             .description(accommodation.getDescription())
             .category(accommodation.getCategory().getName())
             .mainCoupon(mainCoupon)
-            .images(
-                accommodation.getImages().stream()
-                    .map(image -> image.getUrl())
-                    .toList()
-            )
-            .option(option)
+            .option(AccommodationOptionResponse.of(option))
+            .images(images)
             .rooms(rooms)
             .build();
     }

@@ -115,8 +115,9 @@ public class OpenApiService {
                     checkIntroItem(introItem);
                     checkStay(stay);
 
-                    Accommodation accommodation = saveAccommodation(stay, commonItem, introItem);
+                    Accommodation accommodation = saveAccommodation(stay, commonItem);
                     saveOwnership(accommodation, member);
+                    saveAccommodationOption(accommodation, introItem);
                     saveAccommodationImages(accommodation, images);
                     saveRooms(accommodation, introItem, rooms);
                 } catch (InvalidDataException | WrongCategoryException e) {
@@ -239,8 +240,7 @@ public class OpenApiService {
 
     private Accommodation saveAccommodation(
         JSONObject base,
-        JSONObject common,
-        JSONObject intro
+        JSONObject common
     ) throws JSONException {
         Category category = categoryRepository.findCategoryByNameAndIdGreaterThan(
                 AccommodationType.getByCode(base.getString("cat3")).name(), 4L)
@@ -254,11 +254,9 @@ public class OpenApiService {
             .zipCode(common.getString("zipcode"))
             .description(common.getString("overview"))
             .thumbnail(base.getString("firstimage"))
-            .images(new ArrayList<>())
             .build();
 
         Accommodation saveAccommodation = accommodationRepository.save(accommodation);
-        saveAccommodationOption(accommodation, intro);
 
         return saveAccommodation;
     }
