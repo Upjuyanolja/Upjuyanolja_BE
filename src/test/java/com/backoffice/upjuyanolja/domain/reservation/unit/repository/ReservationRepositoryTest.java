@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
@@ -17,9 +16,9 @@ import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
 import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRepository;
 import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRoomRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomPriceRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.global.config.QueryDslConfig;
 import jakarta.persistence.EntityManager;
@@ -61,6 +60,9 @@ class ReservationRepositoryTest {
     private RoomRepository roomRepository;
 
     @Autowired
+    private RoomPriceRepository roomPriceRepository;
+
+    @Autowired
     private ReservationRoomRepository reservationRoomRepository;
 
     @Autowired
@@ -73,11 +75,14 @@ class ReservationRepositoryTest {
 
     static Room room;
 
+    static RoomPrice roomPrice;
+
     @BeforeEach
     public void initTest() {
         clear("member");
         clear("accommodation");
         clear("room");
+        clear("room_price");
         clear("reservation");
 
         member = Member.builder()
@@ -92,6 +97,7 @@ class ReservationRepositoryTest {
         memberRepository.save(member);
 
         room = createRoom();
+        roomPrice = createRoomPrice(room);
     }
 
     private void clear(String tableName) {
@@ -131,12 +137,6 @@ class ReservationRepositoryTest {
             .maxCapacity(3)
             .checkInTime(LocalTime.of(15, 0, 0))
             .checkOutTime(LocalTime.of(11, 0, 0))
-            .price(RoomPrice.builder()
-                .offWeekDaysMinFee(100000)
-                .offWeekendMinFee(100000)
-                .peakWeekDaysMinFee(100000)
-                .peakWeekendMinFee(100000)
-                .build())
             .amount(858)
             .status(RoomStatus.SELLING)
             .images(new ArrayList<>())
@@ -145,6 +145,21 @@ class ReservationRepositoryTest {
         roomRepository.save(room);
 
         return room;
+    }
+
+    private RoomPrice createRoomPrice(Room room) {
+        RoomPrice roomPrice = RoomPrice.builder()
+            .id(1L)
+            .room(room)
+            .offWeekDaysMinFee(100000)
+            .offWeekendMinFee(100000)
+            .peakWeekDaysMinFee(100000)
+            .peakWeekendMinFee(100000)
+            .build();
+
+        roomPriceRepository.save(roomPrice);
+
+        return roomPrice;
     }
 
     private void setupDummy() {
@@ -168,7 +183,7 @@ class ReservationRepositoryTest {
             .room(room)
             .startDate(startDate)
             .endDate(endDate)
-            .price(room.getPrice().getOffWeekDaysMinFee())
+            .price(roomPrice.getOffWeekDaysMinFee())
             .build();
         reservationRoomRepository.save(reservationRoom);
 

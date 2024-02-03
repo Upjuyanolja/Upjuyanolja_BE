@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
@@ -23,9 +22,9 @@ import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomPriceRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.global.config.QueryDslConfig;
 import jakarta.persistence.EntityManager;
@@ -65,6 +64,9 @@ class CouponRepositoryTest {
     private RoomRepository roomRepository;
 
     @Autowired
+    private RoomPriceRepository roomPriceRepository;
+
+    @Autowired
     private AccommodationRepository accommodationRepository;
 
     @Autowired
@@ -83,12 +85,14 @@ class CouponRepositoryTest {
     Coupon mockCoupon;
     Point mockPoint;
     List<Room> mockRooms;
+    List<RoomPrice> mockRoomPrices;
 
     @BeforeEach
     public void initTest() {
         clearTable("member");
         clearTable("accommodation");
         clearTable("room");
+        clearTable("room_price");
         clearTable("coupon");
         clearTable("point");
 
@@ -98,6 +102,9 @@ class CouponRepositoryTest {
         List<Long> roomIdSet = List.of(1L, 2L, 3L);
         List<String> roomNameSet = List.of("스탠다드", "디럭스", "스위트");
         mockRooms = createRooms(mockAccommodation, roomIdSet, roomNameSet);
+
+        List<Long> roomPriceIdSet = List.of(1L, 2L, 3L);
+        mockRoomPrices = createRoomPrice(mockRooms, roomPriceIdSet);
 
         List<Long> couponIds1 = List.of(1L, 2L, 3L, 4L);
         List<Long> couponIds2 = List.of(5L, 6L, 7L, 8L);
@@ -230,7 +237,8 @@ class CouponRepositoryTest {
         return ownership;
     }
 
-    private List<Room> createRooms(Accommodation mockAccommodation, List<Long> roomIds, List<String> roomNames) {
+    private List<Room> createRooms(Accommodation mockAccommodation, List<Long> roomIds,
+        List<String> roomNames) {
         List<Room> rooms = List.of(
             createRoom(roomIds.get(0), roomNames.get(0), mockAccommodation),
             createRoom(roomIds.get(1), roomNames.get(1), mockAccommodation),
@@ -249,12 +257,6 @@ class CouponRepositoryTest {
             .maxCapacity(3)
             .checkInTime(LocalTime.of(15, 0, 0))
             .checkOutTime(LocalTime.of(11, 0, 0))
-            .price(RoomPrice.builder()
-                       .offWeekDaysMinFee(100000)
-                       .offWeekendMinFee(100000)
-                       .peakWeekDaysMinFee(100000)
-                       .peakWeekendMinFee(100000)
-                       .build())
             .amount(858)
             .status(RoomStatus.SELLING)
             .images(new ArrayList<>())
@@ -318,6 +320,28 @@ class CouponRepositoryTest {
             .build();
         couponRepository.save(coupon);
         return coupon;
+    }
+
+    private List<RoomPrice> createRoomPrice(List<Room> rooms, List<Long> roomPriceIdSet) {
+        List<RoomPrice> roomPrices = List.of(
+            createRoomPrice(rooms.get(0), roomPriceIdSet.get(0)),
+            createRoomPrice(rooms.get(1), roomPriceIdSet.get(1)),
+            createRoomPrice(rooms.get(2), roomPriceIdSet.get(2))
+        );
+        roomPriceRepository.saveAll(roomPrices);
+
+        return roomPrices;
+    }
+
+    private RoomPrice createRoomPrice(Room room, Long id) {
+        return RoomPrice.builder()
+            .id(id)
+            .room(room)
+            .offWeekDaysMinFee(100000)
+            .offWeekendMinFee(100000)
+            .peakWeekDaysMinFee(100000)
+            .peakWeekendMinFee(100000)
+            .build();
     }
 
     private Point createPoint(Long pointId, Member member, long amount) {

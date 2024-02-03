@@ -119,12 +119,7 @@ class ReservationStockServiceTest {
             .maxCapacity(3)
             .checkInTime(LocalTime.of(15, 0, 0))
             .checkOutTime(LocalTime.of(11, 0, 0))
-            .price(RoomPrice.builder()
-                .offWeekDaysMinFee(100000)
-                .offWeekendMinFee(100000)
-                .peakWeekDaysMinFee(100000)
-                .peakWeekendMinFee(100000)
-                .build())
+
             .amount(858)
             .status(RoomStatus.SELLING)
             .images(new ArrayList<>())

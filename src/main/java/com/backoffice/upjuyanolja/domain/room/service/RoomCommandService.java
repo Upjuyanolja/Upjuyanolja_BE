@@ -218,7 +218,6 @@ public class RoomCommandService implements RoomCommandUseCase {
     private RoomPrice updateRoomPrice(Room room, int price) {
         RoomPrice roomPrice = roomQueryUseCase.findRoomPriceByRoom(room);
         roomPrice.updateRoomPrice(price);
-        roomPriceRepository.save(roomPrice);
 
         return roomPrice;
     }

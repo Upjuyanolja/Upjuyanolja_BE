@@ -8,7 +8,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponRedeem;
@@ -37,7 +36,6 @@ import com.backoffice.upjuyanolja.domain.reservation.repository.ReservationRepos
 import com.backoffice.upjuyanolja.domain.reservation.service.ReservationService;
 import com.backoffice.upjuyanolja.domain.reservation.service.ReservationStockService;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
@@ -102,6 +100,8 @@ class ReservationServiceTest {
     static Accommodation mockAccommodation;
     static Room mockRoom;
 
+    static RoomPrice mockRoomPrice;
+
     static Coupon mockCoupon;
 
     static List<Reservation> mockReservations;
@@ -112,10 +112,11 @@ class ReservationServiceTest {
         mockMember = createMember(1L);
         mockAccommodation = createAccommodation();
         mockRoom = createRoom(1L, RoomStatus.SELLING);
+        mockRoomPrice = createRoomPrice(1L, mockRoom);
         mockCoupon = createCoupon(1L, mockRoom, CouponStatus.ENABLE, 1);
-        mockReservations = createReservations();
+        mockReservations = createReservations(mockRoomPrice);
         for (Reservation reservation : mockReservations) {
-            mockPayments.add(createPayment(reservation));
+            mockPayments.add(createPayment(reservation, mockRoomPrice));
         }
     }
 
@@ -163,12 +164,6 @@ class ReservationServiceTest {
             .maxCapacity(3)
             .checkInTime(LocalTime.of(15, 0, 0))
             .checkOutTime(LocalTime.of(11, 0, 0))
-            .price(RoomPrice.builder()
-                .offWeekDaysMinFee(100000)
-                .offWeekendMinFee(100000)
-                .peakWeekDaysMinFee(100000)
-                .peakWeekendMinFee(100000)
-                .build())
             .amount(858)
             .status(status)
             .images(new ArrayList<>())
@@ -176,9 +171,23 @@ class ReservationServiceTest {
         return room;
     }
 
+    private RoomPrice createRoomPrice(long id, Room room) {
+        RoomPrice roomPrice = RoomPrice.builder()
+            .id(id)
+            .room(room)
+            .offWeekDaysMinFee(100000)
+            .offWeekendMinFee(100000)
+            .peakWeekDaysMinFee(100000)
+            .peakWeekendMinFee(100000)
+            .build();
+
+        return roomPrice;
+    }
+
     private Reservation createReservation(
         LocalDate startDate,
         LocalDate endDate,
+        RoomPrice roomPrice,
         boolean isCouponUsed,
         ReservationStatus status
     ) {
@@ -187,7 +196,7 @@ class ReservationServiceTest {
             .room(mockRoom)
             .startDate(startDate)
             .endDate(endDate)
-            .price(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .price(roomPrice.getOffWeekDaysMinFee())
             .build();
 
         Reservation reservation = Reservation.builder()
@@ -203,40 +212,40 @@ class ReservationServiceTest {
         return reservation;
     }
 
-    private List<Reservation> createReservations() {
+    private List<Reservation> createReservations(RoomPrice roomPrice) {
         List<Reservation> reservations = new ArrayList<>();
 
         reservations.add(createReservation(
-            LocalDate.now(), LocalDate.now().plusDays(1),
+            LocalDate.now(), LocalDate.now().plusDays(1), roomPrice,
             false, ReservationStatus.RESERVED
         ));
 
         reservations.add(createReservation(
-            LocalDate.now(), LocalDate.now().plusDays(1),
+            LocalDate.now(), LocalDate.now().plusDays(1), roomPrice,
             true, ReservationStatus.RESERVED
         ));
 
         reservations.add(createReservation(
-            LocalDate.now(), LocalDate.now().plusDays(1),
+            LocalDate.now(), LocalDate.now().plusDays(1), roomPrice,
             false, ReservationStatus.SERVICED
         ));
 
         reservations.add(createReservation(
-            LocalDate.now(), LocalDate.now().plusDays(1),
+            LocalDate.now(), LocalDate.now().plusDays(1), roomPrice,
             false, ReservationStatus.CANCELLED
         ));
 
         return reservations;
     }
 
-    private Payment createPayment(Reservation reservation) {
+    private Payment createPayment(Reservation reservation, RoomPrice roomPrice) {
         return Payment.builder()
             .member(mockMember)
             .reservation(reservation)
             .payMethod(PayMethod.KAKAO_PAY)
-            .roomPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .roomPrice(roomPrice.getOffWeekDaysMinFee())
             .discountAmount(0)
-            .totalAmount(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .totalAmount(roomPrice.getOffWeekDaysMinFee())
             .build();
     }
 
@@ -458,7 +467,7 @@ class ReservationServiceTest {
                 .room(mockRoom)
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
-                .price(mockRoom.getPrice().getOffWeekDaysMinFee())
+                .price(mockRoomPrice.getOffWeekDaysMinFee())
                 .build();
 
             when(roomRepository.findById(any(Long.class))).thenReturn(
@@ -466,6 +475,7 @@ class ReservationServiceTest {
             when(roomQueryService.getFilteredRoomStocksByDate(
                 any(Room.class), any(LocalDate.class), any(LocalDate.class)
             )).thenReturn(roomStockList);
+            when(roomQueryService.findRoomPriceByRoom(mockRoom)).thenReturn(mockRoomPrice);
             when(couponRepository.findByIdAndRoom(any(Long.class),
                 any(Room.class))).thenReturn(Optional.ofNullable(mockCoupon));
 
@@ -530,7 +540,7 @@ class ReservationServiceTest {
             RoomStock roomStock = createRoomStock(mockRoom, 1);
             List<RoomStock> roomStockList = new ArrayList<>(Arrays.asList(roomStock));
             Reservation reservation = createReservation(
-                LocalDate.now(), LocalDate.now(),
+                LocalDate.now(), LocalDate.now(), mockRoomPrice,
                 true, ReservationStatus.RESERVED
             );
 
@@ -555,7 +565,7 @@ class ReservationServiceTest {
             Coupon coupon = createCoupon(1L, mockRoom, CouponStatus.ENABLE, 1);
 
             Reservation reservation = createReservation(
-                LocalDate.now(), LocalDate.now(),
+                LocalDate.now(), LocalDate.now(), mockRoomPrice,
                 true, ReservationStatus.RESERVED
             );
 

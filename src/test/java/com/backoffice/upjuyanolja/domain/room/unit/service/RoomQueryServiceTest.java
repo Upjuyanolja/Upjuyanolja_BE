@@ -29,6 +29,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomPriceRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
 import java.time.LocalDate;
@@ -68,6 +69,9 @@ public class RoomQueryServiceTest {
 
     @Mock
     private RoomOptionRepository roomOptionRepository;
+
+    @Mock
+    private RoomPriceRepository roomPriceRepository;
 
     @Mock
     private CouponService couponService;
@@ -121,24 +125,11 @@ public class RoomQueryServiceTest {
                 .maxCapacity(3)
                 .checkInTime(LocalTime.of(15, 0, 0))
                 .checkOutTime(LocalTime.of(11, 0, 0))
-                .price(RoomPrice.builder()
-                    .offWeekDaysMinFee(100000)
-                    .offWeekendMinFee(100000)
-                    .peakWeekDaysMinFee(100000)
-                    .peakWeekendMinFee(100000)
-                    .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
                 .images(new ArrayList<>())
                 .build();
 
-            RoomOption roomOption = RoomOption.builder()
-                .id(1L)
-                .room(room)
-                .airCondition(true)
-                .tv(true)
-                .internet(true)
-                .build();
 
             RoomImage roomImage = RoomImage.builder()
                 .id(1L)
@@ -154,12 +145,6 @@ public class RoomQueryServiceTest {
                 .maxCapacity(3)
                 .checkInTime(LocalTime.of(15, 0, 0))
                 .checkOutTime(LocalTime.of(11, 0, 0))
-                .price(RoomPrice.builder()
-                    .offWeekDaysMinFee(100000)
-                    .offWeekendMinFee(100000)
-                    .peakWeekDaysMinFee(100000)
-                    .peakWeekendMinFee(100000)
-                    .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
                 .images(List.of(roomImage))
@@ -171,6 +156,15 @@ public class RoomQueryServiceTest {
                 .airCondition(true)
                 .tv(true)
                 .internet(true)
+                .build();
+
+            RoomPrice savedRoomPrice = RoomPrice.builder()
+                .id(1L)
+                .room(room)
+                .offWeekDaysMinFee(100000)
+                .offWeekendMinFee(100000)
+                .peakWeekDaysMinFee(100000)
+                .peakWeekendMinFee(100000)
                 .build();
 
             List<Coupon> coupons = List.of(
@@ -237,17 +231,19 @@ public class RoomQueryServiceTest {
                 .willReturn(new PageImpl<>(List.of(savedRoom)));
             given(roomOptionRepository.findByRoom(savedRoom))
                 .willReturn(Optional.of(savedRoomOption));
+            given(roomPriceRepository.findByRoom(savedRoom))
+                .willReturn(Optional.of(savedRoomPrice));
             given(couponService.getCouponInRoom(any(Room.class))).willReturn(coupons);
             given(couponService.getSortedDiscountTypeCouponResponseInRoom(
                 any(Room.class),
+                any((Integer.TYPE)),
                 any(List.class),
-                eq(DiscountType.FLAT)
-            )).willReturn(flatCoupons);
+                eq(DiscountType.FLAT))).willReturn(flatCoupons);
             given(couponService.getSortedDiscountTypeCouponResponseInRoom(
                 any(Room.class),
+                any((Integer.TYPE)),
                 any(List.class),
-                eq(DiscountType.RATE)
-            )).willReturn(rateCoupons);
+                eq(DiscountType.RATE))).willReturn(rateCoupons);
 
             // when
             RoomPageResponse result = roomQueryService.getRooms(1L, 1L, roomPageRequest.of());
@@ -284,14 +280,14 @@ public class RoomQueryServiceTest {
             verify(couponService, times(1)).getCouponInRoom(any(Room.class));
             verify(couponService, times(1)).getSortedDiscountTypeCouponResponseInRoom(
                 any(Room.class),
+                any((Integer.TYPE)),
                 any(List.class),
-                eq(DiscountType.FLAT)
-            );
+                eq(DiscountType.FLAT));
             verify(couponService, times(1)).getSortedDiscountTypeCouponResponseInRoom(
                 any(Room.class),
+                any((Integer.TYPE)),
                 any(List.class),
-                eq(DiscountType.RATE)
-            );
+                eq(DiscountType.RATE));
         }
     }
 
@@ -344,12 +340,6 @@ public class RoomQueryServiceTest {
                 .maxCapacity(3)
                 .checkInTime(LocalTime.of(15, 0, 0))
                 .checkOutTime(LocalTime.of(11, 0, 0))
-                .price(RoomPrice.builder()
-                    .offWeekDaysMinFee(100000)
-                    .offWeekendMinFee(100000)
-                    .peakWeekDaysMinFee(100000)
-                    .peakWeekendMinFee(100000)
-                    .build())
                 .amount(858)
                 .status(RoomStatus.SELLING)
                 .images(List.of(roomImage1))
@@ -363,10 +353,21 @@ public class RoomQueryServiceTest {
                 .internet(true)
                 .build();
 
+            RoomPrice roomPrice = RoomPrice.builder()
+                .id(1L)
+                .room(room)
+                .offWeekDaysMinFee(100000)
+                .offWeekendMinFee(100000)
+                .peakWeekDaysMinFee(100000)
+                .peakWeekendMinFee(100000)
+                .build();
+
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(roomRepository.findById(any(Long.TYPE))).willReturn(Optional.of(room));
             given(roomOptionRepository.findByRoom(room))
                 .willReturn(Optional.of(roomOption));
+            given(roomPriceRepository.findByRoom(room))
+                .willReturn(Optional.of(roomPrice));
             given(accommodationOwnershipRepository
                 .existsAccommodationOwnershipByMemberAndAccommodation(
                     any(Member.class),

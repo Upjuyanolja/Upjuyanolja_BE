@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
@@ -23,7 +22,6 @@ import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationRoom;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
 import com.backoffice.upjuyanolja.domain.reservation.service.ReservationService;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
@@ -82,11 +80,13 @@ class ReservationControllerTest {
 
     static Member mockMember;
     static Room mockRoom;
+    static RoomPrice mockRoomPrice;
 
     @BeforeEach
     public void initTest() {
         mockMember = createMember(1L);
         mockRoom = createRoom();
+        mockRoomPrice = createRoomPrice();
     }
 
     private static Member createMember(Long id) {
@@ -130,17 +130,24 @@ class ReservationControllerTest {
             .maxCapacity(3)
             .checkInTime(LocalTime.of(15, 0, 0))
             .checkOutTime(LocalTime.of(11, 0, 0))
-            .price(RoomPrice.builder()
-                .offWeekDaysMinFee(100000)
-                .offWeekendMinFee(100000)
-                .peakWeekDaysMinFee(100000)
-                .peakWeekendMinFee(100000)
-                .build())
             .amount(858)
             .status(RoomStatus.SELLING)
             .images(new ArrayList<>())
             .build();
         return room;
+    }
+
+    private static RoomPrice createRoomPrice() {
+        RoomPrice roomPrice = RoomPrice.builder()
+            .id(1L)
+            .room(mockRoom)
+            .offWeekDaysMinFee(100000)
+            .offWeekendMinFee(100000)
+            .peakWeekDaysMinFee(100000)
+            .peakWeekendMinFee(100000)
+            .build();
+
+        return roomPrice;
     }
 
     private Reservation createReservation(
@@ -155,7 +162,7 @@ class ReservationControllerTest {
             .room(mockRoom)
             .startDate(startDate)
             .endDate(endDate)
-            .price(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .price(mockRoomPrice.getOffWeekDaysMinFee())
             .build();
 
         Reservation reservation = Reservation.builder()
@@ -176,9 +183,9 @@ class ReservationControllerTest {
             .member(mockMember)
             .reservation(reservation)
             .payMethod(PayMethod.KAKAO_PAY)
-            .roomPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .roomPrice(mockRoomPrice.getOffWeekDaysMinFee())
             .discountAmount(0)
-            .totalAmount(mockRoom.getPrice().getOffWeekDaysMinFee())
+            .totalAmount(mockRoomPrice.getOffWeekDaysMinFee())
             .build();
     }
 
@@ -194,7 +201,7 @@ class ReservationControllerTest {
                     .visitorPhone("010-1234-5678")
                     .startDate(LocalDate.now())
                     .endDate(LocalDate.now().plusDays(1))
-                    .totalPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
+                    .totalPrice(mockRoomPrice.getOffWeekDaysMinFee())
                     .payMethod(PayMethod.KAKAO_PAY)
                     .build();
             }
@@ -206,7 +213,7 @@ class ReservationControllerTest {
                 .startDate(LocalDate.now())
                 .endDate(LocalDate.now().plusDays(1))
                 .couponId(couponId)
-                .totalPrice(mockRoom.getPrice().getOffWeekDaysMinFee())
+                .totalPrice(mockRoomPrice.getOffWeekDaysMinFee())
                 .payMethod(PayMethod.KAKAO_PAY)
                 .build();
         }
