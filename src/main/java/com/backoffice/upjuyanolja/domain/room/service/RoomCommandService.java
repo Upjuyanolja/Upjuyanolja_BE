@@ -90,19 +90,18 @@ public class RoomCommandService implements RoomCommandUseCase {
             .checkInTime(DateTimeParser.timeParser(request.checkInTime()))
             .checkOutTime(DateTimeParser.timeParser(request.checkOutTime()))
             .amount(request.amount())
-            .images(new ArrayList<>())
             .build()
         );
 
-        roomImageRepository.saveAll(RoomImageRequest.toEntity(room, request.images()))
-            .forEach(roomImage -> room.getImages().add(roomImage));
+        List<RoomImage> roomImages =
+            roomImageRepository.saveAll(RoomImageRequest.toEntity(room, request.images()));
 
         createRoomStock(room);
 
         RoomOption roomOption = saveRoomOption(room, request.option());
         RoomPrice roomPrice = saveRoomPrice(room, request.price());
 
-        return RoomInfoResponse.of(room, roomOption, roomPrice.getOffWeekDaysMinFee());
+        return RoomInfoResponse.of(room, roomOption, roomImages, roomPrice.getOffWeekDaysMinFee());
     }
 
     public RoomOption saveRoomOption(Room room, RoomOptionRequest request) {
@@ -144,14 +143,14 @@ public class RoomCommandService implements RoomCommandUseCase {
         updateRoom(room, request);
         RoomOption roomOption = updateRoomOption(room, request.option().toRoomOptionUpdateDto());
         RoomPrice roomPrice = updateRoomPrice(room, request.price());
-
+        List<RoomImage> roomImages = roomQueryUseCase.findRoomImageByRoom(room);
 
         em.flush();
         em.refresh(room);
         em.refresh(roomOption);
         em.refresh(roomPrice);
 
-        return RoomInfoResponse.of(room, roomOption, roomPrice.getOffWeekDaysMinFee());
+        return RoomInfoResponse.of(room, roomOption, roomImages, roomPrice.getOffWeekDaysMinFee());
     }
 
     @Override
@@ -168,8 +167,9 @@ public class RoomCommandService implements RoomCommandUseCase {
         roomOption.delete(LocalDateTime.now());
         RoomPrice roomPrice = roomQueryUseCase.findRoomPriceByRoom(room);
         roomPrice.delete(LocalDateTime.now());
+        List<RoomImage> roomImages = roomQueryUseCase.findRoomImageByRoom(room);
 
-        return RoomInfoResponse.of(room, roomOption, roomPrice.getOffWeekDaysMinFee());
+        return RoomInfoResponse.of(room, roomOption, roomImages, roomPrice.getOffWeekDaysMinFee());
     }
 
     @Transactional(readOnly = true)
@@ -177,9 +177,10 @@ public class RoomCommandService implements RoomCommandUseCase {
         List<RoomInfoResponse> roomInfoResponses = new ArrayList<>();
         accommodation.getRooms()
             .forEach(room -> {
-                RoomOption option = roomQueryUseCase.findRoomOptionByRoom(room);
-                int roomPrice = roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee();
-                roomInfoResponses.add(RoomInfoResponse.of(room, option, roomPrice));
+                    RoomOption roomOption = roomQueryUseCase.findRoomOptionByRoom(room);
+                    int roomPrice = roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee();
+                    List<RoomImage> roomImages = roomQueryUseCase.findRoomImageByRoom(room);
+                    roomInfoResponses.add(RoomInfoResponse.of(room, roomOption, roomImages, roomPrice));
                 }
             );
 
@@ -205,7 +206,7 @@ public class RoomCommandService implements RoomCommandUseCase {
         }
         room.updateRoom(request.toRoomUpdateDto());
         addRoomImages(room, request.addImages());
-        roomImageRepository.deleteAll(getRoomImages(request.deleteImages()));
+        roomImageRepository.deleteAll(deleteRoomImages(request.deleteImages()));
     }
 
     private RoomOption updateRoomOption(Room room, RoomOptionUpdate option) {
@@ -239,7 +240,7 @@ public class RoomCommandService implements RoomCommandUseCase {
         roomImageRepository.saveAll(images);
     }
 
-    private List<RoomImage> getRoomImages(List<RoomImageDeleteRequest> requests) {
+    private List<RoomImage> deleteRoomImages(List<RoomImageDeleteRequest> requests) {
         List<RoomImage> images = new ArrayList<>();
         for (RoomImageDeleteRequest request : requests) {
             images.add(roomImageRepository.findById(request.id())

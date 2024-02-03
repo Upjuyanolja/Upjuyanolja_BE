@@ -14,6 +14,7 @@ import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomsInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
@@ -21,6 +22,7 @@ import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomOptionNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomPriceNotFoundException;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomStockNotFoundException;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomPriceRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
@@ -46,6 +48,7 @@ public class RoomQueryService implements RoomQueryUseCase {
     private final AccommodationRepository accommodationRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
     private final RoomRepository roomRepository;
+    private final RoomImageRepository roomImageRepository;
     private final RoomOptionRepository roomOptionRepository;
     private final RoomPriceRepository roomPriceRepository;
     private final RoomStockRepository roomStockRepository;
@@ -76,6 +79,18 @@ public class RoomQueryService implements RoomQueryUseCase {
     }
 
     @Override
+    public List<RoomImage> findRoomImageByRoom(Room room) {
+        return roomImageRepository.findByRoom(room);
+    }
+
+    @Override
+    public List<String> getRoomImageUrlByRoom(Room room) {
+        return roomImageRepository.findByRoom(room).stream()
+            .map(image -> image.getUrl())
+            .toList();
+    }
+
+    @Override
     public RoomPageResponse getRooms(long memberId, long accommodationId, Pageable pageable) {
         Member member = memberGetService.getMemberById(memberId);
         Accommodation accommodation = accommodationRepository.findById(accommodationId)
@@ -86,8 +101,9 @@ public class RoomQueryService implements RoomQueryUseCase {
         roomPage.get().forEach(room -> {
             List<CouponDetailResponse> couponDetails = new ArrayList<>();
             List<Coupon> coupons = couponService.getCouponInRoom(room);
-            RoomOption option = findRoomOptionByRoom(room);
+            RoomOption roomOption = findRoomOptionByRoom(room);
             int roomPrice = findRoomPriceByRoom(room).getOffWeekDaysMinFee();
+            List<RoomImage> roomImage = findRoomImageByRoom(room);
 
             couponDetails.addAll(couponService
                 .getSortedDiscountTypeCouponResponseInRoom(
@@ -100,8 +116,11 @@ public class RoomQueryService implements RoomQueryUseCase {
                     coupons, DiscountType.RATE)
             );
 
-            rooms.add(RoomsInfoResponse.of(room, option, couponDetails,
-                roomPrice));
+            rooms.add(RoomsInfoResponse.of(
+                    room, roomOption, roomImage,
+                    couponDetails, roomPrice
+                )
+            );
         });
         return RoomPageResponse.builder()
             .pageNum(roomPage.getNumber())
@@ -121,8 +140,9 @@ public class RoomQueryService implements RoomQueryUseCase {
 
         RoomOption option = findRoomOptionByRoom(room);
         int roomPrice = findRoomPriceByRoom(room).getOffWeekDaysMinFee();
+        List<RoomImage> roomImage = findRoomImageByRoom(room);
 
-        return RoomInfoResponse.of(room, option, roomPrice);
+        return RoomInfoResponse.of(room, option, roomImage, roomPrice);
     }
 
     @Override
@@ -144,7 +164,7 @@ public class RoomQueryService implements RoomQueryUseCase {
     public Map<Room, Integer> getMinRoomPriceWithRoom(List<Room> rooms) {
         Map<Room, Integer> roomMinPriceMap = new HashMap<>();
 
-        for (Room room: rooms) {
+        for (Room room : rooms) {
             int roomPrice = findRoomPriceByRoom(room).getOffWeekDaysMinFee();
             roomMinPriceMap.put(room, roomPrice);
         }

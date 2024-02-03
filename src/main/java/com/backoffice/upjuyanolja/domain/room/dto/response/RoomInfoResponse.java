@@ -1,6 +1,7 @@
 package com.backoffice.upjuyanolja.domain.room.dto.response;
 
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -22,7 +23,7 @@ public record RoomInfoResponse(
 ) {
 
     public static RoomInfoResponse of(
-        Room room, RoomOption option, int price
+        Room room, RoomOption option, List<RoomImage> images, int price
     ) {
         return RoomInfoResponse.builder()
             .id(room.getId())
@@ -34,7 +35,7 @@ public record RoomInfoResponse(
             .price(price)
             .amount(room.getAmount())
             .status(room.getStatus().name())
-            .images(RoomImageResponse.of(room.getImages()))
+            .images(RoomImageResponse.of(images))
             .option(RoomOptionResponse.of(option))
             .build();
     }

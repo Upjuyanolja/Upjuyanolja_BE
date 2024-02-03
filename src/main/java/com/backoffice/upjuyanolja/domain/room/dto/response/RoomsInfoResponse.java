@@ -2,9 +2,9 @@ package com.backoffice.upjuyanolja.domain.room.dto.response;
 
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 import lombok.Builder;
@@ -27,9 +27,10 @@ public record RoomsInfoResponse(
 ) {
 
     public static RoomsInfoResponse of(
-        Room room, RoomOption option, List<CouponDetailResponse> coupons, int roomPrice
+        Room room, RoomOption option, List<RoomImage> images,
+        List<CouponDetailResponse> coupons, int roomPrice
     ) {
-        PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
+        PriorityQueue<Integer> pq = new PriorityQueue<>();
         for (CouponDetailResponse coupon : coupons) {
             pq.offer(coupon.price());
         }
@@ -46,7 +47,7 @@ public record RoomsInfoResponse(
             .discountPrice(discountPrice)
             .amount(room.getAmount())
             .status(room.getStatus().name())
-            .images(RoomImageResponse.of(room.getImages()))
+            .images(RoomImageResponse.of(images))
             .option(RoomOptionResponse.of(option))
             .coupons(coupons)
             .build();

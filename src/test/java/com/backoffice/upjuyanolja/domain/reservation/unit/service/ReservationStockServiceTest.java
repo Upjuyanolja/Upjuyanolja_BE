@@ -3,7 +3,6 @@ package com.backoffice.upjuyanolja.domain.reservation.unit.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
@@ -16,15 +15,12 @@ import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidCouponExce
 import com.backoffice.upjuyanolja.domain.reservation.exception.InvalidReservationInfoException;
 import com.backoffice.upjuyanolja.domain.reservation.service.ReservationStockService;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -39,6 +35,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Transactional
@@ -118,10 +115,8 @@ class ReservationStockServiceTest {
             .maxCapacity(3)
             .checkInTime(LocalTime.of(15, 0, 0))
             .checkOutTime(LocalTime.of(11, 0, 0))
-
             .amount(858)
             .status(RoomStatus.SELLING)
-            .images(new ArrayList<>())
             .build();
         roomRepository.save(room);
 

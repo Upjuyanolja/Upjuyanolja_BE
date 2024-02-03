@@ -322,7 +322,6 @@ public class OpenApiService {
                         roomJson.getInt("roommaxcount")))
                     .checkInTime(checkIn)
                     .checkOutTime(checkOut)
-                    .images(new ArrayList<>())
                     .amount(Integer.parseInt(roomJson.getString("roomcount")))
                     .status(RoomStatus.SELLING)
                     .build());

@@ -4,7 +4,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase.RoomUpdate;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import com.backoffice.upjuyanolja.global.util.DateTimeParser;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,11 +14,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -70,10 +66,6 @@ public class Room extends BaseTime {
     @Comment("객실 상태")
     private RoomStatus status;
 
-    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("객실 이미지 식별자")
-    private List<RoomImage> images = new ArrayList<>();
-
 
     @Builder
     public Room(
@@ -85,8 +77,7 @@ public class Room extends BaseTime {
         int amount,
         LocalTime checkInTime,
         LocalTime checkOutTime,
-        RoomStatus status,
-        List<RoomImage> images
+        RoomStatus status
     ) {
         this.id = id;
         this.accommodation = accommodation;
@@ -97,7 +88,6 @@ public class Room extends BaseTime {
         this.checkInTime = checkInTime;
         this.checkOutTime = checkOutTime;
         this.status = status;
-        this.images = images;
     }
 
     public void updateRoom(RoomUpdate request) {

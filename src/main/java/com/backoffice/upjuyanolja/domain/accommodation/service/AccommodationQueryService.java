@@ -108,9 +108,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
             accommodation,
             getMainCouponName(accommodationId),
             getAccommodationOptionByAccommodation(accommodation),
-            getAccommodationImageByAccommodation(accommodation).stream()
-                .map(image -> image.getUrl())
-                .toList(),
+            getAccommodationImageUrlByAccommodation(accommodation),
             accommodation.getRooms().stream()
                 .map(room -> {
                         int roomPrice = roomQueryUseCase.findRoomPriceByRoom(room)
@@ -123,6 +121,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
                             getDiscountPrice(room, roomPrice),
                             !checkSoldOut(filterRooms, room),
                             getMinFilteredRoomStock(room, startDate, endDate),
+                            roomQueryUseCase.getRoomImageUrlByRoom(room),
                             couponService.getSortedTotalCouponResponseInRoom(
                                 room, roomPrice
                             )
@@ -176,8 +175,15 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
 
     @Transactional(readOnly = true)
     public List<AccommodationImage> getAccommodationImageByAccommodation(
-        Accommodation accommodation) {
+        Accommodation accommodation
+    ) {
         return accommodationImageRepository.findByAccommodation(accommodation);
+    }
+
+    private List<String> getAccommodationImageUrlByAccommodation(Accommodation accommodation) {
+        return accommodationImageRepository.findByAccommodation(accommodation).stream()
+            .map(image -> image.getUrl())
+            .toList();
     }
 
     private boolean checkCouponAvailability(Accommodation accommodation) {

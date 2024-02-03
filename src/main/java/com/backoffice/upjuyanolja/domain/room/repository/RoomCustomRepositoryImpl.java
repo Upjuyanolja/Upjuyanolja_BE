@@ -39,7 +39,6 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
             .select(room)
             .from(room)
             .leftJoin(room.accommodation, accommodation).fetchJoin()
-            .leftJoin(room.images, roomImage).fetchJoin()
             .where(createSearchConditionsBuilder(accommodationId))
             .offset(pageable.getOffset())
             .orderBy(getAllOrderSpecifiers().toArray(OrderSpecifier[]::new))
@@ -48,7 +47,6 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
             .select(room)
             .from(room)
             .leftJoin(room.accommodation, accommodation).fetchJoin()
-            .leftJoin(room.images, roomImage).fetchJoin()
             .where(room.accommodation.id.eq(accommodationId));
         List<Room> content = query.fetch();
         return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetch().size());

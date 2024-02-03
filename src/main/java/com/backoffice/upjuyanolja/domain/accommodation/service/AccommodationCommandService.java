@@ -69,24 +69,24 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
 
         imageValidate(request.images());
         List<AccommodationImage> images = accommodationImageRepository.saveAll(
-            AccommodationImageRequest
-                .toEntity(accommodation, request.images()));
+            AccommodationImageRequest.toEntity(accommodation, request.images())
+        );
 
         accommodationOwnershipRepository.save(AccommodationOwnership.builder()
             .accommodation(accommodation)
             .member(member)
             .build());
 
+        AccommodationOption option = createAccommodationOption(accommodation, request.option());
+
         roomValidate(request.rooms());
         request.rooms().forEach(
-            roomRegisterRequest -> roomCommandService.saveRoom(accommodation, roomRegisterRequest));
-
-        AccommodationOption option = createAccommodationOption(accommodation, request.option());
+            roomRegisterRequest -> roomCommandService.saveRoom(accommodation, roomRegisterRequest)
+        );
+        List<RoomInfoResponse> room = roomCommandService.getRoomInfoResponses(accommodation);
 
         em.refresh(accommodation);
         em.refresh(option);
-
-        List<RoomInfoResponse> room = roomCommandService.getRoomInfoResponses(accommodation);
 
         return AccommodationInfoResponse.of(accommodation, option, images, room);
     }

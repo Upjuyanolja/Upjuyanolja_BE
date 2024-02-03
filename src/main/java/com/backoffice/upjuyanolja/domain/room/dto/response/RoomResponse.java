@@ -26,8 +26,9 @@ public record RoomResponse(
 ) {
 
     public static RoomResponse of(
-        Room room, RoomOption option, int roomPrice, int discountPrice,
-        boolean soldOut, int count, List<CouponDetailResponse> coupons
+        Room room, RoomOption option, int roomPrice,
+        int discountPrice, boolean soldOut, int count,
+        List<String> images, List<CouponDetailResponse> coupons
 
     ) {
         return RoomResponse.builder()
@@ -42,11 +43,7 @@ public record RoomResponse(
             .soldOut(soldOut)
             .count(count)
             .coupons(coupons)
-            .images(
-                room.getImages().stream()
-                    .map(image -> image.getUrl())
-                    .toList()
-            )
+            .images(images)
             .roomOption(RoomOptionResponse.of(option))
             .build();
     }
