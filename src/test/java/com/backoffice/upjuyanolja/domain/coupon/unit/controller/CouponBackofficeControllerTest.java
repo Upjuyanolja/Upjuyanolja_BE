@@ -536,7 +536,6 @@ class CouponBackofficeControllerTest {
             .checkOutTime(LocalTime.of(11, 0, 0))
             .amount(858)
             .status(RoomStatus.SELLING)
-            .images(new ArrayList<>())
             .build();
     }
 

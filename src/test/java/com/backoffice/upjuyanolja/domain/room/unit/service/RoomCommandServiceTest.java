@@ -153,7 +153,6 @@ public class RoomCommandServiceTest {
                 .checkOutTime(LocalTime.of(11, 0, 0))
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .images(new ArrayList<>())
                 .build();
 
             RoomOption roomOption = RoomOption.builder()
@@ -189,7 +188,6 @@ public class RoomCommandServiceTest {
                 .checkOutTime(LocalTime.of(11, 0, 0))
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .images(List.of(roomImage))
                 .build();
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
@@ -370,7 +368,6 @@ public class RoomCommandServiceTest {
                 .checkOutTime(LocalTime.of(11, 0, 0))
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .images(new ArrayList<>())
                 .build();
 
             RoomOption roomOption = RoomOption.builder()
@@ -406,7 +403,6 @@ public class RoomCommandServiceTest {
                 .checkOutTime(LocalTime.of(11, 0, 0))
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .images(List.of(roomImage))
                 .build();
 
             given(roomRepository.existsRoomByNameAndAccommodation(
@@ -570,7 +566,6 @@ public class RoomCommandServiceTest {
                 .checkOutTime(LocalTime.of(11, 0, 0))
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .images(List.of(roomImage1))
                 .build();
 
             RoomOption roomOption = RoomOption.builder()
@@ -611,7 +606,6 @@ public class RoomCommandServiceTest {
                 .checkOutTime(LocalTime.of(11, 0, 0))
                 .amount(858)
                 .status(RoomStatus.STOP_SELLING)
-                .images(List.of(roomImage2, roomImage3))
                 .build();
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
@@ -713,7 +707,6 @@ public class RoomCommandServiceTest {
                 .checkOutTime(LocalTime.of(11, 0, 0))
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .images(List.of(roomImage1))
                 .build();
 
             RoomOption roomOption = RoomOption.builder()
@@ -734,9 +727,10 @@ public class RoomCommandServiceTest {
                 .build();
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
+            given(roomRepository.findById(any(Long.TYPE))).willReturn(Optional.of(room));
+            given(roomQueryUseCase.findRoomImageByRoom(room)).willReturn(List.of(roomImage1));
             given(roomQueryUseCase.findRoomOptionByRoom(any(Room.class))).willReturn(roomOption);
             given(roomQueryUseCase.findRoomPriceByRoom(any(Room.class))).willReturn(roomPrice);
-            given(roomRepository.findById(any(Long.TYPE))).willReturn(Optional.of(room));
             given(accommodationOwnershipRepository
                 .existsAccommodationOwnershipByMemberAndAccommodation(
                     any(Member.class),

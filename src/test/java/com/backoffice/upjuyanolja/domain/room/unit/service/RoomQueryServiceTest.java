@@ -28,6 +28,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomPriceRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
@@ -66,6 +67,9 @@ public class RoomQueryServiceTest {
 
     @Mock
     private RoomRepository roomRepository;
+
+    @Mock
+    private RoomImageRepository roomImageRepository;
 
     @Mock
     private RoomOptionRepository roomOptionRepository;
@@ -126,9 +130,7 @@ public class RoomQueryServiceTest {
                 .checkOutTime(LocalTime.of(11, 0, 0))
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .images(new ArrayList<>())
                 .build();
-
 
             RoomImage roomImage = RoomImage.builder()
                 .id(1L)
@@ -146,7 +148,6 @@ public class RoomQueryServiceTest {
                 .checkOutTime(LocalTime.of(11, 0, 0))
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .images(List.of(roomImage))
                 .build();
 
             RoomOption savedRoomOption = RoomOption.builder()
@@ -228,6 +229,7 @@ public class RoomQueryServiceTest {
                 .willReturn(true);
             given(roomRepository.findAllByAccommodation(any(Long.TYPE), any(Pageable.class)))
                 .willReturn(new PageImpl<>(List.of(savedRoom)));
+            given(roomImageRepository.findByRoom(any(Room.class))).willReturn(List.of(roomImage));
             given(roomOptionRepository.findByRoom(savedRoom))
                 .willReturn(Optional.of(savedRoomOption));
             given(roomPriceRepository.findByRoom(savedRoom))
@@ -340,7 +342,6 @@ public class RoomQueryServiceTest {
                 .checkOutTime(LocalTime.of(11, 0, 0))
                 .amount(858)
                 .status(RoomStatus.SELLING)
-                .images(List.of(roomImage1))
                 .build();
 
             RoomOption roomOption = RoomOption.builder()
@@ -362,6 +363,7 @@ public class RoomQueryServiceTest {
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(roomRepository.findById(any(Long.TYPE))).willReturn(Optional.of(room));
+            given(roomImageRepository.findByRoom(room)).willReturn(List.of(roomImage1));
             given(roomOptionRepository.findByRoom(room))
                 .willReturn(Optional.of(roomOption));
             given(roomPriceRepository.findByRoom(room))

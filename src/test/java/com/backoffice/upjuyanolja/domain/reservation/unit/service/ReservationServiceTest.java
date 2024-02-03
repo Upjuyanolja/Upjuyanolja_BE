@@ -165,7 +165,6 @@ class ReservationServiceTest {
             .checkOutTime(LocalTime.of(11, 0, 0))
             .amount(858)
             .status(status)
-            .images(new ArrayList<>())
             .build();
         return room;
     }
