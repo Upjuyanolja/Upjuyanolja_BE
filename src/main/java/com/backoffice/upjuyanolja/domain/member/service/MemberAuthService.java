@@ -37,7 +37,7 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
     private final JwtTokenProvider jwtTokenProvider;
     private final BCryptPasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
-    //    private final RedisService redisService;
+    private final RedisService redisService;
     private final MemberGetService memberGetService;
 
     @Transactional
@@ -86,7 +86,7 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
         }
 
         //Redis에 RefreshToken 저장
-//        redisService.setValues(authentication.getName(), tokenResponse.getRefreshToken());
+        redisService.setValues(authentication.getName(), tokenResponse.getRefreshToken());
 
         return SignInResponse.builder()
             .accessToken(tokenResponse.getAccessToken())
@@ -99,18 +99,18 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
     }
 
     public void logout(long memberId) {
-//        Member member = memberGetService.getMemberById(memberId);
-//
-//        // 저장소에서 Member 이메일을 기반으로 Refresh Token 값 가져옴
-//        String refreshToken = redisService.getValues(member.getEmail());
-//
-//        // 없다면 이미 로그아웃한 회원
-//        if (refreshToken.equals("false")) {
-//            throw new LoggedOutMemberException();
-//        }
-//
-//        // 레디스 저장소에서 Refresh Token 삭제
-//        redisService.deleteValues(member.getEmail());
+        Member member = memberGetService.getMemberById(memberId);
+
+        // 저장소에서 Member 이메일을 기반으로 Refresh Token 값 가져옴
+        String refreshToken = redisService.getValues(member.getEmail());
+
+        // 없다면 이미 로그아웃한 회원
+        if (refreshToken.equals("false")) {
+            throw new LoggedOutMemberException();
+        }
+
+        // 레디스 저장소에서 Refresh Token 삭제
+        redisService.deleteValues(member.getEmail());
     }
 
     public void validateDuplicatedEmail(String email) {
@@ -142,23 +142,23 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
         log.info("멤버 아이디: {}", authentication.getName());
 
         // 3. 저장소에서 Member ID 를 기반으로 Refresh Token 값 가져옴
-//        String refreshToken = redisService.getValues(authentication.getName());
-//        if (refreshToken.equals("false")) {
-//            throw new LoggedOutMemberException();
-//        }
-//
-//        // 4. Refresh Token 일치하는지 검사
-//        if (!refreshToken.equals(request.getRefreshToken())) {
-//            throw new InvalidRefreshTokenException();
-//        }
-//        log.info("요청한 리프레쉬 토큰: {} ", request.getRefreshToken());
-//        log.info("Redis에 저장된 리프레쉬 토큰: {} ", refreshToken);
+        String refreshToken = redisService.getValues(authentication.getName());
+        if (refreshToken.equals("false")) {
+            throw new LoggedOutMemberException();
+        }
+
+        // 4. Refresh Token 일치하는지 검사
+        if (!refreshToken.equals(request.getRefreshToken())) {
+            throw new InvalidRefreshTokenException();
+        }
+        log.info("요청한 리프레쉬 토큰: {} ", request.getRefreshToken());
+        log.info("Redis에 저장된 리프레쉬 토큰: {} ", refreshToken);
 
         // 5. 새로운 토큰 생성
         TokenResponse newToken = jwtTokenProvider.generateToken(authentication);
 
         // 6. 저장소 정보 업데이트
-//        redisService.setValues(authentication.getName(), newToken.getRefreshToken());
+        redisService.setValues(authentication.getName(), newToken.getRefreshToken());
 
         return newToken;
     }
