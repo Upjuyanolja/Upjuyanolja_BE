@@ -7,10 +7,6 @@ import lombok.Builder;
 
 @Builder
 public record AccommodationOptionRequest(
-
-    @NotNull(message = "숙소 ID를 입력하세요.")
-    Long AccommodationId,
-
     @NotNull(message = "객실 내 취사 여부를 입력하세요.")
     boolean cooking,
 
