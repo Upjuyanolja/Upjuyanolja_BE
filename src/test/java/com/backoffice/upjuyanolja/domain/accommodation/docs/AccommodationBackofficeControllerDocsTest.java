@@ -199,10 +199,6 @@ public class AccommodationBackofficeControllerDocsTest extends RestDocsSupport {
                                 .value(accommodationImageRequestDescriptions.descriptionsForProperty(
                                     "url"))),
                         fieldWithPath("option").description("숙소 옵션"),
-                        fieldWithPath("option.AccommodationId").description("숙소 식별자")
-                            .attributes(key("constraints")
-                                .value(accommodationOptionRequestDescriptions.descriptionsForProperty(
-                                    "AccommodationId"))),
                         fieldWithPath("option.cooking").description("객실 내 취사 여부")
                             .attributes(key("constraints")
                                 .value(accommodationOptionRequestDescriptions.descriptionsForProperty(
