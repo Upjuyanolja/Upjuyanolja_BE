@@ -26,9 +26,6 @@ import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
-import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
-import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
-import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.time.LocalDate;
 import java.time.Period;
@@ -73,8 +70,8 @@ public class ReservationService {
         Coupon coupon = (request.getCouponId() == null) ? null : getValidCoupon(request, room);
 
         // 할인 금액 계산
-        int totalAmount = getValidTotalAmount(request.getTotalPrice(),
-            roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee(), coupon);
+        int roomPrice = roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee();
+        int totalAmount = getValidTotalAmount(request.getTotalPrice(), roomPrice, coupon);
 
         /*
          * 객실 재고 차감
@@ -99,7 +96,7 @@ public class ReservationService {
          * 예외 발생 시 보상트랜잭션(재고 롤백) 수행
          * */
         try {
-            createOrder(currentMember, request, room, coupon, totalAmount);
+            createOrder(currentMember, request, room, coupon, roomPrice, totalAmount);
         } catch (Exception e) {
             for (RoomStock roomStock : roomStocks) {
                 stockService.increaseRoomStock(roomStock.getId()); //lock
@@ -177,12 +174,13 @@ public class ReservationService {
     }
 
     private void createOrder(
-        Member member, CreateReservationRequest request, Room room, Coupon coupon, int totalAmount
+        Member member, CreateReservationRequest request, Room room, Coupon coupon,
+        int roomPrice, int totalAmount
     ) {
         /*
          * 예약 객실 저장
          * */
-        ReservationRoom reservationRoom = saveReservationRoom(request, room);
+        ReservationRoom reservationRoom = saveReservationRoom(request, room, roomPrice);
 
         /*
          * 예약 저장
@@ -203,12 +201,13 @@ public class ReservationService {
         }
     }
 
-    private ReservationRoom saveReservationRoom(CreateReservationRequest request, Room room) {
+    private ReservationRoom saveReservationRoom(CreateReservationRequest request, Room room,
+        int roomPrice) {
         return reservationRoomRepository.save(ReservationRoom.builder()
             .room(room)
             .startDate(request.getStartDate())
             .endDate(request.getEndDate())
-            .price(roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee())
+            .price(roomPrice)
             .build());
     }
 
