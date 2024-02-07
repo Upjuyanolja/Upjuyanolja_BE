@@ -1,10 +1,13 @@
 package com.backoffice.upjuyanolja.domain.accommodation.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +23,10 @@ public class AccommodationOption {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("숙소 옵션 식별자")
     private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Comment("숙소 식별자")
+    private Accommodation accommodation;
 
     @Column(nullable = false)
     @Comment("객실 내 취사 여부")
@@ -60,6 +67,7 @@ public class AccommodationOption {
     @Builder
     public AccommodationOption(
         Long id,
+        Accommodation accommodation,
         boolean cooking,
         boolean parking,
         boolean pickup,
@@ -71,6 +79,7 @@ public class AccommodationOption {
         boolean seminar
     ) {
         this.id = id;
+        this.accommodation = accommodation;
         this.cooking = cooking;
         this.parking = parking;
         this.pickup = pickup;

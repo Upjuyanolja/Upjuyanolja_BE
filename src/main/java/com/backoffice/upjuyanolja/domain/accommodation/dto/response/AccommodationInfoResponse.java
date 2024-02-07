@@ -1,8 +1,9 @@
 package com.backoffice.upjuyanolja.domain.accommodation.dto.response;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 
@@ -18,19 +19,20 @@ public record AccommodationInfoResponse(
     List<RoomInfoResponse> rooms
 ) {
 
-    public static AccommodationInfoResponse of(Accommodation accommodation) {
-        List<RoomInfoResponse> rooms = new ArrayList<>();
-        accommodation.getRooms().forEach(room -> rooms.add(RoomInfoResponse.of(room)));
+    public static AccommodationInfoResponse of(
+        Accommodation accommodation, AccommodationOption option, List<AccommodationImage> images,
+        List<RoomInfoResponse> rooms
+    ) {
         return AccommodationInfoResponse.builder()
             .accommodationId(accommodation.getId())
             .name(accommodation.getName())
             .category(accommodation.getCategory().getName())
             .description(accommodation.getDescription())
-            .address(accommodation.getAddress().getAddress()
+            .address(accommodation.getAddress()
                 + " "
-                + accommodation.getAddress().getDetailAddress())
-            .images(AccommodationImageResponse.of(accommodation.getImages()))
-            .option(AccommodationOptionResponse.of(accommodation.getOption()))
+                + accommodation.getDetailAddress())
+            .option(AccommodationOptionResponse.of(option))
+            .images(AccommodationImageResponse.of(images))
             .rooms(rooms)
             .build();
     }

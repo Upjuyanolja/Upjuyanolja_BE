@@ -2,18 +2,23 @@ package com.backoffice.upjuyanolja.domain.accommodation.service;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationNameResponse;
+import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOptionResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationSummaryResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
+import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
+import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationOptionNotFoundException;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationImageRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOptionRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationQueryUseCase;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
-import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
@@ -22,7 +27,7 @@ import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
-import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
+import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,9 +48,11 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
 
     private final AccommodationRepository accommodationRepository;
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
+    private final AccommodationOptionRepository accommodationOptionRepository;
+    private final AccommodationImageRepository accommodationImageRepository;
     private final MemberRepository memberRepository;
     private final CouponService couponService;
-    private final RoomQueryService roomQueryService;
+    private final RoomQueryUseCase roomQueryUseCase;
 
     @Override
     @Transactional(readOnly = true)
@@ -97,15 +104,29 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
             accommodation.getRooms(), startDate, endDate
         );
 
-        return AccommodationDetailResponse.of(accommodation,
+        return AccommodationDetailResponse.of(
+            accommodation,
             getMainCouponName(accommodationId),
+            getAccommodationOptionByAccommodation(accommodation),
+            getAccommodationImageUrlByAccommodation(accommodation),
             accommodation.getRooms().stream()
-                .map(room -> RoomResponse.of(
-                        room, getDiscountPrice(room),
-                        !checkSoldOut(filterRooms, room),
-                        getMinFilteredRoomStock(room, startDate, endDate),
-                        couponService.getSortedTotalCouponResponseInRoom(room)
-                    )
+                .map(room -> {
+                        int roomPrice = roomQueryUseCase.findRoomPriceByRoom(room)
+                            .getOffWeekDaysMinFee();
+
+                        return RoomResponse.of(
+                            room,
+                            roomQueryUseCase.findRoomOptionByRoom(room),
+                            roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee(),
+                            getDiscountPrice(room, roomPrice),
+                            !checkSoldOut(filterRooms, room),
+                            getMinFilteredRoomStock(room, startDate, endDate),
+                            roomQueryUseCase.getRoomImageUrlByRoom(room),
+                            couponService.getSortedTotalCouponResponseInRoom(
+                                room, roomPrice
+                            )
+                        );
+                    }
                 )
                 .toList()
         );
@@ -137,8 +158,32 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     }
 
     @Transactional(readOnly = true)
+    public Accommodation findAccommodationByRoomId(long roomId) {
+        return roomQueryUseCase.findRoomById(roomId).getAccommodation();
+    }
+
+    @Transactional(readOnly = true)
     public List<AccommodationOwnership> getOwnershipByMember(Member member) {
         return accommodationOwnershipRepository.findAllByMember(member);
+    }
+
+    @Transactional(readOnly = true)
+    public AccommodationOption getAccommodationOptionByAccommodation(Accommodation accommodation) {
+        return accommodationOptionRepository.findByAccommodation(accommodation)
+            .orElseThrow(AccommodationOptionNotFoundException::new);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AccommodationImage> getAccommodationImageByAccommodation(
+        Accommodation accommodation
+    ) {
+        return accommodationImageRepository.findByAccommodation(accommodation);
+    }
+
+    private List<String> getAccommodationImageUrlByAccommodation(Accommodation accommodation) {
+        return accommodationImageRepository.findByAccommodation(accommodation).stream()
+            .map(image -> image.getUrl())
+            .toList();
     }
 
     private boolean checkCouponAvailability(Accommodation accommodation) {
@@ -146,12 +191,12 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     }
 
     private int getLowestPrice(Long accommodationId) {
-        List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
+        List<Room> rooms = roomQueryUseCase.findByAccommodationId(accommodationId);
 
-        PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
+        PriorityQueue<Integer> pq = new PriorityQueue<>();
 
         for (Room room : rooms) {
-            pq.offer(room.getPrice().getOffWeekDaysMinFee());
+            pq.offer(roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee());
         }
 
         return pq.poll();
@@ -159,15 +204,19 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
 
     private Optional<CouponDetailResponse> getDiscountInfo(Long accommodationId) {
         List<CouponDetailResponse> responses = new ArrayList<>();
-        List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
+        List<Room> rooms = roomQueryUseCase.findByAccommodationId(accommodationId);
         List<Coupon> coupons = new ArrayList<>();
 
         for (Room room : rooms) {
             coupons = couponService.getCouponInRoom(room);
             responses.addAll(
-                couponService.getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.FLAT));
+                couponService.getSortedDiscountTypeCouponResponseInRoom(
+                    room, roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee(),
+                    coupons, DiscountType.FLAT));
             responses.addAll(
-                couponService.getSortedDiscountTypeCouponResponseInRoom(room, coupons, DiscountType.RATE));
+                couponService.getSortedDiscountTypeCouponResponseInRoom(
+                    room, roomQueryUseCase.findRoomPriceByRoom(room).getOffWeekDaysMinFee(),
+                    coupons, DiscountType.RATE));
         }
 
         return responses.stream()
@@ -175,10 +224,14 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     }
 
     private String getMainCouponName(Long accommodationId) {
-        List<Room> rooms = roomQueryService.findByAccommodationId(accommodationId);
-        String flatName = couponService.getDiscountTypeMainRoomCouponName(rooms, DiscountType.FLAT);
-        String rateName = couponService.getDiscountTypeMainRoomCouponName(rooms, DiscountType.RATE);
+        List<Room> rooms = roomQueryUseCase.findByAccommodationId(accommodationId);
 
+        String flatName = couponService.getDiscountTypeMainRoomCouponName(
+            rooms, DiscountType.FLAT, roomQueryUseCase.getMinRoomPriceWithRoom(rooms)
+        );
+        String rateName = couponService.getDiscountTypeMainRoomCouponName(
+            rooms, DiscountType.RATE, roomQueryUseCase.getMinRoomPriceWithRoom(rooms)
+        );
 
         if (flatName.isEmpty() && rateName.isEmpty()) {
             return "";
@@ -192,18 +245,12 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
 
     }
 
-    @Transactional(readOnly = true)
-    public Accommodation findAccommodationByRoomId(long roomId) {
-        return roomQueryService.findRoomById(roomId).getAccommodation();
-    }
 
-
-    private int getDiscountPrice(Room room) {
-        return couponService.getSortedTotalCouponResponseInRoom(room)
-            .stream()
+    private int getDiscountPrice(Room room, int roomPrice) {
+        return couponService.getSortedTotalCouponResponseInRoom(room, roomPrice).stream()
             .findFirst()
             .map(coupon -> coupon.price())
-            .orElse(room.getPrice().getOffWeekDaysMinFee());
+            .orElse(roomPrice);
     }
 
     private List<Room> getFilteredRoomsByDate(
@@ -212,7 +259,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         List<Room> filterRoom = new ArrayList<>();
 
         for (Room room : rooms) {
-            List<RoomStock> filteredStocks = roomQueryService.getFilteredRoomStocksByDate(room,
+            List<RoomStock> filteredStocks = roomQueryUseCase.getFilteredRoomStocksByDate(room,
                 startDate, endDate);
             if (!filteredStocks.isEmpty()) {
                 filterRoom.add(room);
@@ -224,7 +271,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     private int getMinFilteredRoomStock(
         Room room, LocalDate startDate, LocalDate endDate
     ) {
-        return roomQueryService.getFilteredRoomStocksByDate(room, startDate, endDate).stream()
+        return roomQueryUseCase.getFilteredRoomStocksByDate(room, startDate, endDate).stream()
             .mapToInt(RoomStock::getCount)
             .min()
             .orElse(0);

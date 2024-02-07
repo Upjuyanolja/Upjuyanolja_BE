@@ -27,7 +27,9 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    RoomCustomRepositoryImpl(JPAQueryFactory jpaQueryFactory) {
+    RoomCustomRepositoryImpl(
+        JPAQueryFactory jpaQueryFactory
+    ) {
         this.queryFactory = jpaQueryFactory;
     }
 
@@ -37,8 +39,6 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
             .select(room)
             .from(room)
             .leftJoin(room.accommodation, accommodation).fetchJoin()
-            .leftJoin(room.option, roomOption).fetchJoin()
-            .leftJoin(room.images, roomImage).fetchJoin()
             .where(createSearchConditionsBuilder(accommodationId))
             .offset(pageable.getOffset())
             .orderBy(getAllOrderSpecifiers().toArray(OrderSpecifier[]::new))
@@ -47,8 +47,6 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
             .select(room)
             .from(room)
             .leftJoin(room.accommodation, accommodation).fetchJoin()
-            .leftJoin(room.option, roomOption).fetchJoin()
-            .leftJoin(room.images, roomImage).fetchJoin()
             .where(room.accommodation.id.eq(accommodationId));
         List<Room> content = query.fetch();
         return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetch().size());
@@ -86,7 +84,6 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
     private List<OrderSpecifier<?>> getAllOrderSpecifiers() {
         List<OrderSpecifier<?>> orders = new LinkedList<>();
         orders.add(QueryDslUtil.getSortedColumn(Order.ASC, room, "status"));
-        orders.add(QueryDslUtil.getSortedColumn(Order.ASC, room.price, "offWeekDaysMinFee"));
         orders.add(QueryDslUtil.getSortedColumn(Order.ASC, room, "id"));
         return orders;
     }

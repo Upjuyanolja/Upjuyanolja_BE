@@ -1,6 +1,8 @@
 package com.backoffice.upjuyanolja.domain.room.dto.response;
 
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.Builder;
@@ -20,7 +22,9 @@ public record RoomInfoResponse(
     RoomOptionResponse option
 ) {
 
-    public static RoomInfoResponse of(Room room) {
+    public static RoomInfoResponse of(
+        Room room, RoomOption option, List<RoomImage> images, int price
+    ) {
         return RoomInfoResponse.builder()
             .id(room.getId())
             .name(room.getName())
@@ -28,11 +32,11 @@ public record RoomInfoResponse(
             .maxCapacity(room.getMaxCapacity())
             .checkInTime(room.getCheckInTime().format(DateTimeFormatter.ofPattern("HH:mm")))
             .checkOutTime(room.getCheckOutTime().format(DateTimeFormatter.ofPattern("HH:mm")))
-            .price(room.getPrice().getOffWeekDaysMinFee())
+            .price(price)
             .amount(room.getAmount())
             .status(room.getStatus().name())
-            .images(RoomImageResponse.of(room.getImages()))
-            .option(RoomOptionResponse.of(room.getOption()))
+            .images(RoomImageResponse.of(images))
+            .option(RoomOptionResponse.of(option))
             .build();
     }
 }

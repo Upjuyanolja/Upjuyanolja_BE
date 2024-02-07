@@ -29,6 +29,7 @@ public enum ErrorCode {
     WRONG_CATEGORY(HttpStatus.BAD_REQUEST, 2002, "알맞지 않은 카테고리입니다."),
     ACCOMMODATION_IMAGE_NOT_EXISTS(HttpStatus.BAD_REQUEST, 2003, "숙소 이미지를 1개 이상 등록해야 합니다."),
     FAILED_SAVE_IMAGE(HttpStatus.BAD_REQUEST, 2004, "이미지 저장에 실패했습니다."),
+    ACCOMMODATION_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, 2005, "숙소 옵션 정보를 찾을 수 없습니다."),
 
     // Room
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, 3000, "객실 정보를 찾을 수 없습니다."),
@@ -40,6 +41,8 @@ public enum ErrorCode {
     ROOM_NOT_EXISTS(HttpStatus.BAD_REQUEST, 3006, "객실을 1개 이상 등록해야 합니다."),
     ROOM_IMAGE_NOT_EXISTS(HttpStatus.BAD_REQUEST, 3007, "객실 이미지를 1개 이상 등록해야 합니다."),
     LAST_ROOM(HttpStatus.BAD_REQUEST, 3008, "마지막 객실은 삭제할 수 없습니다."),
+    ROOM_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, 3009, "객실 옵션 정보를 찾을 수 없습니다."),
+    ROOM_PRICE_NOT_FOUND(HttpStatus.NOT_FOUND, 3010, "객실 가격 정보를 찾을 수 없습니다."),
 
     // Reservation
     RESERVATION_PAYMENT_FAILED(HttpStatus.BAD_REQUEST, 4000, "결제에 실패 했습니다."),

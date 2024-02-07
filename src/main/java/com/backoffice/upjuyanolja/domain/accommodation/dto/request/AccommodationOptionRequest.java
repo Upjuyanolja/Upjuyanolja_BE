@@ -1,5 +1,6 @@
 package com.backoffice.upjuyanolja.domain.accommodation.dto.request;
 
+import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -34,8 +35,12 @@ public record AccommodationOptionRequest(
     boolean seminar
 ) {
 
-    public static AccommodationOption toEntity(AccommodationOptionRequest request) {
+    public static AccommodationOption toEntity(
+        AccommodationOptionRequest request,
+        Accommodation accommodation
+    ) {
         return AccommodationOption.builder()
+            .accommodation(accommodation)
             .cooking(request.cooking)
             .parking(request.parking)
             .pickup(request.pickup)

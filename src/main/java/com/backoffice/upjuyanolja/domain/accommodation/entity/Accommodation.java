@@ -12,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,15 +35,6 @@ public class Accommodation extends BaseTime {
     @Comment("숙소 이름")
     private String name;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("숙소 위치")
-    private Address address;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    @Comment("숙소 카테고리")
-    private Category category;
-
     @Column(columnDefinition = "TEXT", nullable = false)
     @Comment("숙소 설명")
     private String description;
@@ -53,12 +43,22 @@ public class Accommodation extends BaseTime {
     @Comment("숙소 대표 이미지 URL")
     private String thumbnail;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("숙소 옵션 식별자")
-    private AccommodationOption option;
+    @Column(nullable = false)
+    @Comment("주소")
+    private String address;
 
-    @OneToMany(mappedBy = "accommodation", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AccommodationImage> images = new ArrayList<>();
+    @Column(nullable = false)
+    @Comment("상세 주소")
+    private String detailAddress;
+
+    @Column(nullable = false)
+    @Comment("우편번호")
+    private String zipCode;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    @Comment("숙소 카테고리")
+    private Category category;
 
     @OneToMany(mappedBy = "accommodation", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Room> rooms = new ArrayList<>();
@@ -67,26 +67,25 @@ public class Accommodation extends BaseTime {
     public Accommodation(
         Long id,
         String name,
-        Address address,
+        String address,
+        String detailAddress,
+        String zipCode,
         Category category,
         String description,
         String thumbnail,
-        AccommodationOption option,
-        List<AccommodationImage> images,
         List<Room> rooms
     ) {
         this.id = id;
         this.name = name;
         this.address = address;
+        this.detailAddress = detailAddress;
+        this.zipCode = zipCode;
         this.category = category;
         this.description = description;
         this.thumbnail = thumbnail;
-        this.option = option;
-        this.images = images;
         this.rooms = rooms;
     }
 
-    // 숙소의 ID로 동등 비교를 하기 위해 추가함.
     @Override
     public boolean equals(Object o) {
         if (this == o) {

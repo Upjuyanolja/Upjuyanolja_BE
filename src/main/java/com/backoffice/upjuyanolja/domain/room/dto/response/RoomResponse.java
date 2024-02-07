@@ -2,6 +2,7 @@ package com.backoffice.upjuyanolja.domain.room.dto.response;
 
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Stream;
@@ -25,21 +26,15 @@ public record RoomResponse(
 ) {
 
     public static RoomResponse of(
-        Room room, int discountPrice, boolean soldOut, int count,
-        List<CouponDetailResponse> coupons
+        Room room, RoomOption option, int roomPrice,
+        int discountPrice, boolean soldOut, int count,
+        List<String> images, List<CouponDetailResponse> coupons
 
     ) {
         return RoomResponse.builder()
             .id(room.getId())
             .name(room.getName())
-            .basePrice(
-                Stream.of(
-                        room.getPrice().getOffWeekDaysMinFee(),
-                        room.getPrice().getOffWeekendMinFee(),
-                        room.getPrice().getPeakWeekDaysMinFee(),
-                        room.getPrice().getPeakWeekendMinFee())
-                    .reduce(Math::min).orElse(0)
-            )
+            .basePrice(roomPrice)
             .discountPrice(discountPrice)
             .defaultCapacity(room.getDefaultCapacity())
             .maxCapacity(room.getMaxCapacity())
@@ -48,12 +43,8 @@ public record RoomResponse(
             .soldOut(soldOut)
             .count(count)
             .coupons(coupons)
-            .images(
-                room.getImages().stream()
-                    .map(image -> image.getUrl())
-                    .toList()
-            )
-            .roomOption(RoomOptionResponse.of(room.getOption()))
+            .images(images)
+            .roomOption(RoomOptionResponse.of(option))
             .build();
     }
 

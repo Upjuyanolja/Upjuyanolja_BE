@@ -4,7 +4,6 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase.RoomUpdate;
 import com.backoffice.upjuyanolja.global.common.entity.BaseTime;
 import com.backoffice.upjuyanolja.global.util.DateTimeParser;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,12 +14,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -62,10 +57,6 @@ public class Room extends BaseTime {
     @Comment("객실 체크 아웃 시간")
     private LocalTime checkOutTime;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("객실 가격")
-    private RoomPrice price;
-
     @Column(nullable = false)
     @Comment("객실 개수")
     private int amount;
@@ -74,18 +65,6 @@ public class Room extends BaseTime {
     @Enumerated(value = EnumType.STRING)
     @Comment("객실 상태")
     private RoomStatus status;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("객실 옵션 식별자")
-    private RoomOption option;
-
-    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("객실 이미지 식별자")
-    private List<RoomImage> images = new ArrayList<>();
-
-    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Comment("객실 재고 식별자")
-    private List<RoomStock> stocks = new ArrayList<>();
 
 
     @Builder
@@ -98,11 +77,7 @@ public class Room extends BaseTime {
         int amount,
         LocalTime checkInTime,
         LocalTime checkOutTime,
-        RoomPrice price,
-        RoomStatus status,
-        RoomOption option,
-        List<RoomImage> images,
-        List<RoomStock> stocks
+        RoomStatus status
     ) {
         this.id = id;
         this.accommodation = accommodation;
@@ -112,23 +87,17 @@ public class Room extends BaseTime {
         this.amount = amount;
         this.checkInTime = checkInTime;
         this.checkOutTime = checkOutTime;
-        this.price = price;
         this.status = status;
-        this.option = option;
-        this.images = images;
-        this.stocks = stocks;
     }
 
     public void updateRoom(RoomUpdate request) {
         this.name = request.name();
         this.status = RoomStatus.valueOf(request.status());
-        this.price.updateRoomPrice(request.price());
         this.defaultCapacity = request.defaultCapacity();
         this.maxCapacity = request.maxCapacity();
         this.checkInTime = DateTimeParser.timeParser(request.checkInTime());
         this.checkOutTime = DateTimeParser.timeParser(request.checkOutTime());
         this.amount = request.amount();
-        this.option.updateRoomOption(request.option());
     }
 
     @Override

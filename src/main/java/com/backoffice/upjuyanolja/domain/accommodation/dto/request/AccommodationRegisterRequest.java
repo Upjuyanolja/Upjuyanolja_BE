@@ -1,7 +1,6 @@
 package com.backoffice.upjuyanolja.domain.accommodation.dto.request;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.Address;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import jakarta.validation.constraints.NotBlank;
@@ -51,16 +50,12 @@ public record AccommodationRegisterRequest(
     ) {
         return Accommodation.builder()
             .name(request.name())
-            .address(Address.builder()
-                .address(request.address())
-                .detailAddress(request.detailAddress())
-                .zipCode(request.zipCode())
-                .build())
+            .address(request.address())
+            .detailAddress(request.detailAddress())
+            .zipCode(request.zipCode())
             .category(category)
             .description(request.description())
             .thumbnail(request.thumbnail())
-            .images(new ArrayList<>())
-            .option(AccommodationOptionRequest.toEntity(request.option()))
             .rooms(new ArrayList<>())
             .build();
     }

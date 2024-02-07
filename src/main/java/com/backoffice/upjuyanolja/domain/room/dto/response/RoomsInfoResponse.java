@@ -2,8 +2,9 @@ package com.backoffice.upjuyanolja.domain.room.dto.response;
 
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 import lombok.Builder;
@@ -25,12 +26,15 @@ public record RoomsInfoResponse(
     List<CouponDetailResponse> coupons
 ) {
 
-    public static RoomsInfoResponse of(Room room, List<CouponDetailResponse> coupons) {
-        PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.comparingInt(i -> i));
+    public static RoomsInfoResponse of(
+        Room room, RoomOption option, List<RoomImage> images,
+        List<CouponDetailResponse> coupons, int roomPrice
+    ) {
+        PriorityQueue<Integer> pq = new PriorityQueue<>();
         for (CouponDetailResponse coupon : coupons) {
             pq.offer(coupon.price());
         }
-        int discountPrice = pq.isEmpty() ? room.getPrice().getOffWeekDaysMinFee() : pq.poll();
+        int discountPrice = pq.isEmpty() ? roomPrice : pq.poll();
 
         return RoomsInfoResponse.builder()
             .id(room.getId())
@@ -39,12 +43,12 @@ public record RoomsInfoResponse(
             .maxCapacity(room.getMaxCapacity())
             .checkInTime(room.getCheckInTime().format(DateTimeFormatter.ofPattern("HH:mm")))
             .checkOutTime(room.getCheckOutTime().format(DateTimeFormatter.ofPattern("HH:mm")))
-            .basePrice(room.getPrice().getOffWeekDaysMinFee())
+            .basePrice(roomPrice)
             .discountPrice(discountPrice)
             .amount(room.getAmount())
             .status(room.getStatus().name())
-            .images(RoomImageResponse.of(room.getImages()))
-            .option(RoomOptionResponse.of(room.getOption()))
+            .images(RoomImageResponse.of(images))
+            .option(RoomOptionResponse.of(option))
             .coupons(coupons)
             .build();
     }
