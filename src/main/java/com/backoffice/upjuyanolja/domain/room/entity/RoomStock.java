@@ -19,6 +19,7 @@ import org.hibernate.annotations.Comment;
  * 객실 재고 Entity Class
  *
  * @author JeongUijeong (jeong275117@gmail.com)
+ * @author Chaewon12 (djacltk@naver.com)
  */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
