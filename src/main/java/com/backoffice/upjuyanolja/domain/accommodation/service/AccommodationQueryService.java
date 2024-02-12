@@ -2,12 +2,10 @@ package com.backoffice.upjuyanolja.domain.accommodation.service;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationNameResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOptionResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationPageResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationSummaryResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
@@ -22,8 +20,7 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
-import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
+import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
@@ -41,18 +38,49 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 숙소 조회 Service Class
+ *
+ * @author JeongUijeong (jeong275117@gmail.com)
+ */
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class AccommodationQueryService implements AccommodationQueryUseCase {
 
+    /**
+     * 숙소 Repository Interface
+     */
     private final AccommodationRepository accommodationRepository;
+
+    /**
+     * 숙소 소유권 Repository Interface
+     */
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
+
+    /**
+     * 숙소 옵션 Repository Interface
+     */
     private final AccommodationOptionRepository accommodationOptionRepository;
+
+    /**
+     * 숙소 이미지 Repository Interface
+     */
     private final AccommodationImageRepository accommodationImageRepository;
-    private final MemberRepository memberRepository;
-    private final CouponService couponService;
+
+    /**
+     * 객실 조회 UseCase Interface
+     */
     private final RoomQueryUseCase roomQueryUseCase;
+
+    /**
+     * 회원 조회 Service Class
+     */
+    private final MemberGetService memberGetService;
+
+    /**
+     * 쿠폰 Service Class
+     */
+    private final CouponService couponService;
 
     @Override
     @Transactional(readOnly = true)
@@ -100,8 +128,10 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         Accommodation accommodation = getAccommodationById(
             accommodationId);
 
+        List<Room> rooms = roomQueryUseCase.findByAccommodationId(accommodationId);
+
         List<Room> filterRooms = getFilteredRoomsByDate(
-            accommodation.getRooms(), startDate, endDate
+            rooms, startDate, endDate
         );
 
         return AccommodationDetailResponse.of(
@@ -109,7 +139,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
             getMainCouponName(accommodationId),
             getAccommodationOptionByAccommodation(accommodation),
             getAccommodationImageUrlByAccommodation(accommodation),
-            accommodation.getRooms().stream()
+            rooms.stream()
                 .map(room -> {
                         int roomPrice = roomQueryUseCase.findRoomPriceByRoom(room)
                             .getOffWeekDaysMinFee();
@@ -132,22 +162,29 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         );
     }
 
+    /**
+     * 업주가 보유한 숙소 목록 조회 메서드
+     *
+     * @param memberId 보유 숙소 목록을 조회할 업주 회원 식별자
+     * @return 업주가 보유한 숙소 이름 응답 DTO
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
     @Override
     @Transactional(readOnly = true)
     public AccommodationOwnershipResponse getAccommodationOwnership(long memberId) {
-        Member member = memberRepository.findById(memberId)
-            .orElseThrow(MemberNotFoundException::new);
+        Member member = memberGetService.getMemberById(memberId);
         List<AccommodationOwnership> ownerships = getOwnershipByMember(member);
+
         List<AccommodationNameResponse> accommodations = new ArrayList<>();
         ownerships.forEach(ownership -> accommodations.add(
             AccommodationNameResponse.of(ownership.getAccommodation())));
+
         return AccommodationOwnershipResponse.builder()
             .accommodations(accommodations)
             .build();
     }
 
-    @Transactional(readOnly = true)
-    public Accommodation getAccommodationById(long accommodationId) {
+    private Accommodation getAccommodationById(long accommodationId) {
         return accommodationRepository.findById(accommodationId)
             .orElseThrow(AccommodationNotFoundException::new);
     }
@@ -162,26 +199,24 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         return roomQueryUseCase.findRoomById(roomId).getAccommodation();
     }
 
-    @Transactional(readOnly = true)
-    public List<AccommodationOwnership> getOwnershipByMember(Member member) {
+    /**
+     * 업주 회원의 숙소 소유권 리스트 조회 메서드
+     *
+     * @param member 업주 회원 Entity
+     * @return 숙소 소유권 Entity 리스트
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
+    private List<AccommodationOwnership> getOwnershipByMember(Member member) {
         return accommodationOwnershipRepository.findAllByMember(member);
     }
 
-    @Transactional(readOnly = true)
-    public AccommodationOption getAccommodationOptionByAccommodation(Accommodation accommodation) {
+    private AccommodationOption getAccommodationOptionByAccommodation(Accommodation accommodation) {
         return accommodationOptionRepository.findByAccommodation(accommodation)
             .orElseThrow(AccommodationOptionNotFoundException::new);
     }
 
-    @Transactional(readOnly = true)
-    public List<AccommodationImage> getAccommodationImageByAccommodation(
-        Accommodation accommodation
-    ) {
-        return accommodationImageRepository.findByAccommodation(accommodation);
-    }
-
     private List<String> getAccommodationImageUrlByAccommodation(Accommodation accommodation) {
-        return accommodationImageRepository.findByAccommodation(accommodation).stream()
+        return accommodationImageRepository.findAllByAccommodation(accommodation).stream()
             .map(image -> image.getUrl())
             .toList();
     }
@@ -244,7 +279,6 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         }
 
     }
-
 
     private int getDiscountPrice(Room room, int roomPrice) {
         return couponService.getSortedTotalCouponResponseInRoom(room, roomPrice).stream()
