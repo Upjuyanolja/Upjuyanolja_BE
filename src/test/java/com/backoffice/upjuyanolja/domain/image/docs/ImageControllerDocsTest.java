@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.domain.accommodation.docs;
+package com.backoffice.upjuyanolja.domain.image.docs;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -10,9 +10,11 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.restdocs.request.RequestDocumentation.partWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.requestParts;
 
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageUrlResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.service.ImageService;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
+import com.backoffice.upjuyanolja.domain.image.dto.ImageResponse;
+import com.backoffice.upjuyanolja.domain.image.dto.ImageUrlResponse;
+import com.backoffice.upjuyanolja.domain.image.service.ImageService;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,6 +32,9 @@ public class ImageControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private ImageService imageService;
+
+    @MockBean
+    private AccommodationQueryService accommodationQueryService;
 
     @Test
     @DisplayName("이미지를 저장할 수 있다.")

@@ -1,4 +1,4 @@
-package com.backoffice.upjuyanolja.domain.accommodation.unit.controller;
+package com.backoffice.upjuyanolja.domain.image.unit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -9,10 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.backoffice.upjuyanolja.domain.accommodation.controller.ImageController;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageUrlResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.service.ImageService;
+import com.backoffice.upjuyanolja.domain.image.controller.ImageController;
+import com.backoffice.upjuyanolja.domain.image.dto.ImageResponse;
+import com.backoffice.upjuyanolja.domain.image.dto.ImageUrlResponse;
+import com.backoffice.upjuyanolja.domain.image.service.ImageService;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URL;

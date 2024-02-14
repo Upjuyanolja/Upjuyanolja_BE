@@ -1,12 +1,12 @@
-package com.backoffice.upjuyanolja.domain.accommodation.unit.service;
+package com.backoffice.upjuyanolja.domain.image.unit.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
-import com.backoffice.upjuyanolja.domain.accommodation.dto.response.ImageResponse;
-import com.backoffice.upjuyanolja.domain.accommodation.service.ImageService;
-import com.backoffice.upjuyanolja.domain.accommodation.service.S3UploadService;
+import com.backoffice.upjuyanolja.domain.image.dto.ImageResponse;
+import com.backoffice.upjuyanolja.domain.image.service.ImageService;
+import com.backoffice.upjuyanolja.domain.image.service.S3UploadService;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
