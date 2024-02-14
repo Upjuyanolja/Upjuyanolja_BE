@@ -121,7 +121,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         accommodationRegisterRequest.rooms().forEach(
             roomRegisterRequest -> roomCommandService.saveRoom(accommodation, roomRegisterRequest)
         );
-        List<RoomInfoResponse> room = roomQueryService.getRoomInfo(accommodation);
+        List<RoomInfoResponse> room = roomQueryService.getRoomsInfo(accommodation);
 
         return AccommodationInfoResponse.of(accommodation, option, images, room);
     }
