@@ -31,7 +31,7 @@ public class CouponService {
     public List<CouponAccommodationResponse> findCouponResponseInAccommodation(
         Long accommodationId) {
         List<CouponAccommodationResponse> responses = new ArrayList<>();
-        List<Room> rooms = roomRepository.findByAccommodationId(accommodationId);
+        List<Room> rooms = roomRepository.findAllByAccommodationId(accommodationId);
 
         for (Room room : rooms) {
             List<CouponShortResponse> coupons = couponRepository.findByRoom(room).stream()

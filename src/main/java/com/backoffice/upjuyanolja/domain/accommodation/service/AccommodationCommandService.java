@@ -104,13 +104,13 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         Accommodation accommodation = accommodationRepository.save(
             AccommodationRegisterRequest.toEntity(accommodationRegisterRequest, category)
         );
-        List<AccommodationImage> images = accommodationImageRepository.saveAll(
-            AccommodationImageRequest.toEntities(accommodation,
-                accommodationRegisterRequest.images())
-        );
         AccommodationOption option = accommodationOptionRepository.save(
             AccommodationOptionRequest.toEntity(accommodation,
                 accommodationRegisterRequest.option())
+        );
+        List<AccommodationImage> images = accommodationImageRepository.saveAll(
+            AccommodationImageRequest.toEntities(accommodation,
+                accommodationRegisterRequest.images())
         );
         accommodationOwnershipRepository.save(AccommodationOwnership.builder()
             .accommodation(accommodation)
@@ -161,7 +161,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
      * @author JeongUijeong (jeong275117@gmail.com)
      */
     private Category getCategory(String category) {
-        return categoryRepository.findCategoryByName(category)
+        return categoryRepository.findByName(category)
             .orElseThrow(WrongCategoryException::new);
     }
 }

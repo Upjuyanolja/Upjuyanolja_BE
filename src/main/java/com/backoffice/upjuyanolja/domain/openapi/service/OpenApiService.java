@@ -34,7 +34,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -242,8 +241,8 @@ public class OpenApiService {
         JSONObject base,
         JSONObject common
     ) throws JSONException {
-        Category category = categoryRepository.findCategoryByNameAndIdGreaterThan(
-                AccommodationType.getByCode(base.getString("cat3")).name(), 4L)
+        Category category = categoryRepository.findByName(
+                AccommodationType.getByCode(base.getString("cat3")).name())
             .orElseThrow(WrongCategoryException::new);
 
         Accommodation accommodation = Accommodation.builder()
@@ -312,7 +311,6 @@ public class OpenApiService {
                 LocalTime checkIn = getTimeFromString(stringCheckIn);
                 LocalTime checkOut = getTimeFromString(stringCheckOut);
 
-
                 Room room = roomRepository.save(Room.builder()
                     .accommodation(accommodation)
                     .name(roomJson.getString("roomtitle"))
@@ -360,7 +358,7 @@ public class OpenApiService {
         );
     }
 
-    private void saveRoomPrice(Room room, JSONObject roomJson){
+    private void saveRoomPrice(Room room, JSONObject roomJson) {
         int offWeekDaysMinFee = Integer.parseInt(
             roomJson.getString("roomoffseasonminfee1")) == 0 ? DEFAULT_PRICE
             : Integer.parseInt(
