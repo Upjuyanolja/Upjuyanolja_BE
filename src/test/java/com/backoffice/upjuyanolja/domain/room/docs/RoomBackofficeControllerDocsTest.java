@@ -47,7 +47,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-public class RoomControllerDocsTest extends RestDocsSupport {
+public class RoomBackofficeControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private RoomCommandUseCase roomCommandUseCase;

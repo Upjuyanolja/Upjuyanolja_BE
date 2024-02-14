@@ -12,6 +12,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.member.dto.request.EmailRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
@@ -37,6 +38,9 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private SecurityUtil securityUtil;
+
+    @MockBean
+    private AccommodationQueryService accommodationQueryService;
 
     @Test
     @DisplayName("checkEmailDuplicate()는 이메일 중복 검사를 할 수 있다.")

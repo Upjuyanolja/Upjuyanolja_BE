@@ -6,15 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
-import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
+import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
@@ -30,6 +28,7 @@ import com.backoffice.upjuyanolja.domain.room.entity.RoomImage;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.exception.DuplicateRoomNameException;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomImageRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomOptionRepository;
@@ -37,11 +36,9 @@ import com.backoffice.upjuyanolja.domain.room.repository.RoomPriceRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomRepository;
 import com.backoffice.upjuyanolja.domain.room.repository.RoomStockRepository;
 import com.backoffice.upjuyanolja.domain.room.service.RoomCommandService;
-import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomQueryUseCase;
-import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
+import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
 import jakarta.persistence.EntityManager;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -64,7 +61,7 @@ public class RoomCommandServiceTest {
     private MemberGetService memberGetService;
 
     @Mock
-    private RoomQueryUseCase roomQueryUseCase;
+    private RoomQueryService roomQueryService;
 
     @Mock
     private RoomRepository roomRepository;
@@ -82,7 +79,7 @@ public class RoomCommandServiceTest {
     private RoomStockRepository roomStockRepository;
 
     @Mock
-    private AccommodationRepository accommodationRepository;
+    private AccommodationQueryService accommodationQueryService;
 
     @Mock
     private AccommodationOwnershipRepository accommodationOwnershipRepository;
@@ -140,7 +137,6 @@ public class RoomCommandServiceTest {
                 .description(
                     "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
                 .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
-                .rooms(new ArrayList<>())
                 .build();
 
             Room room = Room.builder()
@@ -178,33 +174,19 @@ public class RoomCommandServiceTest {
                 .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
                 .build();
 
-            Room savedRoom = Room.builder()
-                .id(1L)
-                .accommodation(accommodation)
-                .name("65m² 킹룸")
-                .defaultCapacity(2)
-                .maxCapacity(3)
-                .checkInTime(LocalTime.of(15, 0, 0))
-                .checkOutTime(LocalTime.of(11, 0, 0))
-                .amount(858)
-                .status(RoomStatus.SELLING)
-                .build();
-
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
-            given(accommodationRepository.findById(any(Long.TYPE)))
-                .willReturn(Optional.of(accommodation));
-            given(accommodationOwnershipRepository
-                .existsAccommodationOwnershipByMemberAndAccommodation(
-                    any(Member.class),
-                    any(Accommodation.class)
-                ))
-                .willReturn(true);
+            given(accommodationQueryService.getAccommodationById(any(Long.TYPE)))
+                .willReturn(accommodation);
+            doNothing().when(roomQueryService).checkOwnership(
+                any(Member.class),
+                any(Accommodation.class)
+            );
             given(roomRepository
                 .existsRoomByNameAndAccommodation(any(String.class), any(Accommodation.class)))
                 .willReturn(false);
             given(roomRepository.save(any(Room.class))).willReturn(room);
-            given(roomOptionRepository.save(any(RoomOption.class))).willReturn(roomOption);
             given(roomPriceRepository.save(any(RoomPrice.class))).willReturn(roomPrice);
+            given(roomOptionRepository.save(any(RoomOption.class))).willReturn(roomOption);
             given(roomImageRepository.saveAll(any(List.class))).willReturn(List.of(roomImage));
 
             // when
@@ -226,93 +208,18 @@ public class RoomCommandServiceTest {
             assertThat(result.option().internet()).isEqualTo(true);
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
-            verify(accommodationRepository, times(1)).findById(any(Long.TYPE));
-            verify(accommodationOwnershipRepository, times(1))
-                .existsAccommodationOwnershipByMemberAndAccommodation(
-                    any(Member.class),
-                    any(Accommodation.class));
+            verify(accommodationQueryService, times(1)).getAccommodationById(any(Long.TYPE));
+            verify(roomQueryService, times(1)).checkOwnership(
+                any(Member.class),
+                any(Accommodation.class)
+            );
             verify(roomRepository, times(1)).existsRoomByNameAndAccommodation(any(String.class),
                 any(Accommodation.class));
             verify(roomRepository, times(1)).save(any(Room.class));
+            verify(roomPriceRepository, times(1)).save(any(RoomPrice.class));
+            verify(roomOptionRepository, times(1)).save(any(RoomOption.class));
             verify(roomImageRepository, times(1)).saveAll(any(List.class));
-        }
-
-        @Test
-        @DisplayName("숙소 업주가 아니면 객실을 추가 등록할 수 없다.")
-        void notOwner_willFail() {
-            // given
-            RoomRegisterRequest roomRegisterRequest = RoomRegisterRequest.builder()
-                .name("65m² 킹룸")
-                .price(100000)
-                .defaultCapacity(2)
-                .maxCapacity(3)
-                .checkInTime("15:00")
-                .checkOutTime("11:00")
-                .amount(858)
-                .images(List.of(RoomImageRequest.builder()
-                    .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
-                    .build()))
-                .option(RoomOptionRequest.builder()
-                    .airCondition(true)
-                    .tv(true)
-                    .internet(true)
-                    .build())
-                .build();
-
-            Member member = Member.builder()
-                .id(1L)
-                .email("test@mail.com")
-                .password("$10$ygrAExVYmFTkZn2d0.Pk3Ot5CNZwIBjZH5f.WW0AnUq4w4PtBi9Nm")
-                .name("test")
-                .phone("010-1234-1234")
-                .imageUrl(
-                    "https://fastly.picsum.photos/id/866/200/300.jpg?hmac=rcadCENKh4rD6MAp6V_ma-AyWv641M4iiOpe1RyFHeI")
-                .authority(Authority.ROLE_USER)
-                .build();
-
-            Category category = Category.builder()
-                .id(5L)
-                .name("TOURIST_HOTEL")
-                .build();
-
-            Accommodation accommodation = Accommodation.builder()
-                .name("그랜드 하얏트 제주")
-                .address("제주특별자치도 제주시 노형동 925")
-                .detailAddress("")
-                .category(category)
-                .description(
-                    "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
-                .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
-                .rooms(new ArrayList<>())
-                .build();
-
-            given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
-            given(accommodationRepository.findById(any(Long.TYPE)))
-                .willReturn(Optional.of(accommodation));
-            given(
-                accommodationOwnershipRepository.existsAccommodationOwnershipByMemberAndAccommodation(
-                    any(Member.class),
-                    any(Accommodation.class)))
-                .willReturn(false);
-
-            // when
-            Throwable exception = assertThrows(NotOwnerException.class, () -> {
-                roomCommandService.registerRoom(1L, 1L, roomRegisterRequest);
-            });
-
-            // then
-            assertEquals(exception.getMessage(), "숙소의 업주가 아닙니다.");
-
-            verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
-            verify(accommodationRepository, times(1)).findById(any(Long.TYPE));
-            verify(accommodationOwnershipRepository, times(1))
-                .existsAccommodationOwnershipByMemberAndAccommodation(
-                    any(Member.class),
-                    any(Accommodation.class));
-            verify(roomRepository, never()).existsRoomByNameAndAccommodation(any(String.class),
-                any(Accommodation.class));
-            verify(roomRepository, never()).save(any(Room.class));
-            verify(roomImageRepository, never()).saveAll(any(List.class));
+            verify(roomStockRepository, times(30)).save(any(RoomStock.class));
         }
     }
 
@@ -355,7 +262,6 @@ public class RoomCommandServiceTest {
                 .description(
                     "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
                 .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
-                .rooms(new ArrayList<>())
                 .build();
 
             Room room = Room.builder()
@@ -393,25 +299,12 @@ public class RoomCommandServiceTest {
                 .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
                 .build();
 
-            Room savedRoom = Room.builder()
-                .id(1L)
-                .accommodation(accommodation)
-                .name("65m² 킹룸")
-                .defaultCapacity(2)
-                .maxCapacity(3)
-                .checkInTime(LocalTime.of(15, 0, 0))
-                .checkOutTime(LocalTime.of(11, 0, 0))
-                .amount(858)
-                .status(RoomStatus.SELLING)
-                .build();
-
-            given(roomRepository.existsRoomByNameAndAccommodation(
-                any(String.class),
-                any(Accommodation.class)))
+            given(roomRepository
+                .existsRoomByNameAndAccommodation(any(String.class), any(Accommodation.class)))
                 .willReturn(false);
             given(roomRepository.save(any(Room.class))).willReturn(room);
-            given(roomOptionRepository.save(any(RoomOption.class))).willReturn(roomOption);
             given(roomPriceRepository.save(any(RoomPrice.class))).willReturn(roomPrice);
+            given(roomOptionRepository.save(any(RoomOption.class))).willReturn(roomOption);
             given(roomImageRepository.saveAll(any(List.class))).willReturn(List.of(roomImage));
 
             // when
@@ -433,10 +326,13 @@ public class RoomCommandServiceTest {
             assertThat(result.option().tv()).isEqualTo(true);
             assertThat(result.option().internet()).isEqualTo(true);
 
-            verify(roomRepository, times(1))
-                .existsRoomByNameAndAccommodation(any(String.class), any(Accommodation.class));
+            verify(roomRepository, times(1)).existsRoomByNameAndAccommodation(any(String.class),
+                any(Accommodation.class));
             verify(roomRepository, times(1)).save(any(Room.class));
+            verify(roomPriceRepository, times(1)).save(any(RoomPrice.class));
+            verify(roomOptionRepository, times(1)).save(any(RoomOption.class));
             verify(roomImageRepository, times(1)).saveAll(any(List.class));
+            verify(roomStockRepository, times(30)).save(any(RoomStock.class));
         }
 
         @Test
@@ -474,7 +370,6 @@ public class RoomCommandServiceTest {
                 .description(
                     "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
                 .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
-                .rooms(new ArrayList<>())
                 .build();
 
             given(roomRepository
@@ -548,7 +443,6 @@ public class RoomCommandServiceTest {
                 .description(
                     "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
                 .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
-                .rooms(new ArrayList<>())
                 .build();
 
             RoomImage roomImage1 = RoomImage.builder()
@@ -590,39 +484,24 @@ public class RoomCommandServiceTest {
                 .room(room)
                 .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_2.jpg")
                 .build();
-            RoomImage roomImage3 = RoomImage.builder()
-                .id(3L)
-                .room(room)
-                .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_3.jpg")
-                .build();
-
-            Room savedRoom = Room.builder()
-                .id(1L)
-                .accommodation(accommodation)
-                .name("65m² 킹룸")
-                .defaultCapacity(2)
-                .maxCapacity(3)
-                .checkInTime(LocalTime.of(15, 0, 0))
-                .checkOutTime(LocalTime.of(11, 0, 0))
-                .amount(858)
-                .status(RoomStatus.STOP_SELLING)
-                .build();
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
-            given(roomRepository.findById(any(Long.TYPE))).willReturn(Optional.of(room));
-            given(roomQueryUseCase.findRoomOptionByRoom(any(Room.class))).willReturn(roomOption);
-            given(roomQueryUseCase.findRoomPriceByRoom(any(Room.class))).willReturn(roomPrice);
-            given(accommodationOwnershipRepository
-                .existsAccommodationOwnershipByMemberAndAccommodation(
-                    any(Member.class),
-                    any(Accommodation.class)))
-                .willReturn(true);
-            given(roomImageRepository.saveAll(any(List.class)))
-                .willReturn(List.of(roomImage2, roomImage3));
+            given(roomQueryService.findRoomById(any(Long.TYPE))).willReturn(room);
+            doNothing().when(roomQueryService).checkOwnership(
+                any(Member.class),
+                any(Accommodation.class)
+            );
+            given(roomQueryService.findRoomOptionByRoom(any(Room.class))).willReturn(roomOption);
+            given(roomQueryService.findRoomPriceByRoom(any(Room.class))).willReturn(roomPrice);
+            given(roomImageRepository.save(any(RoomImage.class)))
+                .willReturn(roomImage2);
             given(roomImageRepository.findById(any(Long.TYPE)))
                 .willReturn(Optional.of(roomImage1));
-            doNothing().when(roomImageRepository).deleteAll(any(List.class));
+            doNothing().when(roomImageRepository).delete(any(RoomImage.class));
+            doNothing().when(em).flush();
             doNothing().when(em).refresh(any(Room.class));
+            doNothing().when(em).refresh(any(RoomOption.class));
+            doNothing().when(em).refresh(any(RoomPrice.class));
 
             // when
             RoomInfoResponse result = roomCommandService.modifyRoom(1L, 1L, roomUpdateRequest);
@@ -643,17 +522,16 @@ public class RoomCommandServiceTest {
             assertThat(result.option().internet()).isEqualTo(true);
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
-            verify(roomRepository, times(1)).findById(any(Long.TYPE));
-            verify(roomQueryUseCase, times(1)).findRoomOptionByRoom(room);
-            verify(roomQueryUseCase, times(1)).findRoomPriceByRoom(room);
-            verify(accommodationOwnershipRepository, times(1))
-                .existsAccommodationOwnershipByMemberAndAccommodation(
-                    any(Member.class),
-                    any(Accommodation.class)
-                );
-            verify(roomImageRepository, times(1)).saveAll(any(List.class));
+            verify(roomQueryService, times(1)).findRoomById(any(Long.TYPE));
+            verify(roomQueryService, times(1)).checkOwnership(
+                any(Member.class),
+                any(Accommodation.class)
+            );
+            verify(roomQueryService, times(1)).findRoomOptionByRoom(room);
+            verify(roomQueryService, times(1)).findRoomPriceByRoom(room);
+            verify(roomImageRepository, times(1)).save(any(RoomImage.class));
             verify(roomImageRepository, times(1)).findById(any(Long.TYPE));
-            verify(roomImageRepository, times(1)).deleteAll(any(List.class));
+            verify(roomImageRepository, times(1)).delete(any(RoomImage.class));
         }
     }
 
@@ -682,6 +560,7 @@ public class RoomCommandServiceTest {
                 .build();
 
             Accommodation accommodation = Accommodation.builder()
+                .id(1L)
                 .name("그랜드 하얏트 제주")
                 .address("제주특별자치도 제주시 노형동 925")
                 .detailAddress("")
@@ -689,7 +568,6 @@ public class RoomCommandServiceTest {
                 .description(
                     "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
                 .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
-                .rooms(new ArrayList<>())
                 .build();
 
             RoomImage roomImage1 = RoomImage.builder()
@@ -727,15 +605,15 @@ public class RoomCommandServiceTest {
                 .build();
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
-            given(roomRepository.findById(any(Long.TYPE))).willReturn(Optional.of(room));
-            given(roomQueryUseCase.findRoomImageByRoom(room)).willReturn(List.of(roomImage1));
-            given(roomQueryUseCase.findRoomOptionByRoom(any(Room.class))).willReturn(roomOption);
-            given(roomQueryUseCase.findRoomPriceByRoom(any(Room.class))).willReturn(roomPrice);
-            given(accommodationOwnershipRepository
-                .existsAccommodationOwnershipByMemberAndAccommodation(
-                    any(Member.class),
-                    any(Accommodation.class)))
-                .willReturn(true);
+            given(roomQueryService.findRoomById(any(Long.TYPE))).willReturn(room);
+            doNothing().when(roomQueryService).checkOwnership(
+                any(Member.class),
+                any(Accommodation.class)
+            );
+            given(roomRepository.countByAccommodationId(any(Long.TYPE))).willReturn(2L);
+            given(roomQueryService.findRoomOptionByRoom(any(Room.class))).willReturn(roomOption);
+            given(roomQueryService.findRoomPriceByRoom(any(Room.class))).willReturn(roomPrice);
+            given(roomQueryService.findRoomImageByRoom(room)).willReturn(List.of(roomImage1));
 
             // when
             RoomInfoResponse result = roomCommandService.deleteRoom(1L, 1L);
@@ -759,13 +637,15 @@ public class RoomCommandServiceTest {
             assertThat(result.option().internet()).isEqualTo(true);
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
-            verify(roomRepository, times(1)).findById(any(Long.TYPE));
-            verify(roomQueryUseCase, times(1)).findRoomOptionByRoom(room);
-            verify(roomQueryUseCase, times(1)).findRoomPriceByRoom(room);
-            verify(accommodationOwnershipRepository, times(1))
-                .existsAccommodationOwnershipByMemberAndAccommodation(
-                    any(Member.class),
-                    any(Accommodation.class));
+            verify(roomQueryService, times(1)).findRoomById(any(Long.TYPE));
+            verify(roomQueryService, times(1)).checkOwnership(
+                any(Member.class),
+                any(Accommodation.class)
+            );
+            verify(roomRepository, times(1)).countByAccommodationId(any(Long.TYPE));
+            verify(roomQueryService, times(1)).findRoomOptionByRoom(room);
+            verify(roomQueryService, times(1)).findRoomPriceByRoom(room);
+            verify(roomQueryService, times(1)).findRoomImageByRoom(room);
         }
     }
 }
