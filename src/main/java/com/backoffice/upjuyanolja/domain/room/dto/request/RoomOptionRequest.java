@@ -1,5 +1,6 @@
 package com.backoffice.upjuyanolja.domain.room.dto.request;
 
+import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
 import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase.RoomOptionUpdateDto;
 import jakarta.validation.constraints.NotNull;
@@ -28,15 +29,16 @@ public record RoomOptionRequest(
     /**
      * 객실 옵션 등록 요청 DTO를 객실 옵션 Entity로 변환하는 메서드
      *
-     * @param roomOptionRequest 객실 옵션 등록 요청 DTO
+     * @param room 객실 Entity
      * @return 객실 옵션 Entity
      * @author JeongUijeong (jeong275117@gmail.com)
      */
-    public static RoomOption toEntity(RoomOptionRequest roomOptionRequest) {
+    public RoomOption toEntity(Room room) {
         return RoomOption.builder()
-            .airCondition(roomOptionRequest.airCondition)
-            .tv(roomOptionRequest.tv)
-            .internet(roomOptionRequest.internet)
+            .room(room)
+            .airCondition(this.airCondition)
+            .tv(this.tv)
+            .internet(this.internet)
             .build();
     }
 

@@ -1,5 +1,10 @@
 package com.backoffice.upjuyanolja.domain.room.dto.request;
 
+import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
+import com.backoffice.upjuyanolja.domain.room.entity.Room;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
+import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
+import com.backoffice.upjuyanolja.global.util.DateTimeParser;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -62,4 +67,26 @@ public record RoomRegisterRequest(
     List<RoomImageRequest> images
 ) {
 
+    public Room toEntity(Accommodation accommodation) {
+        return Room.builder()
+            .accommodation(accommodation)
+            .name(this.name())
+            .status(RoomStatus.SELLING)
+            .defaultCapacity(this.defaultCapacity())
+            .maxCapacity(this.maxCapacity())
+            .checkInTime(DateTimeParser.timeParser(this.checkInTime()))
+            .checkOutTime(DateTimeParser.timeParser(this.checkOutTime()))
+            .amount(this.amount())
+            .build();
+    }
+
+    public RoomPrice toRoomPriceEntity(Room room) {
+        return RoomPrice.builder()
+            .room(room)
+            .offWeekDaysMinFee(this.price)
+            .offWeekendMinFee(this.price)
+            .peakWeekDaysMinFee(this.price)
+            .peakWeekendMinFee(this.price)
+            .build();
+    }
 }
