@@ -17,5 +17,5 @@ public interface CategoryCustomRepository {
      * @return 카테고리 이름과 일치하는 하위 카테고리 Optional 객체
      * @author JeongUijeong (jeong275117@gmail.com)
      */
-    Optional<Category> findCategoryByName(String name);
+    Optional<Category> findByName(String name);
 }

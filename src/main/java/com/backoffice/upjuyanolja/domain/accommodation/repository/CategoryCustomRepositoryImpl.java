@@ -41,7 +41,7 @@ public class CategoryCustomRepositoryImpl implements CategoryCustomRepository {
      * @author JeongUijeong (jeong275117@gmail.com)
      */
     @Override
-    public Optional<Category> findCategoryByName(String name) {
+    public Optional<Category> findByName(String name) {
         JPAQuery<Category> query = queryFactory
             .selectFrom(qCategory)
             .where(createSearchConditionsBuilder(name));
