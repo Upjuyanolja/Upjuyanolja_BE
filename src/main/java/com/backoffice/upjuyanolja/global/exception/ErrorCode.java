@@ -3,6 +3,17 @@ package com.backoffice.upjuyanolja.global.exception;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+/**
+ * Custom ErrorCode Class
+ * <p>
+ * 비즈니스 로직에서 발생하는 에러의 에러 코드, 에러 메시지 등을 한 곳에서 관리하기 위한 Enum입니다.
+ *
+ * @author JeongUijeong (jeong275117@gmail.com)
+ * @author HyunA (vikim1210@naver.com)
+ * @author chaewon12 (djacltk@naver.com)
+ * @author jisang Lee (matrixpower1004@gmail.com)
+ * @author chadongmin (cdm2883@naver.com)
+ */
 @Getter
 public enum ErrorCode {
 
@@ -76,10 +87,29 @@ public enum ErrorCode {
     INVALID_DATE(HttpStatus.BAD_REQUEST, 9003, "유효하지 않는 날짜입니다."),
     NOT_OWNER(HttpStatus.FORBIDDEN, 9004, "숙소의 업주가 아닙니다.");
 
+    /**
+     * Http 상태 코드
+     */
     private final HttpStatus httpStatus;
+
+    /**
+     * 에러 코드
+     */
     private final int code;
+
+    /**
+     * 에러 메시지
+     */
     private final String message;
 
+    /**
+     * All Arguments Constructor
+     *
+     * @param httpStatus Http 상태 코드
+     * @param code       에러 코드
+     * @param message    에러 메시지
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
     ErrorCode(HttpStatus httpStatus, int code, String message) {
         this.httpStatus = httpStatus;
         this.code = code;
