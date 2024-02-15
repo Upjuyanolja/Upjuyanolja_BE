@@ -9,8 +9,6 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.member.dto.request.EmailRequest;
@@ -38,9 +36,6 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private SecurityUtil securityUtil;
-
-    @MockBean
-    private AccommodationQueryService accommodationQueryService;
 
     @Test
     @DisplayName("checkEmailDuplicate()는 이메일 중복 검사를 할 수 있다.")

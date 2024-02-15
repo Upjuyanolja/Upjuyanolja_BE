@@ -17,7 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
-import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
@@ -67,9 +66,6 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private ReservationService reservationService;
-
-    @MockBean
-    private AccommodationQueryService accommodationQueryService;
 
     static Member mockMember;
     static Room mockRoom;

@@ -197,7 +197,8 @@ public class AccommodationCommandServiceTest {
             given(categoryRepository.findByName(any(String.class)))
                 .willReturn(Optional.of(category));
             given(accommodationRepository.save(any(Accommodation.class))).willReturn(accommodation);
-            given(accommodationOptionRepository.save(any(AccommodationOption.class))).willReturn(accommodationOption);
+            given(accommodationOptionRepository.save(any(AccommodationOption.class))).willReturn(
+                accommodationOption);
             given(accommodationImageRepository.saveAll(any(List.class)))
                 .willReturn(List.of(accommodationImage));
             given(accommodationOwnershipRepository.save(any(AccommodationOwnership.class)))
@@ -205,7 +206,8 @@ public class AccommodationCommandServiceTest {
             given(roomCommandService.saveRoom(any(Accommodation.class),
                 any(RoomRegisterRequest.class)))
                 .willReturn(roomInfoResponse);
-            given(roomQueryService.getRoomsInfo(any(Accommodation.class))).willReturn(List.of(roomInfoResponse));
+            given(roomQueryService.getRoomsInfo(any(Accommodation.class))).willReturn(
+                List.of(roomInfoResponse));
 
             // when
             AccommodationInfoResponse result = accommodationCommandService

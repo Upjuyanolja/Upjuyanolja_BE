@@ -10,7 +10,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.restdocs.request.RequestDocumentation.partWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.requestParts;
 
-import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.image.dto.ImageResponse;
 import com.backoffice.upjuyanolja.domain.image.dto.ImageUrlResponse;
@@ -32,9 +31,6 @@ public class ImageControllerDocsTest extends RestDocsSupport {
 
     @MockBean
     private ImageService imageService;
-
-    @MockBean
-    private AccommodationQueryService accommodationQueryService;
 
     @Test
     @DisplayName("이미지를 저장할 수 있다.")
