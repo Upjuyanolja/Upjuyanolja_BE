@@ -158,6 +158,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
      *
      * @param category 조회하고자 하는 카테고리 이름
      * @return 카테고리 Entity
+     * @throws WrongCategoryException 문자열과 일치하는 하위 카테고리를 찾을 수 없는 경우 에러 처리
      * @author JeongUijeong (jeong275117@gmail.com)
      */
     private Category getCategory(String category) {

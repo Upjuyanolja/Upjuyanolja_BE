@@ -186,6 +186,14 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
             .build();
     }
 
+    /**
+     * 숙소 조회 메서드
+     *
+     * @param accommodationId 조회하려는 숙소 식별자
+     * @return 숙소 Entity
+     * @throws AccommodationNotFoundException 숙소를 찾을 수 없는 경우 에러 처리
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
     public Accommodation getAccommodationById(long accommodationId) {
         return accommodationRepository.findById(accommodationId)
             .orElseThrow(AccommodationNotFoundException::new);
@@ -212,6 +220,14 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
         return accommodationOwnershipRepository.findAllByMember(member);
     }
 
+    /**
+     * 숙소 옵션 조회 메서드
+     *
+     * @param accommodation 옵션을 조회하려는 숙소 Entity
+     * @throws AccommodationOptionNotFoundException 숙소 옵션을 찾을 수 없는 경우 에러 처리
+     * @return 숙소 옵션 Entity
+     * @author HyunA (vikim1210@naver.com)
+     */
     private AccommodationOption getAccommodationOptionByAccommodation(Accommodation accommodation) {
         return accommodationOptionRepository.findByAccommodation(accommodation)
             .orElseThrow(AccommodationOptionNotFoundException::new);
