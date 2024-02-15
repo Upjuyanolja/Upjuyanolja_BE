@@ -3,7 +3,7 @@ package com.backoffice.upjuyanolja.domain.room.service;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.exception.AccommodationNotFoundException;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
-import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
@@ -53,7 +53,7 @@ public class RoomQueryService implements RoomQueryUseCase {
     /**
      * 숙소 Repository Interface
      */
-    private final AccommodationQueryService accommodationQueryService;
+    private final AccommodationRepository accommodationRepository;
 
     /**
      * 숙소 소유권 Repository Interface
@@ -113,9 +113,8 @@ public class RoomQueryService implements RoomQueryUseCase {
     ) {
         // 1. 회원, 숙소 조회
         Member member = memberGetService.getMemberById(memberId);
-        Accommodation accommodation = accommodationQueryService.getAccommodationById(
-            accommodationId
-        );
+        Accommodation accommodation = accommodationRepository.findById(accommodationId)
+            .orElseThrow(AccommodationNotFoundException::new);
 
         // 2. 소유권 확인
         checkOwnership(member, accommodation);
