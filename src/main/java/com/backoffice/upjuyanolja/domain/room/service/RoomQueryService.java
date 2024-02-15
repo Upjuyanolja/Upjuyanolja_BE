@@ -102,6 +102,7 @@ public class RoomQueryService implements RoomQueryUseCase {
      * @param accommodationId 객실 목록을 조회하고자 하는 숙소 식별자
      * @param pageable        객실 페이지네이션 조회를 위한 Pageable 객체
      * @return 객실 정보 목록 페이지
+     * @throws AccommodationNotFoundException 숙소를 찾을 수 없는 경우 에러 처리
      * @author JeongUijeong (jeong275117@gmail.com)
      */
     @Override
@@ -217,6 +218,7 @@ public class RoomQueryService implements RoomQueryUseCase {
      *
      * @param roomId 조회하려는 객실 식별자
      * @return 객실 Entity
+     * @throws RoomNotFoundException 객실을 찾을 수 없는 경우 에러 처리
      * @author JeongUijeong (jeong275117@gmail.com)
      */
     @Transactional(readOnly = true)
@@ -229,6 +231,7 @@ public class RoomQueryService implements RoomQueryUseCase {
      *
      * @param room 객실 옵션을 조회하려는 객실 Entity
      * @return 객실 옵션 Entity
+     * @throws RoomOptionNotFoundException 객실 옵션을 찾을 수 없는 경우 에러 처리
      * @author HyunA (vikim1210@naver.com)
      */
     @Transactional(readOnly = true)
@@ -242,6 +245,7 @@ public class RoomQueryService implements RoomQueryUseCase {
      *
      * @param room 객실 가격을 조회하려는 객실 Entity
      * @return 객실 가격 Entity
+     * @throws RoomPriceNotFoundException 객실 가격을 찾을 수 없는 경우 에러 처리
      * @author HyunA (vikim1210@naver.com)
      */
     @Transactional(readOnly = true)
@@ -283,6 +287,7 @@ public class RoomQueryService implements RoomQueryUseCase {
      * @param startDate 시작일
      * @param endDate   종료일
      * @return 시작일과 종료일 사이의 객실 재고 Entity 리스트
+     * @throws RoomStockNotFoundException 객실 재고를 찾을 수 없는 경우 에러 처리
      * @author HyunA (vikim1210@naver.com)
      * @author JeongUijeong (jeong275117@gmail.com)
      */
@@ -329,6 +334,7 @@ public class RoomQueryService implements RoomQueryUseCase {
      *
      * @param member        숙소 소유권을 확인할 업주 회원 Entity
      * @param accommodation 소유권을 확인할 숙소 Entity
+     * @throws NotOwnerException 숙소의 소유권을 가진 업주가 아닌 경우 에러 처리
      * @author JeongUijeong (jeong275117@gmail.com)
      */
     @Transactional(readOnly = true)

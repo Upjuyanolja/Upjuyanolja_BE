@@ -201,6 +201,7 @@ public class RoomCommandService implements RoomCommandUseCase {
      *
      * @param roomName      검증하고자 하는 객실 이름
      * @param accommodation 객실이 속한 숙소 Entity
+     * @throws DuplicateRoomNameException 특정 숙소 내 객실 이름이 중복되는 경우 에러 처리
      * @author JeongUijeong (jeong275117@gmail.com)
      */
     private void validateRoomName(String roomName, Accommodation accommodation) {
@@ -215,6 +216,7 @@ public class RoomCommandService implements RoomCommandUseCase {
      * 문자열을 RoomStatus Enum에서 찾을 수 있는 유효한 객실 상태인지 확인합니다.
      *
      * @param stringRoomStatus 객실 상태 문자열
+     * @throws InvalidRoomStatusException 문자열을 RoomStatus Enum에서 찾을 수 없는 경우 에러 처리
      * @author JeongUijeong (jeong275117@gmail.com)
      */
     private void validateRoomStatus(String stringRoomStatus) {
@@ -236,6 +238,7 @@ public class RoomCommandService implements RoomCommandUseCase {
      * @param accommodation       객실을 등록하고자하는 숙소 Entity
      * @param roomRegisterRequest 객실 등록 요청 DTO
      * @return 저장한 객실 정보
+     * @throws RoomImageNotExistsException 객실 이미지가 하나 이상 존재하지 않는 경우 에러 처리
      * @author JeongUijeong (jeong275117@gmail.com)
      */
     public RoomInfoResponse saveRoom(
@@ -344,6 +347,7 @@ public class RoomCommandService implements RoomCommandUseCase {
      * 객실 이미지 삭제 메서드
      *
      * @param roomImageDeleteRequests 객실 이미지 삭제 요청 DTO 리스트
+     * @throws RoomImageNotFoundException 객실 이미지를 찾을 수 없는 경우 에러 처리
      * @author JeongUijeong (jeong275117@gmail.com)
      */
     private void deleteRoomImages(List<RoomImageDeleteRequest> roomImageDeleteRequests) {
