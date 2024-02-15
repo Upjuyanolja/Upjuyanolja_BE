@@ -498,10 +498,6 @@ public class RoomCommandServiceTest {
             given(roomImageRepository.findById(any(Long.TYPE)))
                 .willReturn(Optional.of(roomImage1));
             doNothing().when(roomImageRepository).delete(any(RoomImage.class));
-            doNothing().when(em).flush();
-            doNothing().when(em).refresh(any(Room.class));
-            doNothing().when(em).refresh(any(RoomOption.class));
-            doNothing().when(em).refresh(any(RoomPrice.class));
 
             // when
             RoomInfoResponse result = roomCommandService.modifyRoom(1L, 1L, roomUpdateRequest);

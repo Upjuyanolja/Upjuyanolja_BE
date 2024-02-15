@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
-import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
+import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
 import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponStatus;
@@ -59,7 +59,7 @@ public class RoomQueryServiceTest {
     private MemberGetService memberGetService;
 
     @Mock
-    private AccommodationQueryService accommodationQueryService;
+    private AccommodationRepository accommodationRepository;
 
     @Mock
     private AccommodationOwnershipRepository accommodationOwnershipRepository;
@@ -218,8 +218,8 @@ public class RoomQueryServiceTest {
             );
 
             given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
-            given(accommodationQueryService.getAccommodationById(any(Long.TYPE)))
-                .willReturn(accommodation);
+            given(accommodationRepository.findById(any(Long.TYPE)))
+                .willReturn(Optional.of(accommodation));
             given(accommodationOwnershipRepository
                 .existsAccommodationOwnershipByMemberAndAccommodation(
                     any(Member.class),
@@ -268,7 +268,7 @@ public class RoomQueryServiceTest {
             assertThat(result.rooms().get(0).coupons()).isNotEmpty();
 
             verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
-            verify(accommodationQueryService, times(1)).getAccommodationById(any(Long.TYPE));
+            verify(accommodationRepository, times(1)).findById(any(Long.TYPE));
             verify(accommodationOwnershipRepository, times(1))
                 .existsAccommodationOwnershipByMemberAndAccommodation(
                     any(Member.class),
