@@ -18,7 +18,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationR
 import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.service.usecase.AccommodationCommandUseCase;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.exception.RoomNotFoundException;
@@ -66,7 +66,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
     /**
      * 회원 조회 Service Class
      */
-    private final MemberGetService memberGetService;
+    private final MemberQueryService memberQueryService;
 
     /**
      * 객실 생성, 수정, 삭제 Service Class
@@ -97,7 +97,7 @@ public class AccommodationCommandService implements AccommodationCommandUseCase 
         roomRegisterRequestsValidate(accommodationRegisterRequest.rooms());
 
         // 2. 회원, 카테고리 조회
-        Member member = memberGetService.getMemberById(memberId);
+        Member member = memberQueryService.getMemberById(memberId);
         Category category = getCategory(accommodationRegisterRequest.category());
 
         // 3. 숙소, 숙소 옵션, 숙소 이미지, 숙소 소유권 저장

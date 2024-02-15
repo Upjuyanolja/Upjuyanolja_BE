@@ -3,7 +3,7 @@ package com.backoffice.upjuyanolja.domain.room.service;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageAddRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageDeleteRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
@@ -72,7 +72,7 @@ public class RoomCommandService implements RoomCommandUseCase {
     /**
      * 회원 조회 Service Class
      */
-    private final MemberGetService memberGetService;
+    private final MemberQueryService memberQueryService;
 
     /**
      * 숙소 조회 Service Class
@@ -106,7 +106,7 @@ public class RoomCommandService implements RoomCommandUseCase {
         RoomRegisterRequest roomRegisterRequest
     ) {
         // 1. 회원, 숙소 조회
-        Member member = memberGetService.getMemberById(memberId);
+        Member member = memberQueryService.getMemberById(memberId);
         Accommodation accommodation = accommodationQueryService.getAccommodationById(
             accommodationId
         );
@@ -135,7 +135,7 @@ public class RoomCommandService implements RoomCommandUseCase {
         RoomUpdateRequest roomUpdateRequest
     ) {
         // 1. 회원, 객실 조회
-        Member member = memberGetService.getMemberById(memberId);
+        Member member = memberQueryService.getMemberById(memberId);
         Room room = roomQueryService.findRoomById(roomId);
 
         // 2. 요청 검증
@@ -172,7 +172,7 @@ public class RoomCommandService implements RoomCommandUseCase {
     @Transactional
     public RoomInfoResponse deleteRoom(long memberId, long roomId) {
         // 1. 회원, 객실 조회
-        Member member = memberGetService.getMemberById(memberId);
+        Member member = memberQueryService.getMemberById(memberId);
         Room room = roomQueryService.findRoomById(roomId);
 
         // 2. 소유권 확인

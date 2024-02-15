@@ -20,12 +20,11 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomResponse;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStock;
 import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
-import com.backoffice.upjuyanolja.global.exception.NotOwnerException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -77,7 +76,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     /**
      * 회원 조회 Service Class
      */
-    private final MemberGetService memberGetService;
+    private final MemberQueryService memberQueryService;
 
     /**
      * 쿠폰 Service Class
@@ -174,7 +173,7 @@ public class AccommodationQueryService implements AccommodationQueryUseCase {
     @Override
     @Transactional(readOnly = true)
     public AccommodationOwnershipResponse getAccommodationOwnership(long memberId) {
-        Member member = memberGetService.getMemberById(memberId);
+        Member member = memberQueryService.getMemberById(memberId);
         List<AccommodationOwnership> ownerships = getOwnershipByMember(member);
 
         List<AccommodationNameResponse> accommodations = new ArrayList<>();

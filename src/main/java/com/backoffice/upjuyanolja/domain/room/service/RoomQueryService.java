@@ -9,7 +9,7 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomsInfoResponse;
@@ -88,7 +88,7 @@ public class RoomQueryService implements RoomQueryUseCase {
     /**
      * 회원 조회 Service Class
      */
-    private final MemberGetService memberGetService;
+    private final MemberQueryService memberQueryService;
 
     /**
      * 쿠폰 Service Class
@@ -113,7 +113,7 @@ public class RoomQueryService implements RoomQueryUseCase {
         Pageable pageable
     ) {
         // 1. 회원, 숙소 조회
-        Member member = memberGetService.getMemberById(memberId);
+        Member member = memberQueryService.getMemberById(memberId);
         Accommodation accommodation = accommodationRepository.findById(accommodationId)
             .orElseThrow(AccommodationNotFoundException::new);
 
@@ -168,7 +168,7 @@ public class RoomQueryService implements RoomQueryUseCase {
     @Transactional(readOnly = true)
     public RoomInfoResponse getRoom(long memberId, long roomId) {
         // 1. 회원, 객실 조회
-        Member member = memberGetService.getMemberById(memberId);
+        Member member = memberQueryService.getMemberById(memberId);
         Room room = findRoomById(roomId);
 
         // 2. 소유권 확인

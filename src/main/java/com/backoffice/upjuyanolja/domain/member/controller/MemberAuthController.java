@@ -10,10 +10,11 @@ import com.backoffice.upjuyanolja.domain.member.dto.response.SignInResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.SignUpResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.TokenResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,13 +24,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 회원 API Controller Class
+ *
+ * @author chadongmin (cdm2883@naver.com)
+ * @author JeongUijeong (jeong275117@gmail.com)
+ */
+@Slf4j
 @RestController
 @RequestMapping("api/auth")
 @RequiredArgsConstructor
 public class MemberAuthController {
 
     private final MemberAuthService memberAuthService;
-    private final MemberGetService memberGetService;
+    private final MemberQueryService memberQueryService;
     private final SecurityUtil securityUtil;
 
     @PostMapping("members/signup")
@@ -56,9 +64,17 @@ public class MemberAuthController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    /**
+     * 회원 정보 조회 API Controller
+     *
+     * @return 회원 정보
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
     @GetMapping("members")
     public ResponseEntity<MemberInfoResponse> getMember() {
-        MemberInfoResponse response = memberGetService.getMember(
+        log.info("[GET] /api/auth/members");
+
+        MemberInfoResponse response = memberQueryService.getMember(
             securityUtil.getCurrentMemberId());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -71,8 +87,16 @@ public class MemberAuthController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    /**
+     * 회원 로그아웃 API Controller
+     *
+     * @return void
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
     @DeleteMapping("/logout")
     public ResponseEntity<Void> logout() {
+        log.info("[Delete] /api/auth/logout");
+
         memberAuthService.logout(securityUtil.getCurrentMemberId());
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
