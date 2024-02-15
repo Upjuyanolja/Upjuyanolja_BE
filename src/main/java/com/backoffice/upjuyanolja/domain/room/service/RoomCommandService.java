@@ -156,10 +156,6 @@ public class RoomCommandService implements RoomCommandUseCase {
 
         // 5. 객실 관련 엔터티 Refresh
         List<RoomImage> roomImages = roomQueryService.findRoomImageByRoom(room);
-        em.flush();
-        em.refresh(room);
-        em.refresh(roomOption);
-        em.refresh(roomPrice);
 
         return RoomInfoResponse.of(room, roomOption, roomImages, roomPrice.getOffWeekDaysMinFee());
     }
