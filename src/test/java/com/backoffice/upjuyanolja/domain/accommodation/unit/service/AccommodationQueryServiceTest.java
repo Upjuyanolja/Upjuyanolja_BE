@@ -12,7 +12,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationO
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -31,7 +31,7 @@ public class AccommodationQueryServiceTest {
     private AccommodationQueryService accommodationQueryService;
 
     @Mock
-    private MemberGetService memberGetService;
+    private MemberQueryService memberQueryService;
 
     @Mock
     private AccommodationOwnershipRepository accommodationOwnershipRepository;
@@ -74,7 +74,7 @@ public class AccommodationQueryServiceTest {
                 .member(member)
                 .build();
 
-            given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
+            given(memberQueryService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(accommodationOwnershipRepository.findAllByMember(any(Member.class)))
                 .willReturn(List.of(accommodationOwnership));
 

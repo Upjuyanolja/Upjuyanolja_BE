@@ -19,7 +19,7 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomPageRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
@@ -56,7 +56,7 @@ public class RoomQueryServiceTest {
     private RoomQueryService roomQueryService;
 
     @Mock
-    private MemberGetService memberGetService;
+    private MemberQueryService memberQueryService;
 
     @Mock
     private AccommodationRepository accommodationRepository;
@@ -217,7 +217,7 @@ public class RoomQueryServiceTest {
                     .build()
             );
 
-            given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
+            given(memberQueryService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(accommodationRepository.findById(any(Long.TYPE)))
                 .willReturn(Optional.of(accommodation));
             given(accommodationOwnershipRepository
@@ -267,7 +267,7 @@ public class RoomQueryServiceTest {
             assertThat(result.rooms().get(0).option().internet()).isEqualTo(true);
             assertThat(result.rooms().get(0).coupons()).isNotEmpty();
 
-            verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
+            verify(memberQueryService, times(1)).getMemberById(any(Long.TYPE));
             verify(accommodationRepository, times(1)).findById(any(Long.TYPE));
             verify(accommodationOwnershipRepository, times(1))
                 .existsAccommodationOwnershipByMemberAndAccommodation(
@@ -361,7 +361,7 @@ public class RoomQueryServiceTest {
                 .peakWeekendMinFee(100000)
                 .build();
 
-            given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
+            given(memberQueryService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(roomRepository.findById(any(Long.TYPE))).willReturn(Optional.of(room));
             given(accommodationOwnershipRepository
                 .existsAccommodationOwnershipByMemberAndAccommodation(
@@ -395,7 +395,7 @@ public class RoomQueryServiceTest {
             assertThat(result.option().tv()).isEqualTo(true);
             assertThat(result.option().internet()).isEqualTo(true);
 
-            verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
+            verify(memberQueryService, times(1)).getMemberById(any(Long.TYPE));
             verify(roomRepository, times(1)).findById(any(Long.TYPE));
             verify(accommodationOwnershipRepository, times(1))
                 .existsAccommodationOwnershipByMemberAndAccommodation(

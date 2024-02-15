@@ -15,7 +15,7 @@ import com.backoffice.upjuyanolja.domain.coupon.repository.CouponRepository;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.point.repository.PointRepository;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
@@ -40,7 +40,7 @@ class CouponBackofficeServiceTest {
     CouponBackofficeService couponBackofficeService;
 
     @Mock
-    MemberGetService memberGetService;
+    MemberQueryService memberQueryService;
 
     @Mock
     CouponRepository couponRepository;

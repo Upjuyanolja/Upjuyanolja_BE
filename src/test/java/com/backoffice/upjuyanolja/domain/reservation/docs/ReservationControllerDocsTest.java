@@ -19,7 +19,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.payment.entity.PayMethod;
 import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
 import com.backoffice.upjuyanolja.domain.reservation.dto.request.CreateReservationRequest;
@@ -62,7 +62,7 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
     private SecurityUtil securityUtil;
 
     @MockBean
-    private MemberGetService memberGetService;
+    private MemberQueryService memberQueryService;
 
     @MockBean
     private ReservationService reservationService;
@@ -208,7 +208,7 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         //given
         CreateReservationRequest request = createRequest(null);
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+        when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
         doNothing().when(reservationService).create(any(Member.class), eq(request));
 
         //when
@@ -262,7 +262,7 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         // given
         Long reservationId = 1L;
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+        when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
         doNothing().when(reservationService).cancel(any(Member.class), any(Long.class));
 
         // when
@@ -311,7 +311,7 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         GetReservedResponse mockResponse = new GetReservedResponse(mockPage, mockPayments);
 
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+        when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
         when(reservationService.getReserved(any(Member.class), eq(pageable)))
             .thenReturn(mockResponse);
 
@@ -381,7 +381,7 @@ public class ReservationControllerDocsTest extends RestDocsSupport {
         GetCanceledResponse mockResponse = new GetCanceledResponse(mockPage, mockPayments);
 
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+        when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
         when(reservationService.getCanceled(any(Member.class), eq(pageable)))
             .thenReturn(mockResponse);
 

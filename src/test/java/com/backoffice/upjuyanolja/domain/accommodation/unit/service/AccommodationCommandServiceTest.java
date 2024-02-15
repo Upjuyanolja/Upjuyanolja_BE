@@ -21,7 +21,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.CategoryReposi
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationCommandService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomOptionRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomRegisterRequest;
@@ -50,7 +50,7 @@ public class AccommodationCommandServiceTest {
     private AccommodationCommandService accommodationCommandService;
 
     @Mock
-    private MemberGetService memberGetService;
+    private MemberQueryService memberQueryService;
 
     @Mock
     private AccommodationRepository accommodationRepository;
@@ -193,7 +193,7 @@ public class AccommodationCommandServiceTest {
                     .build())
                 .build();
 
-            given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
+            given(memberQueryService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(categoryRepository.findByName(any(String.class)))
                 .willReturn(Optional.of(category));
             given(accommodationRepository.save(any(Accommodation.class))).willReturn(accommodation);

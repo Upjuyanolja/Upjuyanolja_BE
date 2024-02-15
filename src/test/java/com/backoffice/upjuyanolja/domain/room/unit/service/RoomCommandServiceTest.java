@@ -15,7 +15,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationO
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageAddRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageDeleteRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
@@ -58,7 +58,7 @@ public class RoomCommandServiceTest {
     private RoomCommandService roomCommandService;
 
     @Mock
-    private MemberGetService memberGetService;
+    private MemberQueryService memberQueryService;
 
     @Mock
     private RoomQueryService roomQueryService;
@@ -174,7 +174,7 @@ public class RoomCommandServiceTest {
                 .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_1.jpg")
                 .build();
 
-            given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
+            given(memberQueryService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(accommodationQueryService.getAccommodationById(any(Long.TYPE)))
                 .willReturn(accommodation);
             doNothing().when(roomQueryService).checkOwnership(
@@ -207,7 +207,7 @@ public class RoomCommandServiceTest {
             assertThat(result.option().tv()).isEqualTo(true);
             assertThat(result.option().internet()).isEqualTo(true);
 
-            verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
+            verify(memberQueryService, times(1)).getMemberById(any(Long.TYPE));
             verify(accommodationQueryService, times(1)).getAccommodationById(any(Long.TYPE));
             verify(roomQueryService, times(1)).checkOwnership(
                 any(Member.class),
@@ -485,7 +485,7 @@ public class RoomCommandServiceTest {
                 .url("http://tong.visitkorea.or.kr/cms/resource/77/2876777_image2_2.jpg")
                 .build();
 
-            given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
+            given(memberQueryService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(roomQueryService.findRoomById(any(Long.TYPE))).willReturn(room);
             doNothing().when(roomQueryService).checkOwnership(
                 any(Member.class),
@@ -517,7 +517,7 @@ public class RoomCommandServiceTest {
             assertThat(result.option().tv()).isEqualTo(true);
             assertThat(result.option().internet()).isEqualTo(true);
 
-            verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
+            verify(memberQueryService, times(1)).getMemberById(any(Long.TYPE));
             verify(roomQueryService, times(1)).findRoomById(any(Long.TYPE));
             verify(roomQueryService, times(1)).checkOwnership(
                 any(Member.class),
@@ -600,7 +600,7 @@ public class RoomCommandServiceTest {
                 .peakWeekendMinFee(100000)
                 .build();
 
-            given(memberGetService.getMemberById(any(Long.TYPE))).willReturn(member);
+            given(memberQueryService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(roomQueryService.findRoomById(any(Long.TYPE))).willReturn(room);
             doNothing().when(roomQueryService).checkOwnership(
                 any(Member.class),
@@ -632,7 +632,7 @@ public class RoomCommandServiceTest {
             assertThat(result.option().tv()).isEqualTo(true);
             assertThat(result.option().internet()).isEqualTo(true);
 
-            verify(memberGetService, times(1)).getMemberById(any(Long.TYPE));
+            verify(memberQueryService, times(1)).getMemberById(any(Long.TYPE));
             verify(roomQueryService, times(1)).findRoomById(any(Long.TYPE));
             verify(roomQueryService, times(1)).checkOwnership(
                 any(Member.class),

@@ -46,7 +46,7 @@ import com.backoffice.upjuyanolja.domain.coupon.service.CouponStatisticsService;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.point.entity.Point;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
@@ -99,7 +99,7 @@ class CouponBackofficeControllerTest {
     private SecurityUtil securityUtil;
 
     @MockBean
-    private MemberGetService memberGetService;
+    private MemberQueryService memberQueryService;
 
     Member mockMember;
 
@@ -121,7 +121,7 @@ class CouponBackofficeControllerTest {
         public void couponMakeViewResponse_test() throws Exception {
             // given
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+            when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
             Long accommodationId = 1L;
             CouponMakeViewResponse makeViewResponse = makeCouponViewResponse();
@@ -149,7 +149,7 @@ class CouponBackofficeControllerTest {
         public void couponMakeRequestTest() throws Exception {
             // given
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+            when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
             List<CouponRoomsRequest> mockCouponRoomsRequests = createCouponRooms();
             CouponMakeRequest mockCouponMakeRequest = createCouponMakeRequest(
@@ -177,7 +177,7 @@ class CouponBackofficeControllerTest {
         public void couponManageViewResponse_test() throws Exception {
             // given
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+            when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
             List<Long> roomIdSet = List.of(1L, 2L, 3L);
             List<String> roomNameSet = List.of("스탠다드", "디럭스", "스위트");
@@ -246,7 +246,7 @@ class CouponBackofficeControllerTest {
         public void addonCouponTest() throws Exception {
             // given
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+            when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
             List<CouponAddRooms> rooms = createMockAddCoupons();
             CouponAddRequest couponAddRequest = new CouponAddRequest(
@@ -266,7 +266,7 @@ class CouponBackofficeControllerTest {
         public void couponModifyTest() throws Exception {
             // given
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+            when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
             List<CouponModifyRooms> rooms = createModifyCouponMock();
             CouponModifyRequest couponModifyRequest = new CouponModifyRequest(
@@ -286,7 +286,7 @@ class CouponBackofficeControllerTest {
         public void couponDeleteTest() throws Exception {
             // given
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+            when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
             List<CouponDeleteRooms> rooms = createMockDeleteRooms();
             CouponDeleteRequest mockDeleteRequest = new CouponDeleteRequest(
@@ -311,7 +311,7 @@ class CouponBackofficeControllerTest {
         public void couponStatisticsTest() throws Exception {
             // given
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+            when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
             // when & Then
             CouponStatisticsResponse mockResponse = createMockStatisticsResponse();
@@ -345,7 +345,7 @@ class CouponBackofficeControllerTest {
                 .build();
 
             given(securityUtil.getCurrentMemberId()).willReturn(1L);
-            given(memberGetService.getMember(any(Long.TYPE))).willReturn(memberInfoResponse);
+            given(memberQueryService.getMember(any(Long.TYPE))).willReturn(memberInfoResponse);
             String mockName = mockMember.getName();
 
             // when & Then

@@ -10,7 +10,7 @@ import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.payment.entity.PayMethod;
 import com.backoffice.upjuyanolja.domain.payment.entity.Payment;
 import com.backoffice.upjuyanolja.domain.reservation.controller.ReservationController;
@@ -73,7 +73,7 @@ class ReservationControllerTest {
     private SecurityUtil securityUtil;
 
     @MockBean
-    private MemberGetService memberGetService;
+    private MemberQueryService memberQueryService;
 
     @MockBean
     private ReservationService reservationService;
@@ -300,7 +300,7 @@ class ReservationControllerTest {
             GetReservedResponse mockResponse = new GetReservedResponse(mockPage, mockPayments);
 
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+            when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
             when(reservationService.getReserved(any(Member.class), eq(pageable)))
                 .thenReturn(mockResponse);
 
@@ -383,7 +383,7 @@ class ReservationControllerTest {
             GetCanceledResponse mockResponse = new GetCanceledResponse(mockPage, mockPayments);
 
             when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-            when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+            when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
             when(reservationService.getCanceled(any(Member.class), eq(pageable)))
                 .thenReturn(mockResponse);
 
