@@ -2,8 +2,8 @@ package com.backoffice.upjuyanolja.domain.coupon.unit.service;
 
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.FLAT;
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.RATE;
-import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.makePaymentPrice;
 import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.isRightDiscount;
+import static com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType.makePaymentPrice;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -56,7 +56,7 @@ class DiscountTypeTest {
         assertThat(result).isEqualTo(500);
     }
 
-    @DisplayName("할인 유형과 할인가(할인율)을 입력하면 view에 응답할 쿠폰 이름을 만들어서 보여준다." )
+    @DisplayName("할인 유형과 할인가(할인율)을 입력하면 view에 응답할 쿠폰 이름을 만들어서 보여준다.")
     @Test
     public void makeDicountCouponName() throws Exception {
         // given

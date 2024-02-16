@@ -1,7 +1,7 @@
 package com.backoffice.upjuyanolja.domain.reservation.controller;
 
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.reservation.dto.request.CreateReservationRequest;
 import com.backoffice.upjuyanolja.domain.reservation.dto.response.GetReservationResponse;
 import com.backoffice.upjuyanolja.domain.reservation.entity.ReservationStatus;
@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReservationController {
 
     private final SecurityUtil securityUtil;
-    private final MemberGetService memberGetService;
+    private final MemberQueryService memberQueryService;
     private final ReservationService reservationService;
 
     @PostMapping()
@@ -75,6 +75,6 @@ public class ReservationController {
 
     private Member getCurrentMember() {
         Long memberId = securityUtil.getCurrentMemberId();
-        return memberGetService.getMemberById(memberId);
+        return memberQueryService.getMemberById(memberId);
     }
 }

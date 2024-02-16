@@ -9,7 +9,7 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.DiscountType;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponService;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomInfoResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomPageResponse;
 import com.backoffice.upjuyanolja.domain.room.dto.response.RoomsInfoResponse;
@@ -40,71 +40,93 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 객실 조회 Service Class
+ *
+ * @author JeongUijeong (jeong275117@gmail.com)
+ * @author HyunA (vikim1210@naver.com)
+ */
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class RoomQueryService implements RoomQueryUseCase {
 
+    /**
+     * 숙소 Repository Interface
+     */
     private final AccommodationRepository accommodationRepository;
+
+    /**
+     * 숙소 소유권 Repository Interface
+     */
     private final AccommodationOwnershipRepository accommodationOwnershipRepository;
+
+    /**
+     * 객실 Repository Interface
+     */
     private final RoomRepository roomRepository;
-    private final RoomImageRepository roomImageRepository;
-    private final RoomOptionRepository roomOptionRepository;
+
+    /**
+     * 객실 가격 Repository Interface
+     */
     private final RoomPriceRepository roomPriceRepository;
+
+    /**
+     * 객실 재고 Repository Interface
+     */
     private final RoomStockRepository roomStockRepository;
 
-    private final MemberGetService memberGetService;
+    /**
+     * 객실 이미지 Repository Interface
+     */
+    private final RoomImageRepository roomImageRepository;
+
+    /**
+     * 객실 옵션 Repository Interface
+     */
+    private final RoomOptionRepository roomOptionRepository;
+
+    /**
+     * 회원 조회 Service Class
+     */
+    private final MemberQueryService memberQueryService;
+
+    /**
+     * 쿠폰 Service Class
+     */
     private final CouponService couponService;
 
+    /**
+     * 객실 목록 조회 메서드
+     *
+     * @param memberId        객실 목록을 조회할 업주 회원 식별자
+     * @param accommodationId 객실 목록을 조회하고자 하는 숙소 식별자
+     * @param pageable        객실 페이지네이션 조회를 위한 Pageable 객체
+     * @return 객실 정보 목록 페이지
+     * @throws AccommodationNotFoundException 숙소를 찾을 수 없는 경우 에러 처리
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
     @Override
-    public List<Room> findByAccommodationId(long accommodationId) {
-        return roomRepository.findByAccommodationId(accommodationId);
-    }
-
-    @Override
-    public Room findRoomById(long roomId) {
-        return roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
-    }
-
-    @Override
-    public RoomOption findRoomOptionByRoom(Room room) {
-        return roomOptionRepository.findByRoom(room)
-            .orElseThrow(RoomOptionNotFoundException::new);
-    }
-
-    @Override
-    public RoomPrice findRoomPriceByRoom(Room room) {
-        return roomPriceRepository.findByRoom(room)
-            .orElseThrow(RoomPriceNotFoundException::new);
-    }
-
-    @Override
-    public List<RoomImage> findRoomImageByRoom(Room room) {
-        return roomImageRepository.findByRoom(room);
-    }
-
-    @Override
-    public List<String> getRoomImageUrlByRoom(Room room) {
-        return roomImageRepository.findByRoom(room).stream()
-            .map(image -> image.getUrl())
-            .toList();
-    }
-
-    @Override
-    public RoomPageResponse getRooms(long memberId, long accommodationId, Pageable pageable) {
-        Member member = memberGetService.getMemberById(memberId);
+    @Transactional(readOnly = true)
+    public RoomPageResponse getRooms(
+        long memberId,
+        long accommodationId,
+        Pageable pageable
+    ) {
+        // 1. 회원, 숙소 조회
+        Member member = memberQueryService.getMemberById(memberId);
         Accommodation accommodation = accommodationRepository.findById(accommodationId)
             .orElseThrow(AccommodationNotFoundException::new);
+
+        // 2. 소유권 확인
         checkOwnership(member, accommodation);
+
+        // 3. 객실, 객실 쿠폰, 객실 옵션, 객실 이미지 조회
         List<RoomsInfoResponse> rooms = new ArrayList<>();
-        Page<Room> roomPage = roomRepository.findAllByAccommodation(accommodationId, pageable);
-        roomPage.get().forEach(room -> {
+        Page<Room> roomPage = roomRepository.findAllByAccommodationId(accommodationId, pageable);
+        for (Room room : roomPage.get().toList()) {
             List<CouponDetailResponse> couponDetails = new ArrayList<>();
             List<Coupon> coupons = couponService.getCouponInRoom(room);
-            RoomOption roomOption = findRoomOptionByRoom(room);
             int roomPrice = findRoomPriceByRoom(room).getOffWeekDaysMinFee();
-            List<RoomImage> roomImage = findRoomImageByRoom(room);
-
             couponDetails.addAll(couponService
                 .getSortedDiscountTypeCouponResponseInRoom(
                     room, roomPrice,
@@ -115,13 +137,15 @@ public class RoomQueryService implements RoomQueryUseCase {
                     room, roomPrice,
                     coupons, DiscountType.RATE)
             );
-
+            RoomOption roomOption = findRoomOptionByRoom(room);
+            List<RoomImage> roomImage = findRoomImageByRoom(room);
             rooms.add(RoomsInfoResponse.of(
                     room, roomOption, roomImage,
                     couponDetails, roomPrice
                 )
             );
-        });
+        }
+
         return RoomPageResponse.builder()
             .pageNum(roomPage.getNumber())
             .pageSize(roomPage.getSize())
@@ -132,12 +156,25 @@ public class RoomQueryService implements RoomQueryUseCase {
             .build();
     }
 
+    /**
+     * 객실 상세 조회 메서드
+     *
+     * @param memberId 객실 상세 정보를 조회할 업주 회원 식별자
+     * @param roomId   상세 정보를 조회하고자 하는 객실 식별자
+     * @return 객실 정보
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
     @Override
+    @Transactional(readOnly = true)
     public RoomInfoResponse getRoom(long memberId, long roomId) {
-        Member member = memberGetService.getMemberById(memberId);
-        Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
+        // 1. 회원, 객실 조회
+        Member member = memberQueryService.getMemberById(memberId);
+        Room room = findRoomById(roomId);
+
+        // 2. 소유권 확인
         checkOwnership(member, room.getAccommodation());
 
+        // 3. 객실 옵션, 객실 가격, 객실 이미지 조회
         RoomOption option = findRoomOptionByRoom(room);
         int roomPrice = findRoomPriceByRoom(room).getOffWeekDaysMinFee();
         List<RoomImage> roomImage = findRoomImageByRoom(room);
@@ -145,12 +182,125 @@ public class RoomQueryService implements RoomQueryUseCase {
         return RoomInfoResponse.of(room, option, roomImage, roomPrice);
     }
 
-    @Override
+    /**
+     * 숙소의 객실 정보 조회 메서드
+     *
+     * @param accommodation 객실 정보 목록을 조회할 숙소 Entity
+     * @return 객실 정보 목록
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
+    @Transactional(readOnly = true)
+    public List<RoomInfoResponse> getRoomsInfo(Accommodation accommodation) {
+        List<RoomInfoResponse> roomInfoResponses = new ArrayList<>();
+        for (Room room : findByAccommodationId(accommodation.getId())) {
+            RoomOption roomOption = findRoomOptionByRoom(room);
+            int roomPrice = findRoomPriceByRoom(room).getOffWeekDaysMinFee();
+            List<RoomImage> roomImages = findRoomImageByRoom(room);
+            roomInfoResponses.add(RoomInfoResponse.of(room, roomOption, roomImages, roomPrice));
+        }
+        return roomInfoResponses;
+    }
+
+    /**
+     * 숙소 식별자로 속한 객실 Entity 리스트 조회 메서드
+     *
+     * @param accommodationId 객실 목록을 조회할 숙소 식별자
+     * @return 객실 Entity 리스트
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
+    @Transactional(readOnly = true)
+    public List<Room> findByAccommodationId(long accommodationId) {
+        return roomRepository.findAllByAccommodationId(accommodationId);
+    }
+
+    /**
+     * 객실 식별자로 객실 Entity를 조회하는 메서드
+     *
+     * @param roomId 조회하려는 객실 식별자
+     * @return 객실 Entity
+     * @throws RoomNotFoundException 객실을 찾을 수 없는 경우 에러 처리
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
+    @Transactional(readOnly = true)
+    public Room findRoomById(long roomId) {
+        return roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
+    }
+
+    /**
+     * 객실 Entity로 객실 옵션을 조회하는 메서드
+     *
+     * @param room 객실 옵션을 조회하려는 객실 Entity
+     * @return 객실 옵션 Entity
+     * @throws RoomOptionNotFoundException 객실 옵션을 찾을 수 없는 경우 에러 처리
+     * @author HyunA (vikim1210@naver.com)
+     */
+    @Transactional(readOnly = true)
+    public RoomOption findRoomOptionByRoom(Room room) {
+        return roomOptionRepository.findByRoom(room)
+            .orElseThrow(RoomOptionNotFoundException::new);
+    }
+
+    /**
+     * 객실 Entity로 객실 가격을 조회하는 메서드
+     *
+     * @param room 객실 가격을 조회하려는 객실 Entity
+     * @return 객실 가격 Entity
+     * @throws RoomPriceNotFoundException 객실 가격을 찾을 수 없는 경우 에러 처리
+     * @author HyunA (vikim1210@naver.com)
+     */
+    @Transactional(readOnly = true)
+    public RoomPrice findRoomPriceByRoom(Room room) {
+        return roomPriceRepository.findByRoom(room)
+            .orElseThrow(RoomPriceNotFoundException::new);
+    }
+
+    /**
+     * 객실 Entity로 객실 이미지 목록을 조회하는 메서드
+     *
+     * @param room 객실 이미지 목록을 조회하려는 객실 Entity
+     * @return 객실 이미지 Entity 리스트
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
+    @Transactional(readOnly = true)
+    public List<RoomImage> findRoomImageByRoom(Room room) {
+        return roomImageRepository.findByRoom(room);
+    }
+
+    /**
+     * 객실 이미지 URL 문자열 리스트 조회 메서드
+     *
+     * @param room 객실 이미지 URL을 조회할 객실 Entity
+     * @return 객실 이미지 URL 문자열 리스트
+     * @author HyunA (vikim1210@naver.com)
+     */
+    @Transactional(readOnly = true)
+    public List<String> getRoomImageUrlByRoom(Room room) {
+        return roomImageRepository.findByRoom(room).stream()
+            .map(image -> image.getUrl())
+            .toList();
+    }
+
+    /**
+     * 시작일과 종료일 사이의 객실 재고 필터링 조회 메서드
+     *
+     * @param room      객실 재고를 조회할 객실 Entity
+     * @param startDate 시작일
+     * @param endDate   종료일
+     * @return 시작일과 종료일 사이의 객실 재고 Entity 리스트
+     * @throws RoomStockNotFoundException 객실 재고를 찾을 수 없는 경우 에러 처리
+     * @author HyunA (vikim1210@naver.com)
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
+    @Transactional(readOnly = true)
     public List<RoomStock> getFilteredRoomStocksByDate(
         Room room, LocalDate startDate, LocalDate endDate
     ) {
-        return roomStockRepository.findByRoom(room)
-            .orElseThrow(RoomStockNotFoundException::new)
+        List<RoomStock> roomStocks = roomStockRepository.findAllByRoom(room);
+        if (roomStocks.isEmpty()) {
+            throw new RoomStockNotFoundException();
+        }
+
+        return roomStocks
             .stream()
             .filter(
                 stock ->
@@ -160,7 +310,14 @@ public class RoomQueryService implements RoomQueryUseCase {
             .toList();
     }
 
-    @Override
+    /**
+     * 객실 리스트 중 가장 최소 가격을 가지는 객실에 대한 객실, 최소가 조회 메서드
+     *
+     * @param rooms 객실 Entity 리스트
+     * @return 객실, 최소가 Map
+     * @author HyunA (vikim1210@naver.com)
+     */
+    @Transactional(readOnly = true)
     public Map<Room, Integer> getMinRoomPriceWithRoom(List<Room> rooms) {
         Map<Room, Integer> roomMinPriceMap = new HashMap<>();
 
@@ -172,11 +329,19 @@ public class RoomQueryService implements RoomQueryUseCase {
         return roomMinPriceMap;
     }
 
-    private void checkOwnership(Member member, Accommodation accommodation) {
+    /**
+     * 숙소 소유권 체크 메서드
+     *
+     * @param member        숙소 소유권을 확인할 업주 회원 Entity
+     * @param accommodation 소유권을 확인할 숙소 Entity
+     * @throws NotOwnerException 숙소의 소유권을 가진 업주가 아닌 경우 에러 처리
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
+    @Transactional(readOnly = true)
+    public void checkOwnership(Member member, Accommodation accommodation) {
         if (!accommodationOwnershipRepository
             .existsAccommodationOwnershipByMemberAndAccommodation(member, accommodation)) {
             throw new NotOwnerException();
         }
     }
-
 }

@@ -6,27 +6,14 @@ import static org.mockito.BDDMockito.given;
 
 import com.backoffice.upjuyanolja.domain.accommodation.dto.response.AccommodationOwnershipResponse;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationImage;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOwnership;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationOwnershipRepository;
-import com.backoffice.upjuyanolja.domain.accommodation.repository.AccommodationRepository;
 import com.backoffice.upjuyanolja.domain.accommodation.service.AccommodationQueryService;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
-import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
-import com.backoffice.upjuyanolja.domain.room.service.RoomQueryService;
-import com.backoffice.upjuyanolja.domain.room.service.usecase.RoomCommandUseCase;
-import jakarta.persistence.EntityManager;
-import java.time.LocalTime;
-import java.util.ArrayList;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -44,22 +31,10 @@ public class AccommodationQueryServiceTest {
     private AccommodationQueryService accommodationQueryService;
 
     @Mock
-    private MemberRepository memberRepository;
-
-    @Mock
-    private AccommodationRepository accommodationRepository;
+    private MemberQueryService memberQueryService;
 
     @Mock
     private AccommodationOwnershipRepository accommodationOwnershipRepository;
-
-    @Mock
-    private RoomQueryService roomQueryService;
-
-    @Mock
-    private RoomCommandUseCase roomCommandUseCase;
-
-    @Mock
-    private EntityManager em;
 
     @Nested
     @DisplayName("getAccommodationOwnership()은")
@@ -92,42 +67,14 @@ public class AccommodationQueryServiceTest {
                 .description(
                     "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
                 .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
-                .rooms(new ArrayList<>())
-                .build();
-            AccommodationImage accommodationImage = AccommodationImage.builder()
-                .id(1L)
-                .accommodation(accommodation)
-                .url("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
-                .build();
-            Room room = Room.builder()
-                .id(1L)
-                .accommodation(accommodation)
-                .name("65m² 킹룸")
-                .defaultCapacity(2)
-                .maxCapacity(3)
-                .checkInTime(LocalTime.of(15, 0, 0))
-                .checkOutTime(LocalTime.of(11, 0, 0))
-                .amount(858)
-                .status(RoomStatus.SELLING)
-                .build();
-            Accommodation savedAccommodation = Accommodation.builder()
-                .id(1L)
-                .name("그랜드 하얏트 제주")
-                .address("제주특별자치도 제주시 노형동 925")
-                .detailAddress("")
-                .category(category)
-                .description(
-                    "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
-                .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
-                .rooms(List.of(room))
                 .build();
             AccommodationOwnership accommodationOwnership = AccommodationOwnership.builder()
                 .id(1L)
-                .accommodation(savedAccommodation)
+                .accommodation(accommodation)
                 .member(member)
                 .build();
 
-            given(memberRepository.findById(any(Long.TYPE))).willReturn(Optional.of(member));
+            given(memberQueryService.getMemberById(any(Long.TYPE))).willReturn(member);
             given(accommodationOwnershipRepository.findAllByMember(any(Member.class)))
                 .willReturn(List.of(accommodationOwnership));
 

@@ -6,7 +6,7 @@ import com.backoffice.upjuyanolja.domain.coupon.entity.Coupon;
 import com.backoffice.upjuyanolja.domain.coupon.entity.CouponIssuance;
 import com.backoffice.upjuyanolja.domain.coupon.exception.InsufficientPointsException;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponIssuanceGetService;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.point.dto.request.PointChargeRequest;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargeDetailResponse;
 import com.backoffice.upjuyanolja.domain.point.dto.response.PointChargePageResponse;
@@ -76,7 +76,7 @@ public class PointService {
 
     private final AccommodationQueryService accommodationQueryService;
     private final CouponIssuanceGetService couponIssuanceGetService;
-    private final MemberGetService memberGetService;
+    private final MemberQueryService memberQueryService;
 
     private final ObjectMapper objectMapper;
 
@@ -572,7 +572,7 @@ public class PointService {
     private Point createPoint(Long memberId) {
         Point newPoint = Point.builder()
             .totalPointBalance(0)
-            .member(memberGetService.getMemberById(memberId))
+            .member(memberQueryService.getMemberById(memberId))
             .build();
 
         pointRepository.save(newPoint);

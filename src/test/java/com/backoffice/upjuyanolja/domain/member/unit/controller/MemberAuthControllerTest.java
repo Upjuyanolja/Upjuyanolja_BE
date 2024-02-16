@@ -15,7 +15,7 @@ import com.backoffice.upjuyanolja.domain.member.dto.request.EmailRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.global.security.AuthenticationConfig;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,7 +51,7 @@ public class MemberAuthControllerTest {
     private MemberAuthService memberAuthService;
 
     @MockBean
-    private MemberGetService memberGetService;
+    private MemberQueryService memberQueryService;
 
     @MockBean
     private SecurityUtil securityUtil;
@@ -127,7 +127,7 @@ public class MemberAuthControllerTest {
                 .build();
 
             given(securityUtil.getCurrentMemberId()).willReturn(1L);
-            given(memberGetService.getMember(any(Long.TYPE)))
+            given(memberQueryService.getMember(any(Long.TYPE)))
                 .willReturn(memberInfoResponse);
 
             // when then
@@ -139,7 +139,7 @@ public class MemberAuthControllerTest {
                 .andExpect(jsonPath("$.phoneNumber").isString())
                 .andDo(print());
 
-            verify(memberGetService, times(1)).getMember(any(Long.class));
+            verify(memberQueryService, times(1)).getMember(any(Long.class));
         }
     }
 }

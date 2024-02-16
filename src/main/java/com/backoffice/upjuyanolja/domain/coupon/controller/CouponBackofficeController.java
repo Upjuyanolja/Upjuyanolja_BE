@@ -10,7 +10,7 @@ import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.CouponSt
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.backoffice.RevenueStatisticsResponse;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponBackofficeService;
 import com.backoffice.upjuyanolja.domain.coupon.service.CouponStatisticsService;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -38,7 +38,7 @@ public class CouponBackofficeController {
     private final CouponBackofficeService couponService;
     private final CouponStatisticsService couponStatisticsService;
     private final SecurityUtil securityUtil;
-    private final MemberGetService memberGetService;
+    private final MemberQueryService memberQueryService;
 
     @GetMapping("/buy/{accommodationId}")
     public ResponseEntity<CouponMakeViewResponse> responseRoomsView(
@@ -153,7 +153,7 @@ public class CouponBackofficeController {
         couponService.validateAccommodationRequest(
             accommodationId, currentMemberId);
 
-        String ownerName = memberGetService.getMember(currentMemberId).name();
+        String ownerName = memberQueryService.getMember(currentMemberId).name();
         RevenueStatisticsResponse result = couponStatisticsService
             .getRevenueStatistics(accommodationId, ownerName);
         return ResponseEntity.status(HttpStatus.OK).body(result);

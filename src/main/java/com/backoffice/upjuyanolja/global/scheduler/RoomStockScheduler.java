@@ -10,13 +10,30 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+/**
+ * 객실 재고 생성을 위한 스케줄러
+ *
+ * @author JeongUijeong (jeong275117@gmail.com)
+ */
 @EnableScheduling
 @RequiredArgsConstructor
 public class RoomStockScheduler {
 
+    /**
+     * 객실 Repository Interface
+     */
     private final RoomRepository roomRepository;
+
+    /**
+     * 객실 재고 Repository Interface
+     */
     private final RoomStockRepository roomStockRepository;
 
+    /**
+     * 매일 새벽 3시에 29일 뒤 재고를 생성하는 메서드
+     *
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
     @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     private void addStockAfter30Days() {
         List<Room> rooms = roomRepository.findAll();

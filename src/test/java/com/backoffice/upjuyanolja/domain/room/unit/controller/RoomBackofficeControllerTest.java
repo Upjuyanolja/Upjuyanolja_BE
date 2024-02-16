@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.backoffice.upjuyanolja.domain.coupon.dto.response.CouponDetailResponse;
-import com.backoffice.upjuyanolja.domain.room.controller.RoomController;
+import com.backoffice.upjuyanolja.domain.room.controller.RoomBackofficeController;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageAddRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageDeleteRequest;
 import com.backoffice.upjuyanolja.domain.room.dto.request.RoomImageRequest;
@@ -47,12 +47,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 @ActiveProfiles("test")
-@WebMvcTest(value = RoomController.class,
+@WebMvcTest(value = RoomBackofficeController.class,
     excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
         SecurityConfig.class,
         AuthenticationConfig.class})},
     excludeAutoConfiguration = SecurityAutoConfiguration.class)
-public class RoomControllerTest {
+public class RoomBackofficeControllerTest {
 
     @Autowired
     protected MockMvc mockMvc;

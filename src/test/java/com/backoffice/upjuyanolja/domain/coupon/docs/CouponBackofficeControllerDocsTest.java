@@ -19,7 +19,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Accommodation;
-import com.backoffice.upjuyanolja.domain.accommodation.entity.AccommodationOption;
 import com.backoffice.upjuyanolja.domain.accommodation.entity.Category;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddInfos;
 import com.backoffice.upjuyanolja.domain.coupon.dto.request.backoffice.CouponAddRequest;
@@ -49,10 +48,8 @@ import com.backoffice.upjuyanolja.domain.coupon.service.CouponStatisticsService;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.domain.room.entity.Room;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomOption;
-import com.backoffice.upjuyanolja.domain.room.entity.RoomPrice;
 import com.backoffice.upjuyanolja.domain.room.entity.RoomStatus;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
@@ -79,7 +76,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     private SecurityUtil securityUtil;
 
     @MockBean
-    private MemberGetService memberGetService;
+    private MemberQueryService memberQueryService;
 
     @MockBean
     private CouponBackofficeService couponBackofficeService;
@@ -148,7 +145,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     public void createCouponRequestTest() throws Exception {
         // given
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+        when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
         List<CouponRoomsRequest> mockRequests = List.of(
             new CouponRoomsRequest(1L, DiscountType.FLAT, 5000, 10, 10000),
@@ -213,7 +210,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     public void manageCouponResponseTest() throws Exception {
         // given
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+        when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
         Accommodation mockAccommodation = createAccommodation(1L);
         List<Long> roomIdSet = List.of(1L, 2L, 3L);
@@ -299,7 +296,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     public void addonCouponRequestTest() throws Exception {
         // given
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+        when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
         List<CouponAddRooms> rooms = createMockAddCoupons();
         CouponAddRequest mockCouponAddRequest = new CouponAddRequest(
@@ -385,7 +382,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     public void modifyCouponRequestTest() throws Exception {
         // given
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+        when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
         List<CouponModifyRooms> rooms = createMockModifyCoupons();
         CouponModifyRequest mockCouponModifyRequest = new CouponModifyRequest(
@@ -456,7 +453,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     public void deleteCouponRequestTest() throws Exception {
         // given
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+        when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
         List<CouponDeleteRooms> rooms = createMockDeleteCoupons();
         CouponDeleteRequest mockDeleteRequest = new CouponDeleteRequest(
@@ -502,7 +499,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
     public void couponStatisticsTest() throws Exception {
         // given
         when(securityUtil.getCurrentMemberId()).thenReturn(1L);
-        when(memberGetService.getMemberById(1L)).thenReturn(mockMember);
+        when(memberQueryService.getMemberById(1L)).thenReturn(mockMember);
 
         // when & Then
         CouponStatisticsResponse mockResponse = createMockStatisticsResponse();
@@ -543,7 +540,7 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
             .build();
 
         given(securityUtil.getCurrentMemberId()).willReturn(1L);
-        given(memberGetService.getMember(any(Long.TYPE))).willReturn(memberInfoResponse);
+        given(memberQueryService.getMember(any(Long.TYPE))).willReturn(memberInfoResponse);
         String mockName = mockMember.getName();
 
         // when & Then
@@ -801,7 +798,6 @@ class CouponBackofficeControllerDocsTest extends RestDocsSupport {
             .description(
                 "63빌딩의 1.8배 규모인 연면적 30만 3737m2, 높이 169m(38층)를 자랑하는 제주 최대 높이, 최대 규모의 랜드마크이다. 제주 고도제한선(55m)보다 높이 위치한 1,600 올스위트 객실, 월드클래스 셰프들이 포진해 있는 14개의 글로벌 레스토랑 & 바, 인피니티 풀을 포함한 8층 야외풀데크, 38층 스카이데크를 비롯해 HAN컬렉션 K패션 쇼핑몰, 2개의 프리미엄 스파, 8개의 연회장 등 라스베이거스, 싱가포르, 마카오에서나 볼 수 있는 세계적인 수준의 복합리조트이다. 제주국제공항에서 차량으로 10분거리(5km)이며 제주의 강남이라고 불리는 신제주 관광 중심지에 위치하고 있다.")
             .thumbnail("http://tong.visitkorea.or.kr/cms/resource/83/2876783_image2_1.jpg")
-            .rooms(new ArrayList<>())
             .build();
     }
 

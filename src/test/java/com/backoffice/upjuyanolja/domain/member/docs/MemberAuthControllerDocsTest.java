@@ -9,14 +9,12 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 
 import com.backoffice.upjuyanolja.domain.member.dto.request.EmailRequest;
 import com.backoffice.upjuyanolja.domain.member.dto.response.CheckEmailDuplicateResponse;
 import com.backoffice.upjuyanolja.domain.member.dto.response.MemberInfoResponse;
 import com.backoffice.upjuyanolja.domain.member.service.MemberAuthService;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import com.backoffice.upjuyanolja.global.security.SecurityUtil;
 import com.backoffice.upjuyanolja.global.util.RestDocsSupport;
 import org.junit.jupiter.api.DisplayName;
@@ -33,7 +31,7 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
     private MemberAuthService memberAuthService;
 
     @MockBean
-    private MemberGetService memberGetService;
+    private MemberQueryService memberQueryService;
 
     @MockBean
     private SecurityUtil securityUtil;
@@ -79,7 +77,7 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
             .build();
 
         given(securityUtil.getCurrentMemberId()).willReturn(1L);
-        given(memberGetService.getMember(any(Long.TYPE)))
+        given(memberQueryService.getMember(any(Long.TYPE)))
             .willReturn(memberInfoResponse);
 
         // when then
@@ -97,6 +95,6 @@ public class MemberAuthControllerDocsTest extends RestDocsSupport {
                 )
             ));
 
-        verify(memberGetService, times(1)).getMember(any(Long.TYPE));
+        verify(memberQueryService, times(1)).getMember(any(Long.TYPE));
     }
 }

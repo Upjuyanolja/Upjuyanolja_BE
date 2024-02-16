@@ -13,7 +13,7 @@ import com.backoffice.upjuyanolja.domain.member.entity.Authority;
 import com.backoffice.upjuyanolja.domain.member.entity.Member;
 import com.backoffice.upjuyanolja.domain.member.exception.MemberNotFoundException;
 import com.backoffice.upjuyanolja.domain.member.repository.MemberRepository;
-import com.backoffice.upjuyanolja.domain.member.service.MemberGetService;
+import com.backoffice.upjuyanolja.domain.member.service.MemberQueryService;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -26,10 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 @ExtendWith(MockitoExtension.class)
-public class MemberGetServiceTest {
+public class MemberQueryServiceTest {
 
     @InjectMocks
-    private MemberGetService memberGetService;
+    private MemberQueryService memberQueryService;
 
     @Mock
     private MemberRepository memberRepository;
@@ -55,7 +55,7 @@ public class MemberGetServiceTest {
             given(memberRepository.findById(any(Long.TYPE))).willReturn(Optional.of(member));
 
             // when
-            MemberInfoResponse result = memberGetService.getMember(1L);
+            MemberInfoResponse result = memberQueryService.getMember(1L);
 
             // then
             assertThat(result.memberId()).isEqualTo(1L);
@@ -74,7 +74,7 @@ public class MemberGetServiceTest {
 
             // when
             Throwable exception = assertThrows(MemberNotFoundException.class, () -> {
-                memberGetService.getMember(1L);
+                memberQueryService.getMember(1L);
             });
 
             // then

@@ -28,17 +28,46 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 회원 인증/인가 Service Class
+ *
+ * @author chadongmin (cdm2883@naver.com)
+ * @author JeongUijeong (jeong275117@gmail.com)
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberAuthService implements AuthServiceProvider<SignUpResponse, SignUpRequest> {
 
+    /**
+     * 회원 Repository Interface
+     */
     private final MemberRepository memberRepository;
+
+    /**
+     * JWT Token Provider
+     */
     private final JwtTokenProvider jwtTokenProvider;
+
+    /**
+     * BCrypt 비밀번호 Encoder
+     */
     private final BCryptPasswordEncoder encoder;
+
+    /**
+     * 인증 매니저 Interface
+     */
     private final AuthenticationManager authenticationManager;
+
+    /**
+     * Redis Service Class
+     */
     private final RedisService redisService;
-    private final MemberGetService memberGetService;
+
+    /**
+     * 회원 조회 Service Class
+     */
+    private final MemberQueryService memberQueryService;
 
     @Transactional
     @Override
@@ -98,18 +127,25 @@ public class MemberAuthService implements AuthServiceProvider<SignUpResponse, Si
             .build();
     }
 
+    /**
+     * 회원 로그아웃 메서드
+     *
+     * @param memberId 회원 식별자
+     * @throws LoggedOutMemberException 이미 로그아웃한 회원인 경우 에러 처리
+     * @author JeongUijeong (jeong275117@gmail.com)
+     */
     public void logout(long memberId) {
-        Member member = memberGetService.getMemberById(memberId);
+        Member member = memberQueryService.getMemberById(memberId);
 
-        // 저장소에서 Member 이메일을 기반으로 Refresh Token 값 가져옴
+        // 1. 저장소에서 Member 이메일을 기반으로 Refresh Token 값 가져옴
         String refreshToken = redisService.getValues(member.getEmail());
 
-        // 없다면 이미 로그아웃한 회원
+        // 2. 없다면 이미 로그아웃한 회원
         if (refreshToken.equals("false")) {
             throw new LoggedOutMemberException();
         }
 
-        // 레디스 저장소에서 Refresh Token 삭제
+        // 3. 레디스 저장소에서 Refresh Token 삭제
         redisService.deleteValues(member.getEmail());
     }
 
